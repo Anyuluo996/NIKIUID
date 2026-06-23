@@ -4,13 +4,11 @@ import json
 from datetime import datetime
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader
-
 from gsuid_core.logger import logger
 
 from .encoding import fix_encoding
 from .models import PoolType, WardrobeFilterMode
-from .resource.RESOURCE_PATH import TEMPLATE_PATH as HTML_DIR, USER_DATA_PATH
+from .resource.RESOURCE_PATH import NIKI_TEMPLATES, USER_DATA_PATH
 
 
 def _get_level(suit: dict[str, Any]) -> int:
@@ -235,8 +233,7 @@ async def render_wardrobe_card(
             filter_mode,
         )
 
-        env = Environment(loader=FileSystemLoader(str(HTML_DIR)))
-        template = env.get_template("wardrobe.html")
+        template = NIKI_TEMPLATES.get_template("wardrobe.html")
         html_content = template.render(**context)
 
         if render_fn:

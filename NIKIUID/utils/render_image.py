@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import base64
+import io
 import re
 from pathlib import Path
 from typing import Any
@@ -153,11 +154,16 @@ def _get_font_face_css() -> str:
     htmlkit 走系统 fontconfig,容器里没装中文字体会渲染方块/缺字。
     把 ttf 内联成 @font-face 后,htmlkit 直接从 CSS 加载,完全脱离系统字体。
     结果缓存避免每次渲染都读 8MB 文件做 base64。
+
+    字体文件复用 gsuid_core 自带的 MiSans-Bold.ttf(不重复发布)。
     """
     if "css" in _FONT_CACHE:
         return _FONT_CACHE["css"]
 
-    font_path = Path(__file__).resolve().parents[1] / "fonts" / "MiSans-Bold.ttf"
+    # 复用 gsuid_core 自带字体,不随插件重复发布
+    from gsuid_core.utils.fonts.fonts import FONT_ORIGIN_PATH
+
+    font_path = Path(FONT_ORIGIN_PATH)
     if not font_path.exists():
         logger.warning(f"字体文件不存在: {font_path}")
         return ""
@@ -248,7 +254,7 @@ async def render_html_to_image(
             return None
 
         # 4. 用 PIL 高质量缩回显示尺寸(LANCZOS 抗锯齿)
-        hi_img = Image.open(__import__("io").BytesIO(image_bytes))
+        hi_img = Image.open(io.BytesIO(image_bytes))
         if hi_img.mode != "RGBA":
             hi_img = hi_img.convert("RGBA")
         target_w = int(max_width)
@@ -256,7 +262,7 @@ async def render_html_to_image(
         out_img = hi_img.resize((target_w, target_h), Image.LANCZOS)
 
         # 5. 输出 PNG(无损,保留清晰度)
-        buf = __import__("io").BytesIO()
+        buf = io.BytesIO()
         out_img.save(buf, format="PNG", optimize=True)
         return buf.getvalue()
     except Exception as e:

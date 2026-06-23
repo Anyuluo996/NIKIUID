@@ -21,6 +21,7 @@ from gsuid_core.help.model import PluginHelp
 _help_framework.pic_quality = 100
 
 from ..version import __version__ as NIKIUID_version
+from ..niki_config.prefix import niki_prefix
 
 ICON = Path(__file__).parent.parent.parent / "ICON.png"
 HELP_DATA = Path(__file__).parent / "help.json"
@@ -53,7 +54,7 @@ async def get_help(pm: int):
         plugin_info={f"v{NIKIUID_version}": ""},
         plugin_icon=Image.open(ICON),
         plugin_help=plugin_help,
-        plugin_prefix="niki / nk",
+        plugin_prefix=niki_prefix(),
         help_mode="light",
         banner_bg=_maybe("banner_bg.jpg"),
         banner_sub_text="每一刻,都值得被珍藏。",

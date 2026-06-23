@@ -1,13 +1,12 @@
 """奇想手账卡片渲染"""
 
+import json
 from datetime import datetime
 from typing import Any
 
-from jinja2 import Environment, FileSystemLoader
-
 from gsuid_core.logger import logger
 
-from .resource.RESOURCE_PATH import TEMPLATE_PATH as HTML_DIR
+from .resource.RESOURCE_PATH import NIKI_TEMPLATES
 
 
 def get_regions() -> list[dict[str, Any]]:
@@ -159,7 +158,6 @@ def build_journal_context(
 
     # 从 catalog/list 提取各类收集物总量(已收集来自 map_data 列表长度)
     # catalog 结构: {list: [{id, catalogs: [{id, name, count}]}]}
-    import json as _json
     catalog = (map_data or {}).get("__catalog", {})
     cat_totals: dict[int, int] = {}  # sub_id -> total count
     for cat in catalog.get("list", []):
@@ -173,7 +171,7 @@ def build_journal_context(
             return val[0].get("text", "") if val else ""
         if isinstance(val, str):
             try:
-                arr = _json.loads(val.strip('"'))
+                arr = json.loads(val.strip('"'))
                 return arr[0].get("text", "") if arr else ""
             except Exception:
                 return val
@@ -328,8 +326,7 @@ async def render_journal_card(
     try:
         context = build_journal_context(data, login_info, map_data, get_user_dir_fn)
 
-        env = Environment(loader=FileSystemLoader(str(HTML_DIR)))
-        template = env.get_template("niki_journal.html")
+        template = NIKI_TEMPLATES.get_template("niki_journal.html")
         html_content = template.render(**context)
 
         if render_fn:

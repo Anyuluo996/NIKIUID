@@ -14,6 +14,7 @@ from gsuid_core.segment import MessageSegment
 from gsuid_core.sv import SV
 
 from .get_help import ICON, get_help
+from ..niki_config.prefix import niki_prefix
 
 sv_niki_help = SV("niki帮助")
 
@@ -28,5 +29,5 @@ async def niki_help_cmd(bot: Bot, ev: Event):
         await bot.send("帮助图片渲染失败,请稍后再试")
 
 
-# 注册到 gsuid_core 全局插件帮助一览
-register_help("NIKIUID", "niki帮助", Image.open(ICON))
+# 注册到 gsuid_core 全局插件帮助一览(前缀跟随配置,不写死)
+register_help("NIKIUID", f"{niki_prefix()}帮助", Image.open(ICON))
