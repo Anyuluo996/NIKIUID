@@ -1,0 +1,27 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "NIKIUID"
+version = "1.0.0"
+description = "无限暖暖插件 - 奇想手账登录、刷新、卡片查看和抽卡统计"
+authors = [{ name = "Claude" }]
+requires-python = ">=3.11, <4.0"
+dependencies = [
+    "pycryptodome>=3.20.0",
+    "aiohttp>=3.11.0",
+    "jinja2>=3.1.0",
+    "python-snappy>=0.7.3",
+]
+
+[project.optional-dependencies]
+# 可选:浏览器模式抓共鸣数据 / passport 登录兜底
+browser = ["playwright>=1.40.0"]
+
+[tool.pyright]
+include = ["NIKIUID"]
+venvPath = "../../.."
+venv = ".venv"
+pythonVersion = "3.11"
+typeCheckingMode = "basic"

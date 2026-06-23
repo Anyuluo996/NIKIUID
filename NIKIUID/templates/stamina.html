@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>体力 - 无限暖暖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+        }
+
+        body {
+            width: 760px;
+        }
+
+        .bg {
+            width: 760px;
+            background-image: url("images/bg/HJawK_5aUAAd19x.jpg");
+            background-size: cover;
+            background-position: center;
+            padding: 24px;
+        }
+
+        .header {
+            display: table;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .header .avatar-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 56px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.8);
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.6);
+            text-align: center;
+            line-height: 48px;
+            font-size: 20px;
+            color: #6e594d;
+            border: 2px solid rgba(255,255,255,0.8);
+        }
+
+        .header .title-cell {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 12px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            color: #fff;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            margin-top: 2px;
+        }
+
+        /* 卡片网格(横版并排) */
+        .card-grid {
+            display: table;
+            width: 100%;
+            border-spacing: 10px;
+            border-collapse: separate;
+        }
+
+        .card-col {
+            display: table-cell;
+            width: 25%;
+            vertical-align: top;
+        }
+
+        .glass-card {
+            background: rgba(255,255,255,0.88);
+            border-radius: 16px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .glass-card .card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto 8px;
+        }
+
+        .glass-card .card-name {
+            font-size: 12px;
+            color: #6e594d;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .glass-card .card-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6e594d;
+            text-align: center;
+        }
+
+        .glass-card .card-value .max {
+            font-size: 11px;
+            color: #a69f95;
+            font-weight: normal;
+        }
+
+        .glass-card .card-status {
+            font-size: 10px;
+            color: #2e7d32;
+            text-align: center;
+            margin-top: 3px;
+        }
+
+        .mini-bar {
+            width: 100%;
+            height: 8px;
+            background: #ebe6db;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .mini-fill {
+            height: 8px;
+            background: linear-gradient(90deg, #ff9eb5, #e91e63);
+            border-radius: 4px;
+        }
+
+        .glass-card .card-hint {
+            font-size: 11px;
+            color: #c2185b;
+            margin-top: 6px;
+            opacity: 0.85;
+        }
+
+        /* 派遣详情(横跨整行) */
+        .dispatch-card {
+            background: rgba(255,255,255,0.88);
+            border-radius: 16px;
+            padding: 14px;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .dispatch-card .d-title {
+            font-size: 13px;
+            color: #6e594d;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .dispatch-grid {
+            display: table;
+            width: 100%;
+            border-spacing: 8px;
+            border-collapse: separate;
+        }
+
+        .dispatch-cell {
+            display: table-cell;
+            width: 25%;
+            text-align: center;
+        }
+
+        .dispatch-cell .d-name {
+            font-size: 12px;
+            color: #6e594d;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .dispatch-cell .d-bar {
+            width: 100%;
+            height: 6px;
+            background: #ebe6db;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 3px;
+        }
+
+        .dispatch-cell .d-fill {
+            height: 6px;
+            background: linear-gradient(90deg, #ff9eb5, #e91e63);
+            border-radius: 3px;
+        }
+
+        .dispatch-cell .d-time {
+            font-size: 10px;
+            color: #a69f95;
+        }
+
+        .dispatch-cell .d-remain {
+            font-size: 10px;
+            color: #e91e63;
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 8px 0 2px;
+            color: rgba(255,255,255,0.9);
+            font-size: 10px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg">
+        <!-- 用户信息 -->
+        <div class="header">
+            <div class="avatar-cell">
+                {% if avatar_path %}
+                <img src="{{ avatar_path }}" alt="头像" class="avatar">
+                {% else %}
+                <div class="avatar-placeholder">?</div>
+                {% endif %}
+            </div>
+            <div class="title-cell">
+                <h1>{{ nickname }} · Lv.{{ level }}</h1>
+                {% if data_source == "实时" and data_time_str %}
+                <div class="subtitle">⚡ 能量 {{ energy }}/{{ energy_max }} · 游戏数据 {{ data_time_str }} 上传{% if data_age_hours > 1 %}({{ data_age_hours }}h前){% endif %}</div>
+                {% else %}
+                <div class="subtitle">⚡ 日常进度 · {{ update_time }}{% if data_source == "实时" %} · 实时{% endif %}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 四个半透明卡片横排 -->
+        <div class="card-grid">
+            <!-- 活跃能量 -->
+            <div class="card-col">
+                <div class="glass-card">
+                    <img class="card-icon" src="images/icon/活跃能量.png" alt="能量">
+                    <div class="card-name">活跃能量</div>
+                    <div class="card-value">{{ energy }}<span class="max">/{{ energy_max }}</span></div>
+                    <div class="mini-bar">
+                        <div class="mini-fill" style="width: {{ energy_pct }}%"></div>
+                    </div>
+                    {% if human_remaining and human_remaining != "已满" %}
+                    <div class="card-hint">{{ human_remaining }} 后满</div>
+                    {% elif human_remaining == "已满" %}
+                    <div class="card-hint">已满</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 朝夕心愿 -->
+            <div class="card-col">
+                <div class="glass-card">
+                    <img class="card-icon" src="images/icon/朝夕心愿.png" alt="心愿">
+                    <div class="card-name">朝夕心愿</div>
+                    <div class="card-value">{{ daily_task }}<span class="max">/{{ daily_task_max }}</span></div>
+                    <div class="card-status">{{ task_status }}</div>
+                    {% if daily_countdown %}
+                    <div class="card-hint">{{ daily_countdown }} 后刷新</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 美鸭梨挖掘 -->
+            <div class="card-col">
+                <div class="glass-card">
+                    <img class="card-icon" src="images/icon/美鸭梨挖掘.png" alt="挖掘">
+                    <div class="card-name">美鸭梨挖掘</div>
+                    <div class="card-value">{{ dispatch_count }}<span class="max">/4</span></div>
+                    <div class="card-status">{{ dispatch_status }}</div>
+                </div>
+            </div>
+
+            <!-- 星海/巅峰赛 -->
+            <div class="card-col">
+                <div class="glass-card">
+                    <img class="card-icon" src="images/icon/心之突破幻境.png" alt="星海">
+                    <div class="card-name">星海值</div>
+                    <div class="card-value">{{ star_sea }}</div>
+                    {% if periodic_tower %}
+                    <div class="card-status">巅峰赛第{{ periodic_tower }}层</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 派遣任务详情(横跨整行) -->
+        {% if dispatch_list %}
+        <div class="dispatch-card">
+            <div class="d-title">🦆 派遣任务详情</div>
+            <div class="dispatch-grid">
+                {% for d in dispatch_list %}
+                <div class="dispatch-cell">
+                    <div class="d-name">{{ loop.index }}. {{ d.text }}</div>
+                    <div class="d-bar">
+                        <div class="d-fill" style="width: {{ d.pct }}%"></div>
+                    </div>
+                    <div class="d-time">{{ d.spend }}h/{{ d.total }}h</div>
+                    <div class="d-remain">{{ d.status }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="footer">数据来源: 奇想手账</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,130 @@
+{
+    "账号登录": {
+        "desc": "无限暖暖账号绑定与管理",
+        "data": [
+            {
+                "name": "登录",
+                "desc": "获取网页登录链接,手机号+短信验证码登录,登录后自动拉取数据",
+                "eg": "登录",
+                "highlight": 3,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
+                "name": "账号密码登录",
+                "desc": "直接用账号+密码登录,无需短信验证码(仅限私聊,群聊会被拒绝)",
+                "eg": "登录 账号,密码",
+                "highlight": 5,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
+                "name": "退出登录",
+                "desc": "清除当前激活的无限暖暖账号",
+                "eg": "退出登录",
+                "highlight": 5,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
+                "name": "全部登出",
+                "desc": "清除当前用户的全部无限暖暖账号",
+                "eg": "全部登出",
+                "highlight": 5,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
+                "name": "刷新",
+                "desc": "重新拉取奇想手账数据并更新本地缓存(token 过期会提示重新登录)",
+                "eg": "刷新",
+                "highlight": 2,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            }
+        ]
+    },
+    "数据查询": {
+        "desc": "搭配师面板与日常进度卡片",
+        "data": [
+            {
+                "name": "卡片",
+                "desc": "查看奇想手账:全区域探索(伊赞之土/心愿原野/花焰群岛/无忧岛/丹青屿)+ 共鸣统计",
+                "eg": "卡片",
+                "highlight": 4,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
+                "name": "抽卡",
+                "desc": "查看共鸣衣橱:已共鸣套装图标 + 各套装共鸣抽数(可加参数: 全/5/4)",
+                "eg": "抽卡",
+                "highlight": 4,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
+                "name": "体力",
+                "desc": "实时查询活跃能量/朝夕心愿/美鸭梨挖掘(派遣任务剩余时间),每次都实时拉取",
+                "eg": "体力",
+                "highlight": 2,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            }
+        ]
+    },
+    "抽卡参数": {
+        "desc": "共鸣衣橱命令的可选参数",
+        "data": [
+            {
+                "name": "全/全部",
+                "desc": "显示全部套装(默认仅显示已共鸣的套装)",
+                "eg": "抽卡全",
+                "highlight": 6,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
+                "name": "5/五星",
+                "desc": "只看五星套装(默认)",
+                "eg": "抽卡5",
+                "highlight": 6,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
+                "name": "4/四星",
+                "desc": "只看四星套装",
+                "eg": "抽卡4",
+                "highlight": 6,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            }
+        ]
+    },
+    "其他": {
+        "desc": "帮助",
+        "data": [
+            {
+                "name": "帮助",
+                "desc": "显示本帮助图片",
+                "eg": "帮助",
+                "highlight": 6,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            }
+        ]
+    }
+}

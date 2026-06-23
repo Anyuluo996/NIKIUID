@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣衣橱 - 奇想手账</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+        }
+
+        body {
+            background-image: url("images/bg/GeQ0EtibMAA-hVa.jpg");
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            width: 760px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 26px;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .page-header .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            margin-top: 5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .card {
+            background-color: rgba(253, 250, 243, 0.92);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(160, 145, 130, 0.25);
+            margin-bottom: 20px;
+        }
+
+        .user-info-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #f1d1e6;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #f8dbec;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #a69f95;
+        }
+
+        .user-details {
+            margin-left: 12px;
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #6e594d;
+        }
+
+        .user-level {
+            font-size: 12px;
+            color: #a69f95;
+            margin-top: 2px;
+        }
+
+        .stats-title {
+            text-align: center;
+            color: #6e594d;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .resonance-card {
+            background: rgba(248, 219, 236, 0.35);
+            border-radius: 12px;
+            padding: 15px;
+            border-top: 4px solid #ff9eb5;
+        }
+
+        .resonance-card .title {
+            font-size: 14px;
+            color: #6e594d;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .resonance-card .main-stat {
+            margin-bottom: 6px;
+        }
+
+        .resonance-card .total {
+            font-size: 26px;
+            font-weight: 700;
+            color: #6e594d;
+        }
+
+        .resonance-card .draws {
+            font-size: 11px;
+            color: #a69f95;
+            margin-left: 8px;
+        }
+
+        .resonance-card .detail {
+            font-size: 11px;
+            color: #a69f95;
+        }
+
+        .resonance-card .suit-count {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #f1d1e6;
+            font-size: 11px;
+            color: #6e594d;
+        }
+
+        .card-title {
+            text-align: center;
+            color: #6e594d;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .suit-grid {
+            display: table;
+            width: 100%;
+            border-spacing: 12px;
+            border-collapse: separate;
+        }
+
+        .suit-row {
+            display: table-row;
+        }
+
+        .suit-cell {
+            display: table-cell;
+            width: 33.3%;
+            vertical-align: top;
+        }
+
+        .suit-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(160, 145, 130, 0.18);
+        }
+
+        .suit-card.locked {
+            opacity: 0.5;
+        }
+
+        .suit-card img.suit-img {
+            width: 100%;
+            height: auto;
+            background: #f0f0f0;
+            display: block;
+        }
+
+        .suit-card .info {
+            padding: 10px;
+        }
+
+        .suit-card .name {
+            font-size: 12px;
+            color: #6e594d;
+            margin-bottom: 4px;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .suit-card .star-icon {
+            width: 50px;
+            height: 15px;
+            vertical-align: middle;
+            margin-right: 3px;
+            display: inline-block;
+        }
+
+        .suit-card .big-suit {
+            font-size: 10px;
+            color: #a69f95;
+            margin-bottom: 4px;
+        }
+
+        .suit-card .draw-info {
+            font-size: 10px;
+            color: #a69f95;
+        }
+
+        .suit-card .draw-info .avg {
+            color: #e2b234;
+            font-weight: 600;
+        }
+
+        .suit-card .draw-info .total-draws {
+            float: right;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            color: #a69f95;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>共鸣衣橱</h1>
+            <div class="subtitle">无限暖暖 - 套装收集</div>
+        </div>
+
+        {% if nickname or role_id %}
+        <div class="card">
+            <div class="user-info-row">
+                {% if avatar_path %}
+                <img src="{{ avatar_path }}" alt="头像" class="avatar">
+                {% else %}
+                <div class="avatar avatar-placeholder">?</div>
+                {% endif %}
+                <div class="user-details">
+                    <div class="user-name">{{ nickname }}</div>
+                    <div class="user-level">Lv.{{ level }} · 搭配师 {{ role_id }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="stats-title">共鸣统计</div>
+            <div class="resonance-card">
+                <div class="title">{{ pool_label }}</div>
+                <div class="main-stat">
+                    <span class="total">{{ owned_count }}</span>
+                    <span class="draws">已获 {{ suit_count }} 件</span>
+                </div>
+                <div class="detail">总抽数 {{ total_draws }} · 平均 {{ avg_draw }} 抽</div>
+                <div class="suit-count">收集进度：{{ owned_count }}/{{ suit_count }}</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">{{ pool_label }} · {% if filter_mode == 'owned' %}已集齐{% elif filter_mode == 'not_owned' %}未集齐{% else %}全部{% endif %}</div>
+            {% if clothes %}
+            <div class="suit-grid">
+                {% for suit in clothes %}
+                {% set loop_index = loop.index0 %}
+                {% if loop_index % 3 == 0 %}<div class="suit-row">{% endif %}
+                <div class="suit-cell">
+                    <div class="suit-card{% if not suit.isCollected %} locked{% endif %}">
+                        {% if suit.imgUrl %}
+                        <img class="suit-img" src="{{ suit.imgUrl }}" alt="{{ suit.subSuit }}">
+                        {% else %}
+                        <img class="suit-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='140'%3E%3Crect fill='%23f0f0f0' width='200' height='140'/%3E%3Ctext fill='%23aaa' font-size='14' x='100' y='70' text-anchor='middle'%3E%E5%8D%95%E5%93%81%3C/text%3E%3C/svg%3E" alt="{{ suit.subSuit }}">
+                        {% endif %}
+                        <div class="info">
+                            <div class="name">
+                                {% if suit.level == 5 %}
+                                <img class="star-icon" src="images/icon/五星.webp" alt="5星">
+                                {% else %}
+                                <img class="star-icon" src="images/icon/四星.webp" alt="4星">
+                                {% endif %}
+                                {{ suit.subSuit }}
+                            </div>
+                            {% if suit.bigSuit %}<div class="big-suit">{{ suit.bigSuit }}</div>{% endif %}
+                            <div class="draw-info">
+                                {% if suit.isCollected %}
+                                    {% if suit.avgDrawNum > 0 %}
+                                    <span class="avg">{{ "%.1f"|format(suit.avgDrawNum) }}抽</span>
+                                    <span class="total-draws">{{ suit.actualDrawCount }}抽</span>
+                                    {% else %}
+                                    <span>已共鸣</span>
+                                    {% endif %}
+                                {% else %}
+                                <span>未集齐</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if loop_index % 3 == 2 or loop.last %}</div>{% endif %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="text-align:center;color:#a69f95;padding:40px;">暂无数据</p>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            <p>数据来源: 奇想手账 | 更新时间: {{ update_time }}</p>
+        </div>
+    </div>
+</body>
+</html>

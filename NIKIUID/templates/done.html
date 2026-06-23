@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="https://assets.papegames.com/nikkiweb/infinitynikki/infinitynikkistrategycn/_next/static/media/favicon.cff3fb99.ico">
+  <title>登录完成 · 无限暖暖</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    /* 视频背景层 */
+    .bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+    /* 半透明遮罩 */
+    .bg-mask {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.55) 100%);
+      z-index: 1;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+    main { position: relative; z-index: 2; width: 100%; display: flex; justify-content: center; }
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 24px;
+      padding: 48px 40px;
+      text-align: center;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+    }
+    .check {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      color: #fff;
+    }
+    h1 {
+      color: #880e4f;
+      font-size: 22px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    p {
+      color: #ad1457;
+      font-size: 14px;
+      line-height: 1.8;
+      opacity: 0.8;
+    }
+    .hint {
+      margin-top: 20px;
+      padding: 14px;
+      background: #fce4ec;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #880e4f;
+    }
+  </style>
+</head>
+<body>
+  <!-- 视频背景 -->
+  <video class="bg-video" autoplay muted loop playsinline preload="auto"
+         poster="https://assets.papegames.com/nikkiweb/infinitynikki/infinitynikkistrategycn/_next/static/media/favicon.cff3fb99.ico">
+    <source src="https://assets.papegames.com/resources/cdn/20260526/9a842e53dc90d58a.mp4" type="video/mp4">
+  </video>
+  <div class="bg-mask"></div>
+
+  <main>
+    <div class="card">
+      <div class="check">✓</div>
+      <h1>登录完成</h1>
+      <p>登录结果已同步到 NIKIUID<br>可以关闭此页面回到对话</p>
+      <div class="hint">
+        💡 回到聊天窗口试试这些命令:<br>
+        niki卡片 · niki抽卡 · niki刷新
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>无限暖暖 - 奇想手账</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+        }
+
+        body {
+            background-image: url("images/bg/HGxGdbSbMAAGa2n.jpg");
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            width: 500px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: rgba(253, 250, 243, 0.92);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(160, 145, 130, 0.25);
+            margin-bottom: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 26px;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .page-header .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            margin-top: 5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .card-title {
+            text-align: center;
+            color: #6e594d;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        /* 用户信息 */
+        .user-card {
+            display: table;
+            width: 100%;
+        }
+
+        .user-card .avatar-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 90px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #f1d1e6;
+            object-fit: cover;
+        }
+
+        .avatar-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #f8dbec;
+            text-align: center;
+            line-height: 80px;
+            font-size: 32px;
+            color: #a69f95;
+            border: 3px solid #f1d1e6;
+        }
+
+        .user-card .info-cell {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 16px;
+        }
+
+        .user-card h2 {
+            font-size: 22px;
+            color: #6e594d;
+            margin-bottom: 6px;
+        }
+
+        .user-card .level {
+            display: inline-block;
+            background: #f8dbec;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #6e594d;
+            margin-right: 8px;
+        }
+
+        .user-card .uid {
+            color: #a69f95;
+            font-size: 13px;
+        }
+
+        /* 用户统计网格(用 table 替代 grid,htmlkit 兼容) */
+        .user-stats {
+            display: table;
+            width: 100%;
+            border-spacing: 8px;
+            border-collapse: separate;
+            margin-top: 15px;
+        }
+
+        .stat-cell {
+            display: table-cell;
+            width: 20%;
+            text-align: center;
+            padding: 12px 4px;
+            background: rgba(248, 219, 236, 0.3);
+            border-radius: 10px;
+        }
+
+        .stat-cell .value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #6e594d;
+        }
+
+        .stat-cell .label {
+            color: #a69f95;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        /* 探索进度物品行 */
+        .item-row {
+            display: table;
+            width: 100%;
+            border-spacing: 10px;
+            border-collapse: separate;
+        }
+
+        .item {
+            display: table-cell;
+            width: 33.3%;
+            text-align: center;
+            vertical-align: bottom;
+        }
+
+        .item-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #5b4a5f 0%, #30262c 100%);
+            border: 2px solid #bbaea1;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .item-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .item-name {
+            font-size: 12px;
+            color: #6e594d;
+            font-weight: bold;
+            margin-top: 6px;
+        }
+
+        .item-progress {
+            font-size: 13px;
+            font-weight: bold;
+            color: #6e594d;
+            margin-top: 2px;
+        }
+
+        .item-progress .current {
+            color: #a69f95;
+        }
+
+        /* 子区域 */
+        .sub-sections {
+            display: table;
+            width: 100%;
+            border-spacing: 10px;
+            border-collapse: separate;
+            margin-top: 20px;
+        }
+
+        .sub-box {
+            display: table-cell;
+            width: 50%;
+            border: 2px dashed;
+            border-radius: 12px;
+            padding: 18px 8px 12px;
+            vertical-align: top;
+        }
+
+        .sub-box.pink {
+            border-color: #f1d1e6;
+            background-color: rgba(248, 219, 236, 0.2);
+        }
+
+        .sub-box.blue {
+            border-color: #bce9ed;
+            background-color: rgba(203, 241, 244, 0.2);
+        }
+
+        .sub-tag {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #6e594d;
+            margin-bottom: 10px;
+        }
+
+        .sub-tag.pink-tag {
+            background-color: #f8dbec;
+        }
+
+        .sub-tag.blue-tag {
+            background-color: #cbf1f4;
+        }
+
+        .sub-box .item-icon {
+            width: 42px;
+            height: 42px;
+        }
+
+        .sub-box .item-name {
+            font-size: 11px;
+        }
+
+        /* 共鸣统计 */
+        .resonance-summary {
+            display: table;
+            width: 100%;
+            border-spacing: 12px;
+            border-collapse: separate;
+        }
+
+        .resonance-card {
+            display: table-cell;
+            width: 33.3%;
+            background: rgba(248, 219, 236, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            border-top: 4px solid #ff9eb5;
+            vertical-align: top;
+        }
+
+        .resonance-card.four-star {
+            border-top-color: #a884d8;
+        }
+
+        .resonance-card.permanent {
+            border-top-color: #88c8d8;
+        }
+
+        .resonance-card .title {
+            font-size: 14px;
+            color: #6e594d;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .resonance-card .total {
+            font-size: 26px;
+            font-weight: 700;
+            color: #6e594d;
+        }
+
+        .resonance-card .draws {
+            font-size: 11px;
+            color: #a69f95;
+            margin-left: 6px;
+        }
+
+        .resonance-card .detail {
+            font-size: 11px;
+            color: #a69f95;
+            margin-top: 4px;
+        }
+
+        .resonance-card .suit-count {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #f1d1e6;
+            font-size: 11px;
+            color: #6e594d;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px 0;
+            color: #a69f95;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>奇想手账</h1>
+            <div class="subtitle">无限暖暖 - 数据展示</div>
+        </div>
+
+        <!-- 搭配师信息 -->
+        <div class="card">
+            <div class="card-title">搭配师信息</div>
+            <div class="user-card">
+                <div class="avatar-cell">
+                    {% if avatar_path %}
+                    <img src="{{ avatar_path }}" alt="头像" class="avatar">
+                    {% else %}
+                    <div class="avatar-placeholder">?</div>
+                    {% endif %}
+                </div>
+                <div class="info-cell">
+                    <h2>{{ nickname }}</h2>
+                    <span class="level">Lv.{{ level }}</span>
+                    <span class="uid">编号: {{ role_id }}</span>
+                </div>
+            </div>
+            <div class="user-stats">
+                <div class="stat-cell">
+                    <div class="value">{{ login_days }}</div>
+                    <div class="label">登录天</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="value">{{ total_play_time }}h</div>
+                    <div class="label">游戏时长</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="value">{{ cloth_num }}</div>
+                    <div class="label">服装</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="value">{{ designdrawing_num }}</div>
+                    <div class="label">设计图</div>
+                </div>
+                <div class="stat-cell">
+                    <div class="value">{{ momo_num }}</div>
+                    <div class="label">大喵</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 伊赞之土(含万相境子区域) -->
+        <div class="card">
+            <div class="card-title">伊赞之土</div>
+            <div class="item-row">
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/伊赞奇想星.png" alt="奇想星"></div>
+                    <div class="item-name">奇想星</div>
+                    <div class="item-progress"><span class="current">{{ whimsystar_yz }}</span>/413</div>
+                </div>
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/伊赞灵感露珠.png" alt="灵感露珠"></div>
+                    <div class="item-name">灵感露珠</div>
+                    <div class="item-progress"><span class="current">{{ dew_yz }}</span>/2023</div>
+                </div>
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/流转之柱.png" alt="流转之柱"></div>
+                    <div class="item-name">流转之柱</div>
+                    <div class="item-progress"><span class="current">{{ pillar_num }}</span>/204</div>
+                </div>
+            </div>
+            <div class="sub-sections">
+                <div class="sub-box pink">
+                    <div class="sub-tag pink-tag">万相境</div>
+                    <div class="item-row">
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/奇想华灯.png" alt="奇想华灯"></div>
+                            <div class="item-name">奇想华灯</div>
+                            <div class="item-progress"><span class="current">{{ imagine_lantern_num }}</span>/68</div>
+                        </div>
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/万相金铃.png" alt="万相金铃"></div>
+                            <div class="item-name">万相金铃</div>
+                            <div class="item-progress"><span class="current">{{ imagine_bell_num }}</span>/365</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 心愿原野(含花焰群岛/无忧岛/丹青屿子区域) -->
+        <div class="card">
+            <div class="card-title">心愿原野</div>
+            <div class="item-row">
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/奇想星.png" alt="奇想星"></div>
+                    <div class="item-name">奇想星</div>
+                    <div class="item-progress"><span class="current">{{ whimystar_num }}</span>/378</div>
+                </div>
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/灵感露珠.png" alt="灵感露珠"></div>
+                    <div class="item-name">灵感露珠</div>
+                    <div class="item-progress"><span class="current">{{ dew_num }}</span>/1993</div>
+                </div>
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/流转之柱.png" alt="流转之柱"></div>
+                    <div class="item-name">流转之柱</div>
+                    <div class="item-progress"><span class="current">{{ pillar_num }}</span>/204</div>
+                </div>
+            </div>
+            <div class="sub-sections">
+                <div class="sub-box pink">
+                    <div class="sub-tag pink-tag">花焰群岛</div>
+                    <div class="item-row">
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/奇想气球.webp" alt="奇想气球"></div>
+                            <div class="item-name">奇想气球</div>
+                            <div class="item-progress"><span class="current">{{ imagine_ballon_num }}</span>/56</div>
+                        </div>
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/焰光结晶.png" alt="焰光结晶"></div>
+                            <div class="item-name">焰光结晶</div>
+                            <div class="item-progress"><span class="current">{{ flame_light_stone_num }}</span>/261</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sub-box blue">
+                    <div class="sub-tag blue-tag">无忧岛</div>
+                    <div class="item-row">
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/奇想气泡.webp" alt="奇想气泡"></div>
+                            <div class="item-name">奇想气泡</div>
+                            <div class="item-progress"><span class="current">{{ imagine_foam_num }}</span>/41</div>
+                        </div>
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/无忧凝珠.png" alt="无忧凝珠"></div>
+                            <div class="item-name">无忧凝珠</div>
+                            <div class="item-progress"><span class="current">{{ worry_free_beads_num }}</span>/233</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sub-box pink">
+                    <div class="sub-tag pink-tag">丹青屿</div>
+                    <div class="item-row">
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/奇想玉琚.png" alt="奇想玉琚"></div>
+                            <div class="item-name">奇想玉琚</div>
+                            <div class="item-progress"><span class="current">{{ imagine_jade_num }}</span>/68</div>
+                        </div>
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/丹青玉魄.png" alt="丹青玉魄"></div>
+                            <div class="item-name">丹青玉魄</div>
+                            <div class="item-progress"><span class="current">{{ danqing_jade_num }}</span>/389</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 共鸣统计 -->
+        <div class="card">
+            <div class="card-title">共鸣统计</div>
+            <div class="resonance-summary">
+                <div class="resonance-card">
+                    <div class="title">限定池</div>
+                    <div class="total">{{ periodic_draw_num }}<span class="draws">抽</span></div>
+                    <div class="detail">已共鸣 {{ limited5_owned }}/{{ limited5_total }}套</div>
+                </div>
+                <div class="resonance-card four-star">
+                    <div class="title">常驻池</div>
+                    <div class="total">{{ permanent_draw_num }}<span class="draws">抽</span></div>
+                    <div class="detail">已共鸣 {{ limited4_owned }}/{{ limited4_total }}套</div>
+                </div>
+                <div class="resonance-card permanent">
+                    <div class="title">总计</div>
+                    <div class="total">{{ draw_num }}<span class="draws">抽</span></div>
+                    <div class="detail">全部卡池累计</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 其它收集 -->
+        <div class="card">
+            <div class="card-title">其它收集</div>
+            <div class="item-row">
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/宝箱.png" alt="宝箱"></div>
+                    <div class="item-name">宝箱</div>
+                    <div class="item-progress"><span class="current">{{ box_collected }}</span>/{{ box_total }}</div>
+                </div>
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/阅读物.png" alt="阅读物"></div>
+                    <div class="item-name">阅读物</div>
+                    <div class="item-progress"><span class="current">{{ read_collected }}</span>/{{ read_total }}</div>
+                </div>
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/巡游.png" alt="巡游"></div>
+                    <div class="item-name">世界巡游</div>
+                    <div class="item-progress"><span class="current">{{ cruise_collected }}</span>/{{ cruise_total }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 奇想札记 -->
+        <div class="card">
+            <div class="card-title">奇想札记</div>
+            <div class="item-row">
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/阅读物.png" alt="阅读图鉴"></div>
+                    <div class="item-name">阅读图鉴</div>
+                    <div class="item-progress"><span class="current">{{ reading_exploration }}</span></div>
+                </div>
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/奇想星.png" alt="生物图鉴"></div>
+                    <div class="item-name">生物图鉴</div>
+                    <div class="item-progress"><span class="current">{{ creature_explore_num }}</span></div>
+                </div>
+                <div class="item">
+                    <div class="item-icon"><img src="images/icon/奇想星.png" alt="成就"></div>
+                    <div class="item-name">成就</div>
+                    <div class="item-progress"><span class="current">{{ achievement_num }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>数据来源: 奇想手账 | 更新时间: {{ update_time }}</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Plugin runtime data(不提交用户数据/缓存)
+**/user_data/
+**/data.json
+**/data.json.tmp
+**/avatar.png
+**/suits/
+
+# Logs
+*.log
+logs/
+
+# Test artifacts
+*_preview.*
+*_preview/
+preview/
