@@ -75,11 +75,11 @@ async def migrate_file_cache_to_db() -> int:
                 continue
 
             # 写入 DB
-            await NikiJournalData(
+            await NikiJournalData.upsert(
                 openid=openid,
                 uid=str(uid),
-                data=json.dumps(data, ensure_ascii=False),
-            ).insert_data()
+                data_json=json.dumps(data, ensure_ascii=False),
+            )
 
             _mark_migrated(data_file)
             migrated += 1

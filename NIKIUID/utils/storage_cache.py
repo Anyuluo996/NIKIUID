@@ -40,6 +40,27 @@ class NikiJournalData(BaseIDModel, table=True):
         )
         return result.scalars().first()
 
+    @classmethod
+    @with_session
+    async def upsert(
+        cls,
+        session: AsyncSession,
+        openid: str,
+        uid: str,
+        data_json: str,
+    ) -> None:
+        """按 openid 插入或更新。"""
+        result = await session.execute(
+            select(cls).where(cls.openid == openid).limit(1)
+        )
+        row = result.scalars().first()
+        if row is None:
+            row = cls(openid=openid, uid=uid, data=data_json)
+            session.add(row)
+        else:
+            row.uid = uid
+            row.data = data_json
+
 
 def _default_logger():
     return logger
@@ -128,17 +149,11 @@ async def save_cached_data(
     data["platform_user_id"] = platform_user_id
 
     try:
-        existing = await NikiJournalData.get_by_openid(platform_user_id)
-        if existing is None:
-            await NikiJournalData(
-                openid=platform_user_id,
-                uid=uid,
-                data=json.dumps(data, ensure_ascii=False),
-            ).insert_data()
-        else:
-            existing.uid = uid
-            existing.data = json.dumps(data, ensure_ascii=False)
-            await existing.update_data()
+        await NikiJournalData.upsert(
+            openid=platform_user_id,
+            uid=uid,
+            data_json=json.dumps(data, ensure_ascii=False),
+        )
         lg.info(f"数据已保存到 DB: openid={platform_user_id[:8]}*** uid={uid}")
     except Exception as e:
         lg.error(f"保存缓存数据失败: {e}")
