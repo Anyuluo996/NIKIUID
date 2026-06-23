@@ -24,6 +24,20 @@ exec_list.extend(
     [
         "CREATE INDEX IF NOT EXISTS ix_nikiuser_uid ON nikiuser (uid)",
         "CREATE INDEX IF NOT EXISTS ix_nikiuser_openid ON nikiuser (openid)",
+        # ── schema 迁移:旧表(继承 BaseIDModel)→ 新表(继承 User) ──
+        # User 基类新增的列,旧表不存在,用 ALTER TABLE ADD COLUMN 补上。
+        # SQLite 的 ADD COLUMN 对已存在的列会报错,用 try-except 在 GS Core 层吞掉。
+        # GS Core 的 exec_list 对失败语句只 warning 不中断,所以直接列即可。
+        # 注意:SQLite 不支持 IF NOT EXISTS 语法给 ADD COLUMN,重复执行会 warning。
+        "ALTER TABLE nikiuser ADD COLUMN cookie TEXT DEFAULT ''",
+        "ALTER TABLE nikiuser ADD COLUMN stoken TEXT DEFAULT ''",
+        "ALTER TABLE nikiuser ADD COLUMN status TEXT DEFAULT ''",
+        "ALTER TABLE nikiuser ADD COLUMN push_switch INTEGER DEFAULT 0",
+        "ALTER TABLE nikiuser ADD COLUMN sign_switch INTEGER DEFAULT 0",
+        # 旧 token 列的数据迁移到 cookie(语义复用)
+        # 仅在 cookie 为空且 token 有值时复制,避免覆盖新数据
+        "UPDATE nikiuser SET cookie = token WHERE cookie = '' AND token IS NOT NULL AND token != ''",
+        # 旧表 token 字段已废弃(token 现在是 property → cookie),保留列不删(SQLite 不支持 DROP COLUMN < 3.35)
     ]
 )
 
