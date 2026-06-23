@@ -1,16 +1,14 @@
-"""套装图片下载工具"""
+"""套装图片下载工具
+
+复用 gsuid_core 内置的 download() 函数(httpx + aiofiles,带超时和日志),
+替代原来手写的 aiohttp + 同步 open() 下载循环。
+"""
 
 from pathlib import Path
 from typing import Any
 
-import aiohttp
-
 from gsuid_core.logger import logger as _gscore_logger
-
-
-class Logger(Any if False else object):
-    """兼容占位:实际统一用 gsuid_core.logger"""
-    pass
+from gsuid_core.utils.download_resource.download_file import download
 
 
 def _default_logger():
@@ -22,62 +20,63 @@ async def download_suit_images(
     images_dir: Path,
     fix_fn=None,
     log=_gscore_logger,
+    limit: int = 50,
 ) -> dict[str, str]:
-    """下载套装图片到本地
+    """下载共鸣套装预览图。
 
     Args:
-        suit_card_list: 套装数据列表
-        images_dir: 图片存储目录
-        fix_fn: 编码修复函数
-        logger: 日志记录器
+        suit_card_list: 共鸣套装列表,每项含 preview_image / suit_id
+        images_dir: 图片保存目录
+        fix_fn: 编码修正函数(可选)
+        log: 日志记录器
+        limit: 最多下载数量(防止一次性下载太多)
 
     Returns:
-        套装名称到本地图片路径的映射
+        {suit_id: 本地文件名} 映射
     """
-    log = logger or _default_logger()
-    if fix_fn is None:
-        from .encoding import fix_encoding
-
-        fix_fn = fix_encoding
-
-    suits_dir = images_dir / "suits"
-    suits_dir.mkdir(parents=True, exist_ok=True)
-
+    images_dir.mkdir(parents=True, exist_ok=True)
     name_to_path: dict[str, str] = {}
+    count = 0
 
-    async with aiohttp.ClientSession() as session:
-        for card in suit_card_list:
-            try:
-                name_list = card.get("name", [])
-                sub_suit = name_list[0].get("text", "") if name_list else ""
-                if sub_suit:
-                    sub_suit = fix_fn(sub_suit)
-                else:
-                    continue
+    for card in suit_card_list:
+        if count >= limit:
+            break
+        if not isinstance(card, dict):
+            continue
 
-                preview_image = card.get("preview_image", "")
-                if not preview_image:
-                    continue
+        preview_image = card.get("preview_image", "")
+        suit_id = card.get("suit_id", "")
+        if not preview_image or not suit_id:
+            continue
 
-                url_filename = preview_image.split("/")[-1]
-                if not url_filename.endswith(".png"):
-                    url_filename += ".png"
-                local_path = suits_dir / url_filename
+        # URL 文件名(与 render_wardrobe_card 的推导保持一致)
+        url_filename = preview_image.split("/")[-1]
+        if fix_fn:
+            url_filename = fix_fn(url_filename)
 
-                if local_path.exists():
-                    name_to_path[sub_suit] = str(local_path)
-                    continue
+        # 本地文件名统一用 .png
+        local_name = url_filename.rsplit(".", 1)[0] + ".png"
+        local_path = images_dir / local_name
 
-                async with session.get(preview_image) as resp:
-                    if resp.status == 200:
-                        content = await resp.read()
-                        with open(local_path, "wb") as f:
-                            f.write(content)
-                        name_to_path[sub_suit] = str(local_path)
-                        log.info(f"下载套装图片: {sub_suit}")
-            except Exception as e:
-                log.warning(f"下载套装图片失败: {e}")
-                continue
+        # 已存在就跳过
+        if local_path.exists():
+            name_to_path[suit_id] = local_name
+            continue
 
-    log.info(f"共下载 {len(name_to_path)} 个套装图片")
+        try:
+            retcode = await download(
+                preview_image,
+                images_dir,
+                local_name,
+                tag="[NIKI]",
+            )
+            if retcode == 200:
+                name_to_path[suit_id] = local_name
+                count += 1
+            else:
+                log.warning(f"套装 {suit_id} 下载失败: HTTP {retcode}")
+        except Exception as e:
+            log.warning(f"套装 {suit_id} 下载异常: {e}")
+
+    log.info(f"[NIKI] 套装图片下载完成: {len(name_to_path)} 张")
     return name_to_path

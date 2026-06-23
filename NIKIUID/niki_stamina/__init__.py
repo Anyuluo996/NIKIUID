@@ -24,6 +24,7 @@ from ..utils.resource.RESOURCE_PATH import (
     USER_DATA_PATH,
 )
 from ..utils.services.stamina_service import fetch_realtime_stamina
+from ..utils.session import require_user
 from ..utils.storage_cache import load_cached_data
 
 sv_niki_stamina = SV("niki体力")
@@ -149,10 +150,8 @@ async def niki_stamina_cmd(bot: Bot, ev: Event):
     每次都实时调 note/book/info + start_sync(需要游戏在线才会真正刷新)。
     token 过期(实时返回 None)时回退到缓存数据。
     """
-    user = await NikiUser.get_active(ev.user_id, ev.bot_id)
+    user = await require_user(bot, ev)
     if user is None:
-        accounts = await NikiUser.list_accounts(ev.user_id, ev.bot_id)
-        await send_niki_notify(bot, ev, CommonMsg.not_logged_in(bool(accounts)))
         return
 
     # nickname/level 优先用数据库字段(刷新时会回写)

@@ -1,8 +1,9 @@
 """NIKIUID 数据库模型。
 
 一行 = 一个聊天用户(user_id × bot_id)绑定的一个无限暖暖账号(openid)。
-无限暖暖一个 passport 账号对应一个游戏角色(uid),不涉及多游戏多角色,
-所以表结构比 NTE 简单:用 openid 作为账号去重键,uid 作为角色标识。
+
+继承 GS Core 的 `User` 基类(而非 BaseIDModel),复用 cookie/status/user_id/bot_id
+等标准字段和方法族。token 存在 `cookie` 字段(语义复用),openid/uid 是游戏特有字段。
 """
 
 from __future__ import annotations
@@ -16,12 +17,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from gsuid_core.logger import logger
 from gsuid_core.utils.database.startup import exec_list
-from gsuid_core.utils.database.base_models import BaseIDModel, with_session
+from gsuid_core.utils.database.base_models import User, with_session
+from gsuid_core.webconsole.mount_app import GsAdminModel, PageSchema, site
 
 exec_list.extend(
     [
         "CREATE INDEX IF NOT EXISTS ix_nikiuser_uid ON nikiuser (uid)",
-        "CREATE INDEX IF NOT EXISTS ix_nikiuser_user_id ON nikiuser (user_id)",
         "CREATE INDEX IF NOT EXISTS ix_nikiuser_openid ON nikiuser (openid)",
     ]
 )
@@ -29,21 +30,22 @@ exec_list.extend(
 T_NikiUser = TypeVar("T_NikiUser", bound="NikiUser")
 
 
-class NikiUser(BaseIDModel, table=True):
+class NikiUser(User, table=True):
     """一行 = 一个聊天用户绑定的一个无限暖暖账号。
 
-    用 (user_id, bot_id, openid) 唯一标识一个账号。
-    `cookie` 字段复用基类语义存 access token;这里额外用 `token` / `openid`
-    做语义化字段,方便和 passport 返回的 dict 对齐。
+    继承 User 基类,复用:
+    - user_id / bot_id(BaseModel 层提供,不在本类重复声明)
+    - cookie:存 access token(语义复用)
+    - status:token 状态("ok" / "expired" / None)
+    - stoken:存 openid(语义复用,便于基类的 uid 查询方法使用)
+
+    游戏特有字段:uid / nickname / level / device_id / client_id / area_id
     """
 
     __table_args__: dict[str, Any] = {"extend_existing": True}
 
-    user_id: str = Field(default="", title="聊天平台用户ID", index=True)
-    bot_id: str = Field(default="", title="机器人ID")
     uid: str = Field(default="", title="游戏角色UID", index=True)
     openid: str = Field(default="", title="暖纸passport nid", index=True)
-    token: str = Field(default="", title="访问token")
     nickname: str = Field(default="", title="搭配师昵称")
     level: int = Field(default=0, title="搭配师等级")
     device_id: str = Field(default="", title="设备ID")
@@ -55,6 +57,15 @@ class NikiUser(BaseIDModel, table=True):
         title="更新时间",
     )
 
+    @property
+    def token(self) -> str:
+        """access token(复用基类 cookie 字段)。"""
+        return self.cookie or ""
+
+    @token.setter
+    def token(self, value: str) -> None:
+        self.cookie = value or ""
+
     @classmethod
     @with_session
     async def get_active(
@@ -63,14 +74,17 @@ class NikiUser(BaseIDModel, table=True):
         user_id: str,
         bot_id: str,
     ) -> T_NikiUser | None:
-        """取该聊天用户最新登录的一行;未登录返回 None。"""
+        """取该聊天用户最新登录的一行;未登录返回 None。
+
+        过滤掉 token 失效(status="expired")的账号。
+        """
         result = await session.execute(
             select(cls)
             .where(
                 cls.user_id == user_id,
                 cls.bot_id == bot_id,
                 col(cls.openid) != "",
-                col(cls.token) != "",
+                col(cls.cookie) != "",
             )
             .order_by(col(cls.updated_at).desc())
             .limit(1)
@@ -109,32 +123,34 @@ class NikiUser(BaseIDModel, table=True):
                 user_id=user_id,
                 bot_id=bot_id,
                 openid=openid,
-                token=token,
+                cookie=token,
+                stoken=openid,
                 uid=uid,
                 nickname=nickname,
-                level=level,
+                level=level if level is not None else 0,
                 device_id=device_id,
                 client_id=client_id,
                 area_id=area_id,
+                status="ok",
                 updated_at=now,
             )
             session.add(row)
             logger.info(f"[NIKIUID] 新增账号 user_id={user_id} openid={openid[:8]}***")
         else:
-            row.token = token
+            row.cookie = token
+            row.stoken = openid
+            row.status = "ok"
             if uid:
                 row.uid = uid
             if nickname:
                 row.nickname = nickname
-            if level:
+            if level is not None:
                 row.level = level
             if device_id:
                 row.device_id = device_id
             row.client_id = client_id
             row.area_id = area_id
             row.updated_at = now
-        await session.commit()
-        await session.refresh(row)
         return row
 
     @classmethod
@@ -246,3 +262,31 @@ class NikiUser(BaseIDModel, table=True):
         row = result.scalars().first()
         if row is not None:
             row.updated_at = datetime.now()
+
+    @classmethod
+    @with_session
+    async def mark_expired(
+        cls: type[T_NikiUser],
+        session: AsyncSession,
+        user_id: str,
+        bot_id: str,
+        openid: str,
+    ) -> None:
+        """标记 token 已失效(status="expired"),不删行。"""
+        result = await session.execute(
+            select(cls).where(
+                cls.user_id == user_id,
+                cls.bot_id == bot_id,
+                cls.openid == openid,
+            )
+        )
+        row = result.scalars().first()
+        if row is not None:
+            row.status = "expired"
+
+
+@site.register_admin
+class NikiUserAdmin(GsAdminModel):
+    pk_name = "id"
+    page_schema = PageSchema(label="无限暖暖用户管理", icon="fa fa-users")  # type: ignore
+    model = NikiUser

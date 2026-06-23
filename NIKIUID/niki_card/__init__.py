@@ -26,6 +26,7 @@ from ..utils.render_image import render_html_to_image
 from ..utils.render_journal_card import render_journal_card
 from ..utils.render_wardrobe_card import render_wardrobe_card
 from ..utils.resource.RESOURCE_PATH import USER_DATA_PATH
+from ..utils.session import require_user
 from ..utils.storage_cache import load_cached_data
 
 sv_niki_card = SV("niki卡片")
@@ -42,10 +43,8 @@ async def _get_user_data_dir(uid: str) -> "object":
 @sv_niki_card.on_command(("卡片", "kp"), block=True)
 async def niki_card_cmd(bot: Bot, ev: Event):
     """niki卡片 - 查看奇想手账"""
-    user = await NikiUser.get_active(ev.user_id, ev.bot_id)
+    user = await require_user(bot, ev)
     if user is None:
-        accounts = await NikiUser.list_accounts(ev.user_id, ev.bot_id)
-        await send_niki_notify(bot, ev, CommonMsg.not_logged_in(bool(accounts)))
         return
 
     # 用 openid(原 platform_user_id)查找缓存数据
@@ -115,10 +114,8 @@ async def _handle_gacha(bot: Bot, ev: Event, args_text: str) -> None:
         await send_niki_notify(bot, ev, build_gacha_parse_error_message())
         return
 
-    user = await NikiUser.get_active(ev.user_id, ev.bot_id)
+    user = await require_user(bot, ev)
     if user is None:
-        accounts = await NikiUser.list_accounts(ev.user_id, ev.bot_id)
-        await send_niki_notify(bot, ev, CommonMsg.not_logged_in(bool(accounts)))
         return
 
     data = await load_cached_data(USER_DATA_PATH, user.openid, logger)

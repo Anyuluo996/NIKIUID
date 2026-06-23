@@ -13,6 +13,7 @@ from gsuid_core.sv import SV
 from ..utils.database import NikiUser
 from ..utils.msgs import CommonMsg, RefreshMsg, send_niki_notify
 from ..utils.services.refresh_service import refresh_user_data
+from ..utils.session import require_user
 
 sv_niki_refresh = SV("niki刷新")
 
@@ -20,10 +21,8 @@ sv_niki_refresh = SV("niki刷新")
 @sv_niki_refresh.on_command(("刷新", "sx", "sync"), block=True)
 async def niki_refresh_cmd(bot: Bot, ev: Event):
     """niki刷新 / nk刷新 - 重新拉取奇想手账数据"""
-    user = await NikiUser.get_active(ev.user_id, ev.bot_id)
+    user = await require_user(bot, ev)
     if user is None:
-        accounts = await NikiUser.list_accounts(ev.user_id, ev.bot_id)
-        await send_niki_notify(bot, ev, CommonMsg.not_logged_in(bool(accounts)))
         return
 
     await bot.send(f"[无限暖暖] {RefreshMsg.REFRESHING}", at_sender=bool(ev.group_id))
