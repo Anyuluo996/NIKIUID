@@ -54,13 +54,13 @@ async def niki_login_cmd(bot: Bot, ev: Event):
     await login_by_password(bot, ev, account, password)
 
 
-@sv_niki_login.on_fullmatch(("退出登录", "退出登陆", "登出", "logout"))
+@sv_niki_login.on_fullmatch(("退出登录", "退出登陆", "登出", "logout", "tcdl", "dc"))
 async def niki_logout_cmd(bot: Bot, ev: Event):
     """niki退出登录 / nk登出 - 删除当前账号"""
     await logout(bot, ev)
 
 
-@sv_niki_login.on_fullmatch(("全部登出", "退出全部登录", "退出全部登陆"))
+@sv_niki_login.on_fullmatch(("全部登出", "退出全部登录", "退出全部登陆", "qbdc", "qbzc"))
 async def niki_logout_all_cmd(bot: Bot, ev: Event):
     """全部登出 - 删除所有账号"""
     await logout_all(bot, ev)

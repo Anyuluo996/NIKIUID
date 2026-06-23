@@ -141,7 +141,7 @@ def _build_stamina_context(user_data: dict, role: dict, avatar_path: str) -> dic
     }
 
 
-@sv_niki_stamina.on_command(("体力", "能量", "stamina", "energy"), block=True)
+@sv_niki_stamina.on_command(("体力", "能量", "stamina", "energy", "tl"), block=True)
 async def niki_stamina_cmd(bot: Bot, ev: Event):
     """nk体力 - 查询活跃能量、朝夕心愿、派遣等日常进度(图片)
 
