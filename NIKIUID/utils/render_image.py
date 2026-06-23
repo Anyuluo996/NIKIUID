@@ -145,6 +145,61 @@ def _inline_local_images(html: str, base_dir: Path) -> str:
     return pattern.sub(repl, html)
 
 
+# ── 字体内联(参考 NTEUID 思路:字体随插件发布,不依赖系统 fontconfig) ──
+_FONT_CACHE: dict[str, str] = {}
+
+
+def _get_font_face_css() -> str:
+    """生成 @font-face CSS,把插件自带的 MiSans 字体内联成 base64。
+
+    htmlkit 走系统 fontconfig,容器里没装中文字体会渲染方块/缺字。
+    把 ttf 内联成 @font-face 后,htmlkit 直接从 CSS 加载,完全脱离系统字体。
+    结果缓存避免每次渲染都读 8MB 文件做 base64。
+    """
+    if "css" in _FONT_CACHE:
+        return _FONT_CACHE["css"]
+
+    font_path = Path(__file__).resolve().parents[1] / "fonts" / "MiSans-Bold.ttf"
+    if not font_path.exists():
+        _LOGGER.warning(f"字体文件不存在: {font_path}")
+        return ""
+
+    data = font_path.read_bytes()
+    b64 = base64.b64encode(data).decode()
+    # 注册多个常用名,让模板里的 font-family 都能命中
+    css = f"""
+    <style>
+    @font-face {{
+        font-family: 'MiSans';
+        src: url(data:font/ttf;base64,{b64}) format('truetype');
+        font-weight: bold;
+        font-style: normal;
+    }}
+    @font-face {{
+        font-family: 'MiSans-Bold';
+        src: url(data:font/ttf;base64,{b64}) format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }}
+    </style>
+    """
+    _FONT_CACHE["css"] = css
+    return css
+
+
+def _inject_font(html: str) -> str:
+    """把 @font-face 注入到 HTML 的 <head> 里(在所有样式之前)。"""
+    font_css = _get_font_face_css()
+    if not font_css:
+        return html
+    # 注入到 <head> 之后;没 head 就插到 <html> 后;都没就加到开头
+    if "<head>" in html:
+        return html.replace("<head>", f"<head>{font_css}", 1)
+    if "<html" in html:
+        return re.sub(r"(<html[^>]*>)", rf"\1{font_css}", html, count=1)
+    return font_css + html
+
+
 async def render_html_to_image(
     html_content: str,
     pool_type: str = "limited_5",
@@ -177,9 +232,11 @@ async def render_html_to_image(
     try:
         from PIL import Image
 
-        # 1. 把相对图片路径转 file:// 绝对路径
-        html = _absolutize_img_src(html_content, extra_base=user_data_dir)
-        # 2. 把 file:// 图片内联成 base64(最兼容)
+        # 1. 注入内联字体(让 htmlkit 不依赖系统 fontconfig)
+        html = _inject_font(html_content)
+        # 2. 把相对图片路径转 file:// 绝对路径
+        html = _absolutize_img_src(html, extra_base=user_data_dir)
+        # 3. 把 file:// 图片内联成 base64(最兼容)
         if user_data_dir is not None:
             html = _inline_local_images(html, user_data_dir)
         else:
