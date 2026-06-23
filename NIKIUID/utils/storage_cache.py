@@ -1,24 +1,18 @@
 """用户缓存数据管理"""
 
 import json
-import logging
 import re
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any
+
+from gsuid_core.logger import logger
 
 # 用户目录名(uid/openid)只允许字母数字下划线短横线,杜绝 ../ 路径穿越
 _SAFE_UID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 
-class Logger(Protocol):
-    def info(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def error(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def debug(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-
-
-def _default_logger() -> logging.Logger:
-    return logging.getLogger("niki.storage")
+def _default_logger():
+    return logger
 
 
 def get_user_dir(plugin_data_dir: Path, uid: str, create: bool = False) -> Path:
@@ -49,7 +43,7 @@ def get_user_dir(plugin_data_dir: Path, uid: str, create: bool = False) -> Path:
 async def load_cached_data(
     plugin_data_dir: Path,
     platform_user_id: str,
-    logger: logging.Logger | None = None,
+    logger=None,
 ) -> dict | None:
     """加载用户数据（根据 platform_user_id 查找）
 
@@ -88,7 +82,7 @@ async def save_cached_data(
     uid: str,
     platform_user_id: str,
     data: dict,
-    logger: logging.Logger | None = None,
+    logger=None,
 ) -> None:
     """保存用户数据到缓存
 

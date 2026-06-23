@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 
 import aiohttp
@@ -33,7 +32,6 @@ async def refresh_user_data(
     bot_id: str,
     token_info: dict,
     auto_refresh: bool = True,
-    enable_debug_log: bool = False,
 ) -> dict | None:
     """刷新用户数据
 
@@ -42,7 +40,6 @@ async def refresh_user_data(
         bot_id: 机器人ID
         token_info: 登录凭证(token、openid、client_id 等)
         auto_refresh: 是否自动获取数据;False 则只保存凭证
-        enable_debug_log: 是否启用调试日志
 
     Returns:
         包含 uid / nickname / level / success 等信息的字典
@@ -86,7 +83,6 @@ async def refresh_user_data(
         token=token,
         openid=openid,
         client_id=client_id,
-        enable_debug_log=enable_debug_log,
     )
 
     if not data_result:

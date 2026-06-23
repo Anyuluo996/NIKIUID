@@ -1,13 +1,13 @@
 """共鸣数据服务"""
 
+from gsuid_core.logger import logger
 import json
-import logging
 
 import aiohttp
 
 from ..constants import CLIENT_ID, MYL_API_BASE
 
-logger = logging.getLogger("niki.resonance_service")
+# logger 由 gsuid_core.logger 提供
 
 
 async def fetch_resonance_with_api(

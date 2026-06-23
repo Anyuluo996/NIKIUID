@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 import aiohttp
@@ -18,7 +17,6 @@ async def fetch_journal_data(
     token: str,
     openid: str,
     client_id: int | None = None,
-    enable_debug_log: bool = False,
 ) -> dict | None:
     """使用 token 获取完整奇想手账数据
 
@@ -26,7 +24,6 @@ async def fetch_journal_data(
         token: 登录 token
         openid: 用户 openid
         client_id: 客户端ID（默认 CLIENT_ID）
-        enable_debug_log: 是否启用调试日志
 
     Returns:
         包含 journal_data、login_info、map_data、resonance_data 的字典，失败返回 None
@@ -58,8 +55,7 @@ async def fetch_journal_data(
                 ) as resp:
                     if resp.status == 200:
                         result = await resp.json()
-                        if enable_debug_log:
-                            logger.info(f"用户信息 API 响应: {result}")
+                        logger.debug(f"[niki] 用户信息 API 响应: {result}")
                         if result.get("code") == 0 and result.get("data"):
                             user_info = result.get("data")
                         else:
@@ -92,8 +88,7 @@ async def fetch_journal_data(
                 ) as resp:
                     if resp.status == 200:
                         map_result = await resp.json()
-                        if enable_debug_log:
-                            logger.info(f"地图 API 响应: {map_result}")
+                        logger.debug(f"[niki] 地图 API 响应: {map_result}")
                         if map_result.get("code") == 0:
                             map_data = map_result.get("data", {})
             except Exception as e:

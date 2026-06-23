@@ -10,7 +10,6 @@ from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.sv import SV
 
-from ..niki_config.niki_config import NikiConfig
 from ..utils.database import NikiUser
 from ..utils.msgs import CommonMsg, RefreshMsg, send_niki_notify
 from ..utils.services.refresh_service import refresh_user_data
@@ -37,15 +36,12 @@ async def niki_refresh_cmd(bot: Bot, ev: Event):
         "device_id": user.device_id,
     }
 
-    debug_log = bool(NikiConfig.get_config("NikiDebugLog").data)
-
     try:
         result = await refresh_user_data(
             user_id=ev.user_id,
             bot_id=ev.bot_id,
             token_info=token_info,
             auto_refresh=True,
-            enable_debug_log=debug_log,
         )
     except Exception as e:
         logger.exception(f"[niki刷新] 刷新异常 user_id={ev.user_id}: {e}")

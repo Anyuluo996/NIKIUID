@@ -7,8 +7,8 @@
 将进化套装的抽数归入其基础套装。
 """
 
+from gsuid_core.logger import logger
 import json
-import logging
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -17,7 +17,7 @@ import aiohttp
 
 from ..constants import CLIENT_ID, MYL_API_BASE
 
-logger = logging.getLogger("niki.draw_num_service")
+# logger 由 gsuid_core.logger 提供
 
 
 @dataclass

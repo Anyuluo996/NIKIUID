@@ -209,7 +209,6 @@ async def perform_login(auth_token: str, mobile: str, code: str) -> LoginResult:
     }
 
     auto_refresh = bool(NikiConfig.get_config("NikiLoginAutoRefresh").data)
-    debug_log = bool(NikiConfig.get_config("NikiDebugLog").data)
 
     try:
         refresh_result = await refresh_user_data(
@@ -217,7 +216,6 @@ async def perform_login(auth_token: str, mobile: str, code: str) -> LoginResult:
             bot_id=state.bot_id,
             token_info=token_info,
             auto_refresh=auto_refresh,
-            enable_debug_log=debug_log,
         )
     except Exception as e:
         logger.exception(f"[niki登录] 刷新数据异常 user_id={state.user_id}: {e}")
@@ -282,7 +280,6 @@ async def login_by_password(bot: Bot, ev: Event, account: str, password: str) ->
     }
 
     auto_refresh = bool(NikiConfig.get_config("NikiLoginAutoRefresh").data)
-    debug_log = bool(NikiConfig.get_config("NikiDebugLog").data)
 
     try:
         refresh_result = await refresh_user_data(
@@ -290,7 +287,6 @@ async def login_by_password(bot: Bot, ev: Event, account: str, password: str) ->
             bot_id=ev.bot_id,
             token_info=token_info,
             auto_refresh=auto_refresh,
-            enable_debug_log=debug_log,
         )
     except Exception as e:
         logger.exception(f"[niki登录] 账号密码登录后刷新异常: {e}")

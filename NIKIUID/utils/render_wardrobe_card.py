@@ -1,17 +1,16 @@
 """共鸣衣橱卡片渲染"""
 
-import datetime
 import json
-import logging
+from datetime import datetime
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from gsuid_core.logger import logger
+
 from .encoding import fix_encoding
 from .models import PoolType, WardrobeFilterMode
 from .resource.RESOURCE_PATH import TEMPLATE_PATH as HTML_DIR, USER_DATA_PATH
-
-logger = logging.getLogger("niki.render")
 
 
 def _get_level(suit: dict[str, Any]) -> int:

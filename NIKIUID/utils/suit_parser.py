@@ -3,24 +3,17 @@
 from __future__ import annotations
 
 import json
-import logging
 from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Protocol
+from typing import Any
+
+from gsuid_core.logger import logger
 
 from .encoding import fix_encoding
 
 
-# Protocol for logger compatibility
-class Logger(Protocol):
-    def info(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def error(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def debug(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-
-
-def _default_logger() -> Logger:
-    return logging.getLogger("niki.suit_parser")
+def _default_logger():
+    return logger
 
 
 def _resolve_pool_type(card: dict[str, Any], is_new_format: bool) -> str:
@@ -41,7 +34,7 @@ def enrich_cards_with_evolutions(
     cards: list,
     resonance_data: dict,
     fix_fn: Callable[[str], str] | None = None,
-    logger: Logger | None = None,
+    logger=None,
 ) -> list:
     """为原始套装卡片数据添加进化信息（从 resonance_data 补充）
 
@@ -112,7 +105,7 @@ def enrich_cards_with_evolutions(
 def parse_suit_card_list(
     suit_card_list: list,
     fix_fn: Callable[[str], str] | None = None,
-    logger: Logger | None = None,
+    logger=None,
 ) -> list:
     """从 suitCardListData 解析共鸣套装数据
 

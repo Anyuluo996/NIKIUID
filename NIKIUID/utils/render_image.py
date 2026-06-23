@@ -13,7 +13,6 @@
 from __future__ import annotations
 
 import base64
-import logging
 import re
 from pathlib import Path
 from typing import Any
@@ -23,7 +22,6 @@ from gsuid_core.utils.html_render import render_html_to_bytes
 
 from .resource.RESOURCE_PATH import USER_DATA_PATH
 
-_LOGGER = logging.getLogger("niki.render_image")
 
 # 渲染最大宽度(像素),影响清晰度。由配置 NikiRenderScale 控制,默认 800
 DEFAULT_MAX_WIDTH = 800.0
@@ -63,7 +61,7 @@ def _absolutize_img_src(html: str, extra_base: Path | None = None) -> str:
             abs_path = (prefix_dir / rel).resolve()
             # 路径穿越防护:resolve 后必须仍在 prefix_dir 之下
             if not abs_path.is_relative_to(prefix_resolved):
-                _LOGGER.warning(f"拒绝越界路径: {rel}")
+                logger.warning(f"拒绝越界路径: {rel}")
                 return m.group(0)
             if abs_path.exists():
                 url = _path_to_file_url(abs_path)
@@ -81,7 +79,7 @@ def _absolutize_img_src(html: str, extra_base: Path | None = None) -> str:
             abs_path = (prefix_dir / rel).resolve()
             # 路径穿越防护
             if not abs_path.is_relative_to(prefix_resolved):
-                _LOGGER.warning(f"拒绝越界路径: {rel}")
+                logger.warning(f"拒绝越界路径: {rel}")
                 return m.group(0)
             if abs_path.exists():
                 url = _path_to_file_url(abs_path)
@@ -139,7 +137,7 @@ def _inline_local_images(html: str, base_dir: Path) -> str:
                 return f'src="{data_uri}"'
             return f'url("{data_uri}")'
         except Exception as e:
-            _LOGGER.warning(f"内联图片失败 {img_path}: {e}")
+            logger.warning(f"内联图片失败 {img_path}: {e}")
             return m.group(0)
 
     return pattern.sub(repl, html)
@@ -161,7 +159,7 @@ def _get_font_face_css() -> str:
 
     font_path = Path(__file__).resolve().parents[1] / "fonts" / "MiSans-Bold.ttf"
     if not font_path.exists():
-        _LOGGER.warning(f"字体文件不存在: {font_path}")
+        logger.warning(f"字体文件不存在: {font_path}")
         return ""
 
     data = font_path.read_bytes()

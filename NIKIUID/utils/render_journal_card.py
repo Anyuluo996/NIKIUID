@@ -1,14 +1,13 @@
 """奇想手账卡片渲染"""
 
-import datetime
-import logging
+from datetime import datetime
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from .resource.RESOURCE_PATH import TEMPLATE_PATH as HTML_DIR
+from gsuid_core.logger import logger
 
-logger = logging.getLogger("niki.render")
+from .resource.RESOURCE_PATH import TEMPLATE_PATH as HTML_DIR
 
 
 def get_regions() -> list[dict[str, Any]]:

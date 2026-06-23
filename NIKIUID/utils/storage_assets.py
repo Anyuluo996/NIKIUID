@@ -1,28 +1,27 @@
 """套装图片下载工具"""
 
-import logging
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any
 
 import aiohttp
 
-
-class Logger(Protocol):
-    def info(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def warning(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def error(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
-    def debug(self, msg: str, *args: Any, **kwargs: Any) -> None: ...
+from gsuid_core.logger import logger as _gscore_logger
 
 
-def _default_logger() -> logging.Logger:
-    return logging.getLogger("niki.assets")
+class Logger(Any if False else object):
+    """兼容占位:实际统一用 gsuid_core.logger"""
+    pass
+
+
+def _default_logger():
+    return _gscore_logger
 
 
 async def download_suit_images(
     suit_card_list: list,
     images_dir: Path,
     fix_fn=None,
-    logger: logging.Logger | None = None,
+    log=_gscore_logger,
 ) -> dict[str, str]:
     """下载套装图片到本地
 

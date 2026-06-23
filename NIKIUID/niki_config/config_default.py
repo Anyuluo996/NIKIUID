@@ -44,9 +44,4 @@ CONFIG_DEFAULT: dict[str, GSC] = {
         min_value=400.0,
         max_value=1600.0,
     ),
-    "NikiDebugLog": GsBoolConfig(
-        "调试日志",
-        "开启后在 gsuid_core 日志里输出详细的 API 请求/响应信息,排查问题时打开",
-        False,
-    ),
 }
