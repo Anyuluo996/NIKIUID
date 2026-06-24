@@ -8,8 +8,8 @@ import aiohttp
 
 from gsuid_core.logger import logger
 
-from ..auth.passport import myl_sign_params
 from ..constants import CLIENT_ID, MYL_API_BASE
+from ..auth.passport import myl_sign_params
 from .resonance_service import fetch_resonance_with_api
 
 

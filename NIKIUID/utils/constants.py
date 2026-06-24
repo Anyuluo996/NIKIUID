@@ -1,8 +1,8 @@
 """NIKIUID 常量与签名工具"""
 
-import hashlib
 import hmac
 import time
+import hashlib
 
 # 插件名称
 PLUGIN_NAME = "NIKIUID"

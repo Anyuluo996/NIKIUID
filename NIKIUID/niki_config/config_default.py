@@ -9,10 +9,10 @@ from __future__ import annotations
 
 from gsuid_core.utils.plugins_config.models import (
     GSC,
-    GsBoolConfig,
-    GsFloatConfig,
     GsIntConfig,
     GsStrConfig,
+    GsBoolConfig,
+    GsFloatConfig,
 )
 
 CONFIG_DEFAULT: dict[str, GSC] = {

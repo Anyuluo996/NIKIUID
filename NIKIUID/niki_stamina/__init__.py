@@ -9,23 +9,21 @@ from __future__ import annotations
 import time
 from datetime import datetime
 
+from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.segment import MessageSegment
-from gsuid_core.sv import SV
 
-from ..niki_config.niki_config import NikiConfig
-from ..utils.database import NikiUser
 from ..utils.msgs import CommonMsg, send_niki_notify
+from ..utils.session import require_user
 from ..utils.render_image import render_html_to_image
+from ..utils.storage_cache import load_cached_data
 from ..utils.resource.RESOURCE_PATH import (
     NIKI_TEMPLATES,
     USER_DATA_PATH,
 )
 from ..utils.services.stamina_service import fetch_realtime_stamina
-from ..utils.session import require_user
-from ..utils.storage_cache import load_cached_data
 
 sv_niki_stamina = SV("niki体力")
 

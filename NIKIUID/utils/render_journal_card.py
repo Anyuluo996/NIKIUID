@@ -1,8 +1,8 @@
 """奇想手账卡片渲染"""
 
 import json
-from datetime import datetime
 from typing import Any
+from datetime import datetime
 
 from gsuid_core.logger import logger
 
@@ -188,9 +188,9 @@ def build_journal_context(
     read_collected = _count((map_data or {}).get("read"))
     cruise_collected = _count((map_data or {}).get("cruise"))
 
-    pillar_total = cat_totals.get(10, 0)      # 流转之柱
-    star_total = cat_totals.get(11, 0)        # 奇想星
-    dew_total = cat_totals.get(12, 0)         # 灵感露珠
+    cat_totals.get(10, 0)      # 流转之柱
+    cat_totals.get(11, 0)        # 奇想星
+    cat_totals.get(12, 0)         # 灵感露珠
     # 宝箱总量 = 各类宝箱合计
     box_total = sum(cat_totals.get(i, 0) for i in [13, 14, 15, 16, 259])
     read_total = cat_totals.get(20, 0)        # 阅读物
@@ -222,7 +222,7 @@ def build_journal_context(
         return round(stat[2] / stat[3], 1) if stat[3] > 0 else 0
 
     # 服装/共鸣套装数:userData 里恒为 0,从 suitCardListData 计算
-    owned_suit_count = sum(
+    sum(
         1 for s in suit_list
         if int(s.get("totalDrawNum", 0) or 0) > 0 or int(s.get("collectedCount", 0) or 0) > 0
     )

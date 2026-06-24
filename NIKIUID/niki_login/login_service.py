@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import asyncio
 import secrets
-from dataclasses import dataclass, field
 from typing import Any
+from dataclasses import field, dataclass
 
 from gsuid_core.bot import Bot
 from gsuid_core.config import core_config
@@ -22,14 +22,14 @@ from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.segment import MessageSegment
 
-from ..niki_config.niki_config import NikiConfig
-from ..utils.auth.crypto import generate_device_id
-from ..utils.auth.passport import passport_login, send_sms_code, sms_login
-from ..utils.cache import TimedCache
-from ..utils.database import NikiUser
 from ..utils.msgs import LoginMsg, send_niki_notify
-from ..utils.services.refresh_service import refresh_user_data
+from ..utils.cache import TimedCache
 from ..utils.utils import get_public_ip
+from ..utils.database import NikiUser
+from ..utils.auth.crypto import generate_device_id
+from ..utils.auth.passport import sms_login, send_sms_code, passport_login
+from ..niki_config.niki_config import NikiConfig
+from ..utils.services.refresh_service import refresh_user_data
 
 # cache 容量上限;实际等待时长由 NikiLoginTTL 决定
 _MAX_LOGIN_TTL_S = 3600

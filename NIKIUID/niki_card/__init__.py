@@ -7,27 +7,26 @@
 
 from __future__ import annotations
 
+from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.segment import MessageSegment
-from gsuid_core.sv import SV
 
-from ..niki_config.niki_config import NikiConfig
-from ..utils.cache import TimedCache  # noqa: F401  (保留给后续扩展)
-from ..utils.database import NikiUser
 from ..utils.msgs import CardMsg, CommonMsg, send_niki_notify
+from ..utils.cache import TimedCache  # noqa: F401  (保留给后续扩展)
 from ..utils.parser import (
     CommandParseError,
-    build_gacha_parse_error_message,
     parse_gacha_args_text,
+    build_gacha_parse_error_message,
 )
+from ..utils.session import require_user
 from ..utils.render_image import render_html_to_image
+from ..utils.storage_cache import load_cached_data
+from ..niki_config.niki_config import NikiConfig
 from ..utils.render_journal_card import render_journal_card
 from ..utils.render_wardrobe_card import render_wardrobe_card
 from ..utils.resource.RESOURCE_PATH import USER_DATA_PATH
-from ..utils.session import require_user
-from ..utils.storage_cache import load_cached_data
 
 sv_niki_card = SV("niki卡片")
 sv_niki_gacha = SV("niki抽卡")

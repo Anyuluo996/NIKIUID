@@ -12,15 +12,14 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import aiohttp
 
+from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.segment import MessageSegment
-from gsuid_core.sv import SV
 
 from ..utils.resource.RESOURCE_PATH import USER_DATA_PATH
 

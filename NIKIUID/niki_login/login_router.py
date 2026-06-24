@@ -18,8 +18,8 @@ from gsuid_core.logger import logger
 from gsuid_core.web_app import app
 
 from ..utils.msgs import LoginMsg
+from .login_service import LOGIN_CACHE, LoginState, LoginResult, perform_login, send_login_sms
 from ..utils.resource.RESOURCE_PATH import NIKI_TEMPLATES
-from .login_service import LOGIN_CACHE, LoginResult, LoginState, perform_login, send_login_sms
 
 _MOBILE_RE = re.compile(r"^1\d{10}$")
 _CODE_RE = re.compile(r"^\d{4,8}$")

@@ -1,6 +1,5 @@
 """路径穿越防护测试。"""
 
-from pathlib import Path
 
 import pytest
 

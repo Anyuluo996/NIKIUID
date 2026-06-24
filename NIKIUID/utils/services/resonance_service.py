@@ -1,9 +1,10 @@
 """共鸣数据服务"""
 
-from gsuid_core.logger import logger
 import json
 
 import aiohttp
+
+from gsuid_core.logger import logger
 
 from ..constants import CLIENT_ID, MYL_API_BASE
 

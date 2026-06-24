@@ -5,15 +5,14 @@
 
 from __future__ import annotations
 
+from gsuid_core.sv import SV
 from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
-from gsuid_core.sv import SV
 
-from ..utils.database import NikiUser
-from ..utils.msgs import CommonMsg, RefreshMsg, send_niki_notify
-from ..utils.services.refresh_service import refresh_user_data
+from ..utils.msgs import RefreshMsg, send_niki_notify
 from ..utils.session import require_user
+from ..utils.services.refresh_service import refresh_user_data
 
 sv_niki_refresh = SV("niki刷新")
 

@@ -8,13 +8,12 @@ from __future__ import annotations
 
 import re
 
-from gsuid_core.bot import Bot
-from gsuid_core.logger import logger
-from gsuid_core.models import Event
 from gsuid_core.sv import SV
+from gsuid_core.bot import Bot
+from gsuid_core.models import Event
 
 from . import login_router  # 纯副作用 import:FastAPI 路由在模块加载时注册
-from .login_service import login_by_password, logout, logout_all, request_login
+from .login_service import logout, logout_all, request_login, login_by_password
 
 _ = login_router  # 防 linter 误删
 

@@ -1,19 +1,17 @@
 """体力计算回归测试 — 防止之前的 energy=6 / 朝夕心愿 / dispatch bug 复现。"""
 
+from gsuid_core.plugins.NIKIUID.NIKIUID.niki_stamina import _format_dispatch
 from gsuid_core.plugins.NIKIUID.NIKIUID.utils.services.stamina_service import (
     ENERGY_MAX,
-    ENERGY_REGEN_SECONDS_PER_POINT,
-    DAILY_TASK_MAX,
     _calc_daily_task,
     _human_countdown,
     _calc_estimated_energy,
 )
-from gsuid_core.plugins.NIKIUID.NIKIUID.niki_stamina import _format_dispatch
 
 from .conftest import (
+    DOC_NOW,
     DOC_ENERGY,
     DOC_TIMESTAMP,
-    DOC_NOW,
     DOC_EXPECTED_CURRENT,
 )
 

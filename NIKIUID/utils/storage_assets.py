@@ -5,7 +5,6 @@
 """
 
 from pathlib import Path
-from typing import Any
 
 from gsuid_core.logger import logger as _gscore_logger
 from gsuid_core.utils.download_resource.download_file import download

@@ -10,9 +10,8 @@ from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
 
-from ..niki_config.prefix import niki_prefix
-from .database import NikiUser
 from .msgs import CommonMsg, send_niki_notify
+from .database import NikiUser
 
 
 async def require_user(bot: Bot, ev: Event) -> NikiUser | None:

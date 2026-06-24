@@ -16,14 +16,14 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone, timedelta
 
 import aiohttp
 
 from gsuid_core.logger import logger
 
-from ..auth.passport import myl_sign_params
 from ..constants import CLIENT_ID, MYL_API_BASE
+from ..auth.passport import myl_sign_params
 from .draw_num_service import decompress_snappy_payload
 
 # 能量上限(SPA 硬编码,详见 docs/DATA_FIELDS.md §5.X)
@@ -252,9 +252,9 @@ async def fetch_realtime_stamina(
         }
         logger.info(
             f"[niki体力] 实时查询成功 baseline_energy={energy} "
-            f"current={current}/{ENERGY_MAX} recovered=+{recovered} "
+            f"current={est['current']}/{ENERGY_MAX} recovered=+{est['recovered']} "
             f"data_age={result['data_age_hours']:.1f}h "
-            f"距满={human_remaining} "
+            f"距满={est['human_remaining']} "
             f"daily_task={daily['current']}/{DAILY_TASK_MAX}"
             f"{'(已重置)' if daily['reset'] else ''} "
             f"dispatch={len(result['dispatch'])}个"

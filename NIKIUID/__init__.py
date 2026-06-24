@@ -1,8 +1,8 @@
 import asyncio
 
+from gsuid_core.sv import Plugins
 from gsuid_core.gss import gss
 from gsuid_core.logger import logger
-from gsuid_core.sv import Plugins
 
 Plugins(
     name="NIKIUID",

@@ -1,7 +1,7 @@
 """NIKIUID 帮助图片渲染。
 
 参考 NTEUID/nte_help/get_help.py,使用 gsuid_core 的 PIL 帮助框架
-(draw_new_plugin_help.get_new_help) 渲染图片。图标用 D:\app\niki\bg\图标_抠图
+(draw_new_plugin_help.get_new_help) 渲染图片。图标用 D:\app\niki\bg\\图标_抠图
 下的无限暖暖主题素材(已按指令名重命名后放到 icon_path/)。
 """
 
@@ -13,15 +13,15 @@ from pathlib import Path
 from PIL import Image
 
 from gsuid_core.help import draw_new_plugin_help as _help_framework
-from gsuid_core.help.draw_new_plugin_help import get_new_help
 from gsuid_core.help.model import PluginHelp
+from gsuid_core.help.draw_new_plugin_help import get_new_help
 
 # 帮助图含精细图标和文字,默认 quality=85 双重 JPEG 压缩会糊。
 # 拉到 100 让框架保存时尽量无损(仍 JPEG,但几乎无压缩痕迹)。
 _help_framework.pic_quality = 100
 
-from ..version import __version__ as NIKIUID_version
-from ..niki_config.prefix import niki_prefix
+from ..version import __version__ as NIKIUID_version  # noqa: E402
+from ..niki_config.prefix import niki_prefix  # noqa: E402
 
 ICON = Path(__file__).parent.parent.parent / "ICON.png"
 HELP_DATA = Path(__file__).parent / "help.json"

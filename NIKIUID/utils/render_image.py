@@ -12,17 +12,16 @@
 
 from __future__ import annotations
 
-import base64
 import io
 import re
-from pathlib import Path
+import base64
 from typing import Any
+from pathlib import Path
 
 from gsuid_core.logger import logger
 from gsuid_core.utils.html_render import render_html_to_bytes
 
 from .resource.RESOURCE_PATH import USER_DATA_PATH
-
 
 # 渲染最大宽度(像素),影响清晰度。由配置 NikiRenderScale 控制,默认 800
 DEFAULT_MAX_WIDTH = 800.0

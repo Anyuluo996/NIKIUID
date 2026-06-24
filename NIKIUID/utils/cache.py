@@ -9,8 +9,8 @@
 from __future__ import annotations
 
 import time
-from collections import OrderedDict
 from typing import Any
+from collections import OrderedDict
 
 
 def _now() -> float:

@@ -14,9 +14,8 @@ from pathlib import Path
 
 from gsuid_core.logger import logger
 
-from .resource.RESOURCE_PATH import USER_DATA_PATH
 from .storage_cache import NikiJournalData
-
+from .resource.RESOURCE_PATH import USER_DATA_PATH
 
 _MIGRATED_SUFFIX = ".migrated"
 

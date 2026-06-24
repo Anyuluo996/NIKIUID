@@ -2,30 +2,29 @@
 
 from __future__ import annotations
 
-import hashlib
 import hmac
 import json
 import time
+import hashlib
 from typing import Any
 
 import aiohttp
 
 from gsuid_core.logger import logger
 
-from ..constants import (
-    CLIENT_ID,
-    MYL_API_BASE,
-    PASSPORT_AES_KEY,
-    PASSPORT_API_BASE,
-    PASSPORT_APP_ID,
-    PASSPORT_APP_KEY,
-)
 from .crypto import (
     aes_decrypt,
     aes_encrypt,
-    generate_device_id,
     generate_doid,
+    generate_device_id,
     generate_web_deviceid,
+)
+from ..constants import (
+    CLIENT_ID,
+    PASSPORT_APP_ID,
+    PASSPORT_AES_KEY,
+    PASSPORT_APP_KEY,
+    PASSPORT_API_BASE,
 )
 
 

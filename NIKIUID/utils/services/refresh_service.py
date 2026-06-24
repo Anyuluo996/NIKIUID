@@ -9,18 +9,16 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import aiohttp
 
 from gsuid_core.logger import logger
 
 from ..database import NikiUser
 from ..encoding import fix_encoding
-from ..resource.RESOURCE_PATH import USER_DATA_PATH
-from ..storage_assets import download_suit_images
 from ..storage_cache import save_cached_data
+from ..storage_assets import download_suit_images
 from .journal_service import fetch_journal_data
+from ..resource.RESOURCE_PATH import USER_DATA_PATH
 
 # 套装图片统一存放在用户数据目录下的 suits 子目录
 IMAGES_DIR = USER_DATA_PATH / "suits"

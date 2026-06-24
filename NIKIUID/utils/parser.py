@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 from typing import Literal
+from dataclasses import dataclass
 
 from .models import PoolType, WardrobeFilterMode
 

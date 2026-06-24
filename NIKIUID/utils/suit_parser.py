@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
-from datetime import datetime
 from typing import Any
+from datetime import datetime
+from collections.abc import Callable
 
 from gsuid_core.logger import logger
 
