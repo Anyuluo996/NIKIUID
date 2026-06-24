@@ -36,6 +36,57 @@ DAILY_TASK_MAX = 500
 DISPATCH_TOTAL_SECONDS = 20 * 3600
 
 
+def _format_dispatch(
+    dispatch: list, now: int, total_seconds: int = DISPATCH_TOTAL_SECONDS
+) -> list[dict]:
+    """派遣任务格式化(纯函数,方便单元测试)。
+
+    用 start_time + total_seconds 算结束时间,剩余 = 结束 - 当前。
+    """
+    result = []
+    for d in dispatch:
+        if not isinstance(d, dict):
+            continue
+        text = d.get("text", "未知")
+        reward_id = d.get("reward_id", "")
+        start_ts = int(d.get("start_time", 0) or 0)
+
+        end_ts = start_ts + total_seconds
+        remaining_sec = max(0, end_ts - now)
+        elapsed = max(0, now - start_ts)
+        pct = (
+            min(elapsed / total_seconds * 100, 100)
+            if total_seconds > 0
+            else 0
+        )
+
+        if remaining_sec <= 0:
+            status = "已完成"
+            remain_h = 0
+            remain_m = 0
+        else:
+            remain_h = remaining_sec // 3600
+            remain_m = (remaining_sec % 3600) // 60
+            if remain_h > 0:
+                status = f"剩余 {remain_h}h{remain_m}m"
+            else:
+                status = f"剩余 {remain_m}m"
+
+        spend_h = min(elapsed // 3600, 20)
+
+        result.append({
+            "text": text,
+            "reward_id": reward_id,
+            "spend": spend_h,
+            "total": 20,
+            "remain_h": remain_h,
+            "remain_m": remain_m,
+            "status": status,
+            "pct": round(pct, 1),
+        })
+    return result
+
+
 def _build_stamina_context(user_data: dict, role: dict, avatar_path: str) -> dict:
     """构建体力卡片 Jinja2 上下文。
 
@@ -62,51 +113,9 @@ def _build_stamina_context(user_data: dict, role: dict, avatar_path: str) -> dic
     energy_pct = min(estimated_energy / ENERGY_MAX * 100, 100) if ENERGY_MAX > 0 else 0
     task_done = "已完成" if daily_task >= daily_task_max else "进行中"
 
-    # 派遣任务格式化(总时长 20 小时,用 start_time 计算剩余时间)
+    # 派遣任务格式化(纯函数)
     now = int(time.time())
-    dispatch_list = []
-    for d in dispatch:
-        if not isinstance(d, dict):
-            continue
-        text = d.get("text", "未知")
-        reward_id = d.get("reward_id", "")
-        spend = int(d.get("spend_time", 0) or 0)
-        start_ts = int(d.get("start_time", 0) or 0)
-
-        # 用 start_time + 20h 算结束时间,剩余 = 结束 - 当前
-        end_ts = start_ts + DISPATCH_TOTAL_SECONDS
-        remaining_sec = max(0, end_ts - now)
-
-        # 已耗时百分比 = (now - start) / total
-        elapsed = max(0, now - start_ts)
-        pct = min(elapsed / DISPATCH_TOTAL_SECONDS * 100, 100) if DISPATCH_TOTAL_SECONDS > 0 else 0
-
-        if remaining_sec <= 0:
-            status = "已完成"
-            remain_h = 0
-            remain_m = 0
-        else:
-            remain_h = remaining_sec // 3600
-            remain_m = (remaining_sec % 3600) // 60
-            if remain_h > 0:
-                status = f"剩余 {remain_h}h{remain_m}m"
-            else:
-                status = f"剩余 {remain_m}m"
-
-        # 显示用已耗时(spend_time 是 API 报告的整小时)
-        spend_h = min(elapsed // 3600, 20)  # 不超过 20
-
-        dispatch_list.append({
-            "text": text,
-            "reward_id": reward_id,
-            "spend": spend_h,
-            "total": 20,
-            "remain_h": remain_h,
-            "remain_m": remain_m,
-            "status": status,
-            "pct": round(pct, 1),
-        })
-
+    dispatch_list = _format_dispatch(dispatch, now)
     dispatch_count = len(dispatch_list)
     dispatch_status = f"{dispatch_count}/4 进行中" if dispatch_count > 0 else "空闲"
 

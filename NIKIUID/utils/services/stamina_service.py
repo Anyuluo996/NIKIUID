@@ -84,6 +84,36 @@ def _human_countdown(target_ts: int, now_ts: int) -> str:
     return f"{minutes}m"
 
 
+def _calc_estimated_energy(energy: int, data_ts: int, now: int) -> dict:
+    """体力回复公式(与 SPA 前端一致,详见 docs/DATA_FIELDS.md §5.X):
+
+        current = min(energy + floor((now - timestamp) / 300), 350)
+
+    纯函数,无副作用,方便单元测试。
+
+    Returns:
+        {current, recovered, remaining_points, seconds_to_full, human_remaining}
+    """
+    if data_ts <= 0:
+        data_ts = now
+    elapsed = max(0, now - data_ts)
+    recovered = elapsed // ENERGY_REGEN_SECONDS_PER_POINT
+    current = min(energy + recovered, ENERGY_MAX)
+    remaining_points = ENERGY_MAX - current
+    seconds_to_full = remaining_points * ENERGY_REGEN_SECONDS_PER_POINT
+    full_min = remaining_points * (ENERGY_REGEN_SECONDS_PER_POINT // 60)
+    human_remaining = (
+        f"{full_min // 60}h{full_min % 60}m" if remaining_points > 0 else "已满"
+    )
+    return {
+        "current": current,
+        "recovered": recovered,
+        "remaining_points": remaining_points,
+        "seconds_to_full": seconds_to_full,
+        "human_remaining": human_remaining,
+    }
+
+
 async def _trigger_start_sync(
     session: aiohttp.ClientSession,
     token: str,
@@ -192,22 +222,9 @@ async def fetch_realtime_stamina(
 
         energy = int(igm.get("energy", 0) or 0)
         data_ts = int(igm.get("timestamp", 0) or 0)
-        # timestamp 缺失时退化为 now(避免 elapsed 为负导致回血为负)
-        if data_ts <= 0:
-            data_ts = now
 
-        # 体力计算公式(与 SPA 前端完全一致,详见 docs/DATA_FIELDS.md §5.X):
-        #   current = min(energy + floor((now - timestamp) / 300), 350)
-        elapsed = max(0, now - data_ts)
-        recovered = elapsed // ENERGY_REGEN_SECONDS_PER_POINT
-        current = min(energy + recovered, ENERGY_MAX)
-        remaining_points = ENERGY_MAX - current
-        seconds_to_full = remaining_points * ENERGY_REGEN_SECONDS_PER_POINT
-        # 距满血的可读时长 "Xh Ym"
-        full_min = remaining_points * (ENERGY_REGEN_SECONDS_PER_POINT // 60)
-        human_remaining = (
-            f"{full_min // 60}h{full_min % 60}m" if remaining_points > 0 else "已满"
-        )
+        # 体力计算(纯函数,与 SPA 前端公式一致)
+        est = _calc_estimated_energy(energy, data_ts, now)
 
         # 朝夕心愿:每日 04:00 重置显示(文档 §5.Y)
         daily_api = int(igm.get("daily_task", 0) or 0)
@@ -217,11 +234,11 @@ async def fetch_realtime_stamina(
         result = {
             "energy": energy,  # 原始基线值(非当前体力)
             "energy_max": ENERGY_MAX,
-            "estimated_energy": current,  # 当前体力(前端公式计算)
-            "recovered_points": recovered,
-            "remaining_points": remaining_points,
-            "seconds_to_full": seconds_to_full,
-            "human_remaining": human_remaining,
+            "estimated_energy": est["current"],
+            "recovered_points": est["recovered"],
+            "remaining_points": est["remaining_points"],
+            "seconds_to_full": est["seconds_to_full"],
+            "human_remaining": est["human_remaining"],
             "data_timestamp": data_ts,
             "data_age_hours": (now - data_ts) / 3600,
             "daily_task": daily["current"],  # 重置后的当前值
