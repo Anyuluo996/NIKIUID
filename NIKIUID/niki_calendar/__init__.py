@@ -26,9 +26,10 @@ from ..utils.resource.RESOURCE_PATH import USER_DATA_PATH
 
 sv_niki_calendar = SV("niki日历")
 
-# NIKIUID-calendar 仓库的 raw URL
-CALENDAR_REPO = "Anyuluo996/NIKIUID-calendar"
-RAW_BASE = f"https://raw.githubusercontent.com/{CALENDAR_REPO}/main"
+# NIKIUID-calendar 仓库的 raw URL(CNB,中国可直连)
+# GitHub 仓库(https://github.com/Anyuluo996/NIKIUID-calendar)也同步,但 CNB 在国内更快
+CALENDAR_SLUG = "anyuluo/NIKIUID-calendar"
+RAW_BASE = f"https://cnb.cool/{CALENDAR_SLUG}/-/git/raw/main"
 MANIFEST_URL = f"{RAW_BASE}/manifest.json"
 
 # 本地缓存目录
