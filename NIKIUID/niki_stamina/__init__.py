@@ -60,7 +60,7 @@ def _build_stamina_context(user_data: dict, role: dict, avatar_path: str) -> dic
     human_remaining = user_data.get("human_remaining", "")
 
     energy_pct = min(estimated_energy / ENERGY_MAX * 100, 100) if ENERGY_MAX > 0 else 0
-    task_done = "✅ 已完成" if daily_task >= daily_task_max else "进行中"
+    task_done = "已完成" if daily_task >= daily_task_max else "进行中"
 
     # 派遣任务格式化(总时长 20 小时,用 start_time 计算剩余时间)
     now = int(time.time())

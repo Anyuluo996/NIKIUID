@@ -239,9 +239,9 @@
             <div class="title-cell">
                 <h1>{{ nickname }} · Lv.{{ level }}</h1>
                 {% if data_source == "实时" and data_time_str %}
-                <div class="subtitle">⚡ 能量 {{ energy }}/{{ energy_max }} · 游戏数据 {{ data_time_str }} 上传{% if data_age_hours > 1 %}({{ data_age_hours }}h前){% endif %}</div>
+                <div class="subtitle">能量 {{ energy }}/{{ energy_max }} · 游戏数据 {{ data_time_str }} 上传{% if data_age_hours > 1 %}({{ data_age_hours }}h前){% endif %}</div>
                 {% else %}
-                <div class="subtitle">⚡ 日常进度 · {{ update_time }}{% if data_source == "实时" %} · 实时{% endif %}</div>
+                <div class="subtitle">日常进度 · {{ update_time }}{% if data_source == "实时" %} · 实时{% endif %}</div>
                 {% endif %}
             </div>
         </div>
