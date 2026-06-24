@@ -114,8 +114,17 @@
         ]
     },
     "其他": {
-        "desc": "帮助",
+        "desc": "日历与帮助",
         "data": [
+            {
+                "name": "日历",
+                "desc": "查看版本内容一览图片(活动日历/新套装/新玩法),可加版本号或列表",
+                "eg": "日历 / 日历 2.7 / 日历列表",
+                "highlight": 4,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
             {
                 "name": "帮助",
                 "desc": "显示本帮助图片",
