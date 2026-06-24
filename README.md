@@ -78,12 +78,8 @@
 ## 安装
 
 ```bash
-# 方式 1: 直接 clone 到 gsuid_core 插件目录
 cd gsuid_core/gsuid_core/plugins
 git clone https://github.com/Anyuluo996/NIKIUID.git
-
-# 方式 2: CNB(中国直连)
-git clone https://cnb.cool/anyuluo/NIKIUID.git
 ```
 
 ### 依赖
@@ -121,5 +117,5 @@ git clone https://cnb.cool/anyuluo/NIKIUID.git
 
 ## 致谢
 
-- [NTEUID](https://github.com/NoneGTGB/NTEUID) — 数据库基类、登录链路、帮助框架参考
-- [gsuid_core](https://github.com/GenshinUID/gsuid_core) — 插件运行平台
+- [NTEUID](https://github.com/tyql688/NTEUID) — 数据库基类、登录链路、帮助框架参考
+- [gsuid_core](https://github.com/Genshin-bots/gsuid-core) — 插件运行平台
