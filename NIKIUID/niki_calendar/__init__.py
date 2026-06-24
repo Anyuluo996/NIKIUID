@@ -99,8 +99,7 @@ async def niki_calendar_cmd(bot: Bot, ev: Event):
     """nk日历 - 查看版本内容一览图片(活动日历/新套装/新玩法)"""
     query = ev.text.strip()
 
-    # 拉取 manifest
-    await bot.send("[无限暖暖] 正在获取日历数据...", at_sender=bool(ev.group_id))
+    # 拉取 manifest(静默,不发提示文本)
     manifest = await _fetch_manifest()
     if not manifest:
         await bot.send("日历数据获取失败,请稍后重试")
@@ -122,10 +121,17 @@ async def niki_calendar_cmd(bot: Bot, ev: Event):
         await bot.send("\n".join(lines))
         return
 
-    # 确定要展示的版本
+    # 确定要展示的版本:无参数时用 latest_version 精确匹配(而非 versions[0])
     if not query:
-        # 默认最新
-        version_data = versions[0] if versions else None
+        latest = manifest.get("latest_version", "")
+        version_data = None
+        if latest:
+            for v in versions:
+                if v["version"] == latest:
+                    version_data = v
+                    break
+        if version_data is None and versions:
+            version_data = versions[0]
     else:
         version_data = _find_version(manifest, query)
 
@@ -139,15 +145,12 @@ async def niki_calendar_cmd(bot: Bot, ev: Event):
         await bot.send(f"v{version_data['version']} 暂无图片内容")
         return
 
-    # 下载并发送图片
+    # 只发图片,不发标题/数量等文本
     ver = version_data["version"]
-    title = version_data.get("title", f"v{ver}")[:60]
-    await bot.send(f"📅 {title}\n共 {len(images)} 张图片", at_sender=bool(ev.group_id))
-
     for img_info in images:
         filename = img_info["filename"]
         data = await _download_image(ver, filename)
         if data:
             await bot.send(MessageSegment.image(data))
         else:
-            await bot.send(f"  ⚠️ 图片加载失败: {filename}")
+            await bot.send(f"⚠️ 图片加载失败: {filename}")
