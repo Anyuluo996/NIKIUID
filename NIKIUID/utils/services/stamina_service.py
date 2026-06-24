@@ -14,9 +14,9 @@ energy / dispatch 等字段反映的是上次游戏端上传时的状态(有 tim
 
 from __future__ import annotations
 
-import datetime
 import json
 import time
+from datetime import datetime, timedelta, timezone
 
 import aiohttp
 
@@ -33,7 +33,7 @@ ENERGY_REGEN_SECONDS_PER_POINT = 300
 # 朝夕心愿每日上限(SPA 硬编码,文档 §5.Y.2)
 DAILY_TASK_MAX = 500
 # 时区:北京时间(文档 §5.Y.1 重置时间硬编码为 Asia/Shanghai 04:00)
-TZ_SHANGHAI = datetime.timezone(datetime.timedelta(hours=8))
+TZ_SHANGHAI = timezone(timedelta(hours=8))
 
 
 def _calc_daily_task(api_value: int, data_ts: int, now_ts: int) -> dict:
@@ -51,7 +51,7 @@ def _calc_daily_task(api_value: int, data_ts: int, now_ts: int) -> dict:
     Returns:
         {current, max, reset, reset_at_ts}
     """
-    now_dt = datetime.datetime.fromtimestamp(now_ts, tz=TZ_SHANGHAI)
+    now_dt = datetime.fromtimestamp(now_ts, tz=TZ_SHANGHAI)
     today_4am = now_dt.replace(
         hour=4, minute=0, second=0, microsecond=0
     )

@@ -300,7 +300,7 @@ def build_journal_context(
         "collected_items": collected_items,
         "user_data": user_data,
         "icon_path": "images/icon",
-        "update_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "update_time": datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
 
 
