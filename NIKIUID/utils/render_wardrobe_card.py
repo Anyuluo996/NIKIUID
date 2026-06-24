@@ -47,7 +47,7 @@ def _get_timestamp(suit: dict[str, Any]) -> int:
     time_str = suit.get("card_start_time", "")
     if time_str:
         try:
-            dt = datetime.datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S")
+            dt = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S")
             return int(dt.timestamp())
         except Exception:
             pass
@@ -199,7 +199,7 @@ def build_wardrobe_context(
         # 旧字段保留兼容(如有其它地方引用)
         "clothes_json": json.dumps(clothes_data[:60], ensure_ascii=False),
         "icon_path": "images/icon",
-        "update_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "update_time": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "num_items": num_items,
     }
 

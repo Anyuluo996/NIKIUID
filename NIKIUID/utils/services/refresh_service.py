@@ -154,7 +154,7 @@ async def refresh_user_data(
                 suit_card_list,
                 IMAGES_DIR,
                 fix_fn=fix_encoding,
-                logger=logger,
+                log=logger,
             )
     except Exception as e:
         logger.warning(f"下载套装图片失败: {e}")
