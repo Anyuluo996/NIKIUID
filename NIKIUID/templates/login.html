@@ -243,11 +243,16 @@
         }
       }, 1000);
 
-      const reply = await fetch('/niki/sendSmsCode', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ auth: AUTH, mobile: mobile.value.trim() }),
-      }).then((r) => r.json());
+      let reply;
+      try {
+        reply = await fetch('/niki/sendSmsCode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ auth: AUTH, mobile: mobile.value.trim() }),
+        }).then((r) => r.json());
+      } catch (err) {
+        reply = { ok: false, msg: '网络异常,请稍后重试' };
+      }
       showStatus(reply.msg || (reply.ok ? MSG.smsSent : MSG.smsSendFailed), !!reply.ok);
     });
 
@@ -255,11 +260,20 @@
       loginBtn.disabled = true;
       const origin = loginBtn.textContent;
       loginBtn.textContent = '验证中';
-      const reply = await fetch('/niki/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ auth: AUTH, mobile: mobile.value.trim(), code: code.value.trim() }),
-      }).then((r) => r.json());
+      let reply;
+      try {
+        reply = await fetch('/niki/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ auth: AUTH, mobile: mobile.value.trim(), code: code.value.trim() }),
+        }).then((r) => r.json());
+      } catch (err) {
+        // 网络中断/超时:验证码可能已被消费,让用户回聊天窗口看 bot 通知
+        loginBtn.textContent = origin;
+        validate();
+        showStatus('请求中断,若 bot 已通知登录成功则无需重试', false);
+        return;
+      }
       if (reply.ok) {
         mobile.disabled = true;
         code.disabled = true;

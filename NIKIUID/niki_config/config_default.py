@@ -39,7 +39,7 @@ CONFIG_DEFAULT: dict[str, GSC] = {
     ),
     "NikiRenderScale": GsFloatConfig(
         "卡片渲染缩放",
-        "htmlkit 渲染时的 max_width 像素值,影响卡片清晰度和宽度",
+        "渲染时的 max_width 像素值,影响卡片清晰度和宽度",
         800.0,
         min_value=400.0,
         max_value=1600.0,

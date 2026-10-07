@@ -61,14 +61,13 @@
 
         /* 用户信息 */
         .user-card {
-            display: table;
+            display: flex;
+            align-items: center;
             width: 100%;
         }
 
         .user-card .avatar-cell {
-            display: table-cell;
-            vertical-align: middle;
-            width: 90px;
+            flex: 0 0 90px;
         }
 
         .avatar {
@@ -92,8 +91,7 @@
         }
 
         .user-card .info-cell {
-            display: table-cell;
-            vertical-align: middle;
+            flex: 1;
             padding-left: 16px;
         }
 
@@ -118,18 +116,16 @@
             font-size: 13px;
         }
 
-        /* 用户统计网格(用 table 替代 grid,htmlkit 兼容) */
+        /* 用户统计网格(flex 布局) */
         .user-stats {
-            display: table;
+            display: flex;
+            gap: 8px;
             width: 100%;
-            border-spacing: 8px;
-            border-collapse: separate;
             margin-top: 15px;
         }
 
         .stat-cell {
-            display: table-cell;
-            width: 20%;
+            flex: 1;
             text-align: center;
             padding: 12px 4px;
             background: rgba(248, 219, 236, 0.3);
@@ -150,17 +146,14 @@
 
         /* 探索进度物品行 */
         .item-row {
-            display: table;
+            display: flex;
+            gap: 10px;
             width: 100%;
-            border-spacing: 10px;
-            border-collapse: separate;
         }
 
         .item {
-            display: table-cell;
-            width: 33.3%;
+            flex: 1;
             text-align: center;
-            vertical-align: bottom;
         }
 
         .item-icon {
@@ -199,22 +192,20 @@
             color: #a69f95;
         }
 
-        /* 子区域 */
+        /* 子区域(每行 2 个,放不下自动换行) */
         .sub-sections {
-            display: table;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             width: 100%;
-            border-spacing: 10px;
-            border-collapse: separate;
             margin-top: 20px;
         }
 
         .sub-box {
-            display: table-cell;
-            width: 50%;
+            flex: 0 1 calc(50% - 5px);
             border: 2px dashed;
             border-radius: 12px;
             padding: 18px 8px 12px;
-            vertical-align: top;
         }
 
         .sub-box.pink {
@@ -256,20 +247,17 @@
 
         /* 共鸣统计 */
         .resonance-summary {
-            display: table;
+            display: flex;
+            gap: 12px;
             width: 100%;
-            border-spacing: 12px;
-            border-collapse: separate;
         }
 
         .resonance-card {
-            display: table-cell;
-            width: 33.3%;
+            flex: 1;
             background: rgba(248, 219, 236, 0.3);
             border-radius: 12px;
             padding: 15px;
             border-top: 4px solid #ff9eb5;
-            vertical-align: top;
         }
 
         .resonance-card.four-star {

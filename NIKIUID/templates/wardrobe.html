@@ -153,20 +153,27 @@
         }
 
         .suit-grid {
-            display: table;
             width: 100%;
-            border-spacing: 12px;
-            border-collapse: separate;
         }
 
         .suit-row {
-            display: table-row;
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .suit-row:last-child {
+            margin-bottom: 0;
         }
 
         .suit-cell {
-            display: table-cell;
-            width: 33.3%;
-            vertical-align: top;
+            flex: 1;
+        }
+
+        /* 末行不满 3 张时单卡居中、不拉满整行,避免套装占位图等比放大 */
+        .suit-row.partial .suit-cell {
+            max-width: 250px;
+            margin: 0 auto;
         }
 
         .suit-card {
@@ -182,7 +189,8 @@
 
         .suit-card img.suit-img {
             width: 100%;
-            height: auto;
+            max-height: 280px;
+            object-fit: cover;
             background: #f0f0f0;
             display: block;
         }
@@ -214,6 +222,8 @@
         }
 
         .suit-card .draw-info {
+            display: flex;
+            justify-content: space-between;
             font-size: 10px;
             color: #a69f95;
         }
@@ -223,13 +233,9 @@
             font-weight: 600;
         }
 
-        .suit-card .draw-info .total-draws {
-            float: right;
-        }
-
         .footer {
             text-align: center;
-            padding: 20px 0;
+            padding: 20px 0 4px;
             color: #a69f95;
             font-size: 12px;
         }
@@ -277,7 +283,7 @@
             <div class="suit-grid">
                 {% for suit in clothes %}
                 {% set loop_index = loop.index0 %}
-                {% if loop_index % 3 == 0 %}<div class="suit-row">{% endif %}
+                {% if loop_index % 3 == 0 %}<div class="suit-row{% if loop.length - loop.index0 < 3 %} partial{% endif %}">{% endif %}
                 <div class="suit-cell">
                     <div class="suit-card{% if not suit.isCollected %} locked{% endif %}">
                         {% if suit.imgUrl %}

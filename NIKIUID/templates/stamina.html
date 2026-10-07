@@ -24,15 +24,14 @@
         }
 
         .header {
-            display: table;
+            display: flex;
+            align-items: center;
             width: 100%;
             margin-bottom: 16px;
         }
 
         .header .avatar-cell {
-            display: table-cell;
-            vertical-align: middle;
-            width: 56px;
+            flex: 0 0 56px;
         }
 
         .avatar {
@@ -56,8 +55,7 @@
         }
 
         .header .title-cell {
-            display: table-cell;
-            vertical-align: middle;
+            flex: 1;
             padding-left: 12px;
         }
 
@@ -74,18 +72,15 @@
             margin-top: 2px;
         }
 
-        /* 卡片网格(横版并排) */
+        /* 卡片网格(横版并排,flex 布局) */
         .card-grid {
-            display: table;
+            display: flex;
+            gap: 10px;
             width: 100%;
-            border-spacing: 10px;
-            border-collapse: separate;
         }
 
         .card-col {
-            display: table-cell;
-            width: 25%;
-            vertical-align: top;
+            flex: 1;
         }
 
         .glass-card {
@@ -171,15 +166,13 @@
         }
 
         .dispatch-grid {
-            display: table;
+            display: flex;
+            gap: 8px;
             width: 100%;
-            border-spacing: 8px;
-            border-collapse: separate;
         }
 
         .dispatch-cell {
-            display: table-cell;
-            width: 25%;
+            flex: 1;
             text-align: center;
         }
 

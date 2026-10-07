@@ -127,8 +127,8 @@ def build_wardrobe_context(
     # 按时间戳排序（从新到旧）
     clothes_data.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
 
-    # 替换套装图片为本地路径(优先 file:// 绝对路径,htmlkit 才能读取;
-    # 远程 URL 作为兜底,htmlkit 也能加载网络图片)
+    # 替换套装图片为本地路径(优先 file:// 绝对路径,渲染层会内联成 base64;
+    # 远程 URL 作为兜底)
     suits_dir = USER_DATA_PATH / "suits"
     for suit in clothes_data:
         url = suit.get("imgUrl") or ""

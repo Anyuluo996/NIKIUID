@@ -1,13 +1,13 @@
-"""HTML → 图片渲染(htmlkit 实现)
+"""HTML → 图片渲染(pytakumi 实现)
 
-替代原 niki 的 Playwright 渲染层。核心调用 gsuid_core 内置的
-`render_html_to_bytes`(基于 C 库 htmlkit / pyrenderhtml)。
+调用 gsuid_core 内置的 `render_html_to_bytes`(基于 pytakumi)。
 
 关键差异:
 - 返回 bytes 而非文件路径,调用方用 `MessageSegment.image(bytes)` 发送
-- htmlkit 对 CSS 支持弱于 Chromium,不支持 backdrop-filter / CSS 变量 / 动画;
-  HTML 模板需用内联样式 + 简单布局
-- 本地图片引用需转为 file:// 绝对路径(见 `_absolutize_img_src`)
+- pytakumi 只用显式注册的字体(gsuid_core 启动时已注册 MiSans 可变字体),
+  模板里 font-family 写 "MiSans" 即可,无需 @font-face 注入
+- 本地图片引用需内联成 base64 data URI(见 `_inline_local_images`)
+- 布局用 flexbox(不支持 display: table / float)
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ def _path_to_file_url(abs_path: Path) -> str:
 
 
 def _absolutize_img_src(html: str, extra_base: Path | None = None) -> str:
-    """把 HTML 里的相对图片路径转成 file:// 绝对路径,便于 htmlkit 读取。
+    """把 HTML 里的相对图片路径转成 file:// 绝对路径(随后内联成 base64)。
 
     支持两种引用形式:
     - <img src="images/..."> → src="file:///..."
@@ -111,10 +111,10 @@ def _absolutize_img_src(html: str, extra_base: Path | None = None) -> str:
     return html
 
 
-def _inline_local_images(html: str, base_dir: Path) -> str:
+def _inline_local_images(html: str) -> str:
     """把被引用的本地图片内联成 base64 data URI。
 
-    htmlkit 对 file:// 的支持不确定,base64 最保险。
+    pytakumi 对 file:// 的读取不可靠,base64 data URI 最稳。
     同时处理 <img src="file:///..."> 与 CSS url("file:///...")。
     """
     # 同时匹配 src="file:///..." 和 url("file:///...") 和 url(file:///...)
@@ -143,66 +143,6 @@ def _inline_local_images(html: str, base_dir: Path) -> str:
     return pattern.sub(repl, html)
 
 
-# ── 字体内联(参考 NTEUID 思路:字体随插件发布,不依赖系统 fontconfig) ──
-_FONT_CACHE: dict[str, str] = {}
-
-
-def _get_font_face_css() -> str:
-    """生成 @font-face CSS,把插件自带的 MiSans 字体内联成 base64。
-
-    htmlkit 走系统 fontconfig,容器里没装中文字体会渲染方块/缺字。
-    把 ttf 内联成 @font-face 后,htmlkit 直接从 CSS 加载,完全脱离系统字体。
-    结果缓存避免每次渲染都读 8MB 文件做 base64。
-
-    字体文件复用 gsuid_core 自带的 MiSans-Bold.ttf(不重复发布)。
-    """
-    if "css" in _FONT_CACHE:
-        return _FONT_CACHE["css"]
-
-    # 复用 gsuid_core 自带字体,不随插件重复发布
-    from gsuid_core.utils.fonts.fonts import FONT_ORIGIN_PATH
-
-    font_path = Path(FONT_ORIGIN_PATH)
-    if not font_path.exists():
-        logger.warning(f"字体文件不存在: {font_path}")
-        return ""
-
-    data = font_path.read_bytes()
-    b64 = base64.b64encode(data).decode()
-    # 注册多个常用名,让模板里的 font-family 都能命中
-    css = f"""
-    <style>
-    @font-face {{
-        font-family: 'MiSans';
-        src: url(data:font/ttf;base64,{b64}) format('truetype');
-        font-weight: bold;
-        font-style: normal;
-    }}
-    @font-face {{
-        font-family: 'MiSans-Bold';
-        src: url(data:font/ttf;base64,{b64}) format('truetype');
-        font-weight: normal;
-        font-style: normal;
-    }}
-    </style>
-    """
-    _FONT_CACHE["css"] = css
-    return css
-
-
-def _inject_font(html: str) -> str:
-    """把 @font-face 注入到 HTML 的 <head> 里(在所有样式之前)。"""
-    font_css = _get_font_face_css()
-    if not font_css:
-        return html
-    # 注入到 <head> 之后;没 head 就插到 <html> 后;都没就加到开头
-    if "<head>" in html:
-        return html.replace("<head>", f"<head>{font_css}", 1)
-    if "<html" in html:
-        return re.sub(r"(<html[^>]*>)", rf"\1{font_css}", html, count=1)
-    return font_css + html
-
-
 async def render_html_to_image(
     html_content: str,
     pool_type: str = "limited_5",
@@ -213,10 +153,10 @@ async def render_html_to_image(
     scale: float = 2.0,
     **_kwargs: Any,
 ) -> bytes | None:
-    """用 htmlkit 把 HTML 渲染成 PNG bytes。
+    """用 pytakumi 把 HTML 渲染成 PNG bytes。
 
     与原 Playwright 版签名兼容(接受 pool_type/num_items 等额外参数,但忽略
-    高度计算 —— htmlkit 自动按内容高度出图)。
+    高度计算 —— pytakumi 自动按内容高度出图)。
 
     超采样渲染:按 `max_width × scale` 的像素预算渲染,再用 PIL 缩回 max_width,
     得到更清晰的文字和图标(类似手机屏幕的高 DPI)。
@@ -235,21 +175,30 @@ async def render_html_to_image(
     try:
         from PIL import Image
 
-        # 1. 注入内联字体(让 htmlkit 不依赖系统 fontconfig)
-        html = _inject_font(html_content)
-        # 2. 把相对图片路径转 file:// 绝对路径
-        html = _absolutize_img_src(html, extra_base=user_data_dir)
-        # 3. 把 file:// 图片内联成 base64(最兼容)
-        if user_data_dir is not None:
-            html = _inline_local_images(html, user_data_dir)
-        else:
-            html = _inline_local_images(html, USER_DATA_PATH)
+        # 1. 把相对图片路径转 file:// 绝对路径
+        html = _absolutize_img_src(html_content, extra_base=user_data_dir)
+        # 2. 把 file:// 图片内联成 base64(pytakumi 走 data URI 最稳);
+        #    尾部垫底空白:pytakumi 自适应高度偶尔裁掉最后几像素(footer 半截)
+        if "</body>" in html:
+            html = html.replace(
+                "</body>", '<div style="height:28px"></div></body>', 1
+            )
+        html = _inline_local_images(html)
 
-        # 3. 超采样渲染:用更大的像素预算渲染(htmlkit 按比例缩放所有元素)
-        render_width = max_width * scale
-        image_bytes = await render_html_to_bytes(html, max_width=render_width)
+        # 3. 超采样渲染:max_width 是设备像素(输出图宽),CSS 布局视口由
+        #    core 按 max_width/(dpi/96) 折算 —— dpi=96*scale 即可让视口保持
+        #    max_width CSS px、输出放大 scale 倍(旧 htmlkit 只传大 max_width
+        #    的写法在 pytakumi 下会把视口拉宽,固定宽的 body 只占画布一半)。
+        #    root_max_width 显式收口根容器,兼容未按 dpr 折算宽度的旧版 pytakumi
+        render_width = max_width
+        image_bytes = await render_html_to_bytes(
+            html,
+            max_width=render_width * scale,
+            dpi=96.0 * scale,
+            root_max_width=render_width,
+        )
         if not image_bytes:
-            logger.warning("[render] htmlkit 返回空 bytes")
+            logger.warning("[render] pytakumi 返回空 bytes")
             return None
 
         # 4. 用 PIL 高质量缩回显示尺寸(LANCZOS 抗锯齿)
@@ -265,5 +214,5 @@ async def render_html_to_image(
         out_img.save(buf, format="PNG", optimize=True)
         return buf.getvalue()
     except Exception as e:
-        logger.exception(f"[render] htmlkit 渲染失败: {e}")
+        logger.exception(f"[render] pytakumi 渲染失败: {e}")
         return None
