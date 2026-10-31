@@ -179,6 +179,26 @@ ruff format NIKIUID/    # 格式化
 - 禁止提交有 ruff error 的代码
 - `F821`(未定义变量)尤其重要 — 曾因重构遗漏导致运行时崩溃
 
+### 3.4 本地容器 CI
+
+`ci/` 提供与宿主环境隔离的容器化检查(git bash / pwsh 均可运行):
+
+```bash
+bash ci/run.sh            # 全量:lint + test + smoke
+bash ci/run.sh --lint     # 仅 ruff check
+bash ci/run.sh --test     # 仅 pytest
+bash ci/run.sh --smoke    # 全模块导入检查(路由/SV 注册副作用)
+```
+
+- 镜像 `nikiuid-ci`:python:3.12-slim + **editable 安装**的 gsuid_core(固定
+  `GSCORE_REF`,升级上游后改 `ci/Dockerfile` 重建)。editable 是必须的:
+  常规安装会在 site-packages 生成优先级更高的常规包,插件永远解析不到
+- 代码用 `docker cp` 注入一次性容器,**不用 bind mount**(Windows 上
+  Docker Desktop 未对盘符授权文件共享时 `-v` 会静默卡死)
+- 无代理环境构建:`CI_PROXY= bash ci/run.sh`
+- smoke 层补齐 pytest 覆盖不到的导入副作用(`ci/smoke_imports.py`):
+  FastAPI 路由注册、SV 监听注册、gss 钩子挂载
+
 ---
 
 ## 四、Git 规范
