@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- auth token 在 URL 中,禁止随 Referer 发给第三方资源域名 -->
+  <meta name="referrer" content="no-referrer">
   <link rel="icon" href="https://assets.papegames.com/nikkiweb/infinitynikki/infinitynikkistrategycn/_next/static/media/favicon.cff3fb99.ico">
   <title>无限暖暖 · 登录</title>
   <style>
@@ -280,7 +282,8 @@
         sendBtn.disabled = true;
         loginBtn.textContent = MSG.loginSuccess;
         showStatus(MSG.loginSuccess, true);
-        window.location.replace('/niki/done');
+        // 完成页轮询 /niki/status 展示真实登录结果(数据刷新在后台进行)
+        window.location.replace('/niki/done?auth=' + encodeURIComponent(AUTH));
         return;
       }
       loginBtn.textContent = origin;

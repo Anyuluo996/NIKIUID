@@ -161,7 +161,11 @@ async def request_login(bot: Bot, ev: Event) -> None:
 
 
 async def _wait(auth_token: str) -> LoginState | None:
-    """轮询 LOGIN_CACHE 等终态。"""
+    """轮询 LOGIN_CACHE 等终态。
+
+    终态不从缓存移除:完成页 /niki/done 会继续轮询 /niki/status/{auth}
+    展示真实结果,条目由 TTL 自然过期;终态条目不会被 _auth_token 复用。
+    """
     waited = 0.0
     wait_s = await _login_ttl_s()
     while waited < wait_s:
@@ -169,11 +173,14 @@ async def _wait(auth_token: str) -> LoginState | None:
         if not state:
             return None
         if state.status in {"success", "failed"}:
-            LOGIN_CACHE.pop(auth_token)
             return state
         await asyncio.sleep(LOGIN_POLL_INTERVAL)
         waited += LOGIN_POLL_INTERVAL
-    LOGIN_CACHE.pop(auth_token)
+    # 超时:仅回收未进入刷新阶段的会话。refreshing 的留给后台任务写终态,
+    # 完成页仍能轮询到真实结果(凭证已保存,只是 bot 侧等超时了)
+    state = LOGIN_CACHE.get(auth_token)
+    if state and state.status != "refreshing":
+        LOGIN_CACHE.pop(auth_token)
     return None
 
 
@@ -214,8 +221,8 @@ async def _refresh_login_state(
         logger.exception(f"[niki登录] 刷新数据异常 user_id={state.user_id}: {e}")
         refresh_result = None
 
-    # 会话已被 _wait 回收(TTL 到期等):不再回写,避免留下无人消费的
-    # 终态幽灵条目(会被 _auth_token 复用,导致用户拿到打不开的旧链接)
+    # 会话已过期被 TTL 回收:不再回写,避免留下无人消费的幽灵条目
+    # (终态条目不会被 _auth_token 复用,但登录页 /niki/i/{auth} 会 404)
     if not LOGIN_CACHE.get(auth_token):
         return
 
@@ -246,10 +253,12 @@ async def perform_login(auth_token: str, mobile: str, code: str) -> LoginResult:
     state: LoginState | None = LOGIN_CACHE.get(auth_token)
     if not state:
         return LoginResult.fail(LoginMsg.session_expired())
-    # 幂等:刷新已在后台进行(首次请求可能因网络中断未到达浏览器),
-    # 同一会话重复提交不再走 sms_login,避免把 refreshing 改写成 failed
-    if state.status == "refreshing":
-        return LoginResult.success(msg=LoginMsg.SMS_VERIFIED)
+    # 幂等守卫:refreshing(刷新已在后台进行)与 success(终态已落,旧标签页
+    # 仍停留在登录表单)都不再重走 sms_login —— 验证码已被消费必然失败,
+    # 会把 refreshing/success 改写成 failed,污染完成页轮询到的真实结果。
+    # failed 会话允许重试:验证码错了换个新验证码再提交是正常路径
+    if state.status == "refreshing" or state.ok:
+        return LoginResult.success(msg=state.msg or LoginMsg.SMS_VERIFIED)
 
     login_result = await sms_login(mobile, code, device_id=state.device_id)
     if not login_result:

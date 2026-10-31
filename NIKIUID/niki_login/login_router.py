@@ -51,8 +51,10 @@ async def niki_login_page(auth_token: str) -> HTMLResponse:
     state: LoginState | None = LOGIN_CACHE.get(auth_token)
     if not state:
         return HTMLResponse(LoginMsg.link_expired(), status_code=404)
-    if state.ok:
-        return RedirectResponse("/niki/done", status_code=303)
+    # 已登录或数据刷新中:直接去完成页,由页面轮询真实终态,
+    # 不再渲染登录表单(重提交只会命中幂等分支)
+    if state.ok or state.status == "refreshing":
+        return RedirectResponse(f"/niki/done?auth={auth_token}", status_code=303)
     return HTMLResponse(
         NIKI_TEMPLATES.get_template("login.html").render(
             auth=auth_token,
@@ -68,9 +70,15 @@ async def niki_login_page(auth_token: str) -> HTMLResponse:
 
 
 @app.get("/niki/done")
-async def niki_login_done() -> HTMLResponse:
-    """登录完成页(纯静态)。"""
-    return HTMLResponse(NIKI_TEMPLATES.get_template("done.html").render())
+async def niki_login_done(request: Request) -> HTMLResponse:
+    """登录完成页。
+
+    带 auth 参数时由页面轮询 /niki/status/{auth} 展示真实登录结果
+    (perform_login 在短信验证通过后立即返回,数据刷新在后台进行);
+    不带参数时为静态完成页(兼容旧链接)。
+    """
+    auth_token = request.query_params.get("auth", "")
+    return HTMLResponse(NIKI_TEMPLATES.get_template("done.html").render(auth=auth_token))
 
 
 @app.post("/niki/sendSmsCode")
@@ -107,7 +115,7 @@ async def niki_perform_login(payload: _LoginPayload, _request: Request) -> JSONR
 
 @app.get("/niki/status/{auth_token}")
 async def niki_login_status(auth_token: str) -> JSONResponse:
-    """查询登录状态(给轮询用)。"""
+    """查询登录状态(完成页轮询用)。"""
     state: LoginState | None = LOGIN_CACHE.get(auth_token)
     if not state:
         return JSONResponse({"status": "expired"})
@@ -116,5 +124,8 @@ async def niki_login_status(auth_token: str) -> JSONResponse:
             "status": state.status,
             "ok": state.ok,
             "msg": state.msg,
+            # 刷新结果(success 时):含 nickname/level/message,
+            # message 非空表示凭证已保存但数据刷新失败
+            "result": state.result or {},
         }
     )

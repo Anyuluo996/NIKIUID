@@ -142,8 +142,10 @@ async def test_wait_polls_background_terminal_state(monkeypatch):
     result = await _wait(token)
     assert result is not None
     assert result.status == "success"
-    # 终态被消费后移除
-    assert LOGIN_CACHE.get(token) is None
+    # 终态保留在缓存里:完成页 /niki/done 会轮询 /niki/status 读取真实结果,
+    # 由 TTL 自然过期(_auth_token 不会复用终态会话)
+    assert LOGIN_CACHE.get(token) is not None
+    assert LOGIN_CACHE.get(token).status == "success"
 
 
 @pytest.mark.asyncio
@@ -175,3 +177,56 @@ async def test_refresh_task_does_not_resurrect_collected_session(monkeypatch):
 
     await _refresh_login_state(token, state, {"token": "t", "openid": "o"})
     assert LOGIN_CACHE.get(token) is None
+
+
+@pytest.mark.asyncio
+async def test_perform_login_does_not_rewrite_success_session(monkeypatch):
+    """success 终态后旧表单重复提交:不重走 sms_login、不改写状态。
+
+    终态不再被 _wait 消费移除后,旧标签页可能仍停留在登录表单;
+    此时的重复提交若重走 sms_login,验证码已被消费必然失败,
+    会把 success 改写成 failed,污染完成页轮询到的真实结果。
+    """
+
+    async def no_sms(_mobile, _code, device_id=""):
+        raise AssertionError("success 会话不应再走 sms_login")
+
+    monkeypatch.setattr(login_service, "sms_login", no_sms)
+
+    token = "tok-success-retry"
+    state = _make_state(token)
+    state.status = "success"
+    state.ok = True
+    state.msg = login_service.LoginMsg.SMS_VERIFIED
+
+    result = await perform_login(token, "13800000000", "1234")
+    assert result.ok is True
+    remaining = LOGIN_CACHE.get(token)
+    assert remaining.status == "success"
+    assert remaining.ok is True
+
+
+@pytest.mark.asyncio
+async def test_wait_timeout_keeps_refreshing_drops_pending(monkeypatch):
+    """_wait 超时:refreshing 会话保留(后台任务还要写终态),pending 回收。"""
+
+    async def fake_ttl():
+        return 0.03
+
+    monkeypatch.setattr(login_service, "_login_ttl_s", fake_ttl)
+    monkeypatch.setattr(login_service, "LOGIN_POLL_INTERVAL", 0.01)
+
+    refreshing_token = "tok-timeout-refreshing"
+    state = _make_state(refreshing_token)
+    state.status = "refreshing"
+
+    pending_token = "tok-timeout-pending"
+    _make_state(pending_token)
+
+    assert await _wait(refreshing_token) is None
+    kept = LOGIN_CACHE.get(refreshing_token)
+    assert kept is not None
+    assert kept.status == "refreshing"
+
+    assert await _wait(pending_token) is None
+    assert LOGIN_CACHE.get(pending_token) is None

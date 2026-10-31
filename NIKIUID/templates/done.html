@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- auth token 在 URL 中,禁止随 Referer 发给第三方资源域名 -->
+  <meta name="referrer" content="no-referrer">
   <link rel="icon" href="https://assets.papegames.com/nikkiweb/infinitynikki/infinitynikkistrategycn/_next/static/media/favicon.cff3fb99.ico">
   <title>登录完成 · 无限暖暖</title>
   <style>
@@ -52,17 +54,24 @@
       width: 100%;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
     }
-    .check {
+    .icon {
       width: 72px;
       height: 72px;
       margin: 0 auto 20px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 36px;
       color: #fff;
+      background: linear-gradient(135deg, #ffb74d 0%, #f57c00 100%);
+    }
+    .icon.ok { background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%); }
+    .icon.fail { background: linear-gradient(135deg, #e53935 0%, #b71c1c 100%); }
+    .icon.wait { animation: pulse 1.6s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(0.92); opacity: 0.75; }
     }
     h1 {
       color: #880e4f;
@@ -75,6 +84,7 @@
       font-size: 14px;
       line-height: 1.8;
       opacity: 0.8;
+      white-space: pre-line;
     }
     .hint {
       margin-top: 20px;
@@ -96,14 +106,87 @@
 
   <main>
     <div class="card">
-      <div class="check">✔</div>
-      <h1>登录完成</h1>
-      <p>登录结果已同步到 NIKIUID<br>可以关闭此页面回到对话</p>
-      <div class="hint">
-        💡 回到聊天窗口试试这些命令:<br>
-        niki卡片 · niki抽卡 · niki刷新
+      <div class="icon wait" id="icon">⏳</div>
+      <h1 id="title">正在同步数据</h1>
+      <p id="desc">登录验证已通过，正在加载奇想手账数据…</p>
+      <div class="hint" id="hint">
+        💡 数据量较大时可能需要几十秒<br>完成后回到聊天窗口查看 bot 通知
       </div>
     </div>
   </main>
+
+  <script>
+    const AUTH = {{ auth | tojson }};
+
+    const ICON = document.getElementById('icon');
+    const TITLE = document.getElementById('title');
+    const DESC = document.getElementById('desc');
+    const HINT = document.getElementById('hint');
+
+    function render(icon, cls, title, desc, hint) {
+      ICON.textContent = icon;
+      ICON.className = 'icon ' + cls;
+      TITLE.textContent = title;
+      DESC.textContent = desc;
+      HINT.innerHTML = hint;
+    }
+
+    function showSuccess(result) {
+      const nickname = (result && result.nickname) || '';
+      const warn = (result && result.message) || '';
+      let desc = nickname
+        ? `欢迎回来，${nickname}！登录结果已同步到 NIKIUID`
+        : '登录结果已同步到 NIKIUID';
+      desc += '\n可以关闭此页面回到对话';
+      if (warn) desc += '\n⚠ ' + warn;
+      render('✔', 'ok', '登录完成', desc,
+        '💡 回到聊天窗口试试这些命令:<br>niki卡片 · niki抽卡 · niki刷新');
+    }
+
+    function showFailed(msg) {
+      render('✖', 'fail', '登录失败', msg || '登录过程中出现问题',
+        '💡 请回到聊天窗口重新发送 <b>niki登录</b>');
+    }
+
+    function showEnded() {
+      render('💬', '', '会话已结束', '请回到聊天窗口查看 bot 发送的登录结果通知',
+        '💡 若 bot 未通知，请重新发送 <b>niki登录</b>');
+    }
+
+    // 轮询参数:正常 2s 一轮,网络异常 3s 后重试;总量上限 10 分钟,
+    // 超时按"会话已结束"兜底(后台刷新任务被 core 关停取消时终态永远不会写入)
+    const POLL_INTERVAL_MS = 2000;
+    const ERROR_RETRY_MS = 3000;
+    const POLL_MAX_MS = 10 * 60 * 1000;
+    const deadline = Date.now() + POLL_MAX_MS;
+
+    function scheduleRetry(delayMs) {
+      if (Date.now() + delayMs >= deadline) { showEnded(); return; }
+      setTimeout(poll, delayMs);
+    }
+
+    async function poll() {
+      let reply;
+      try {
+        reply = await fetch('/niki/status/' + encodeURIComponent(AUTH))
+          .then((r) => r.json());
+      } catch (err) {
+        scheduleRetry(ERROR_RETRY_MS);
+        return;
+      }
+      if (reply.status === 'success') { showSuccess(reply.result); return; }
+      if (reply.status === 'failed') { showFailed(reply.msg); return; }
+      if (reply.status === 'expired') { showEnded(); return; }
+      // pending / refreshing:继续轮询
+      scheduleRetry(POLL_INTERVAL_MS);
+    }
+
+    if (AUTH) {
+      poll();
+    } else {
+      // 旧链接(无 auth 参数):保持原静态完成页行为
+      showSuccess(null);
+    }
+  </script>
 </body>
 </html>
