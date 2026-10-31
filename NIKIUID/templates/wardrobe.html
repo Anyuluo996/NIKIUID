@@ -166,14 +166,17 @@
             margin-bottom: 0;
         }
 
+        /* pytakumi 的 flex 实现里子项不会收缩到内容(图片)固有宽度以下,
+           flex:1 会被大尺寸套装图撑爆整行 —— 必须固定列宽:
+           一行 3×232 + 2×12(gap) = 720,恰好占满 .card 内宽 */
         .suit-cell {
-            flex: 1;
+            flex: 0 0 auto;
+            width: 232px;
         }
 
-        /* 末行不满 3 张时单卡居中、不拉满整行,避免套装占位图等比放大 */
-        .suit-row.partial .suit-cell {
-            max-width: 250px;
-            margin: 0 auto;
+        /* 末行不满 3 张时整行居中 */
+        .suit-row.partial {
+            justify-content: center;
         }
 
         .suit-card {
@@ -187,10 +190,10 @@
             opacity: 0.5;
         }
 
+        /* pytakumi 不支持 object-fit(会拉伸变形)且忽略 max-height,
+           直接按原图固有宽高比显示;套装预览图均为 1:1,等宽即等高 */
         .suit-card img.suit-img {
             width: 100%;
-            max-height: 280px;
-            object-fit: cover;
             background: #f0f0f0;
             display: block;
         }
@@ -289,7 +292,7 @@
                         {% if suit.imgUrl %}
                         <img class="suit-img" src="{{ suit.imgUrl }}" alt="{{ suit.subSuit }}">
                         {% else %}
-                        <img class="suit-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='140'%3E%3Crect fill='%23f0f0f0' width='200' height='140'/%3E%3Ctext fill='%23aaa' font-size='14' x='100' y='70' text-anchor='middle'%3E%E5%8D%95%E5%93%81%3C/text%3E%3C/svg%3E" alt="{{ suit.subSuit }}">
+                        <img class="suit-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='232' height='232'%3E%3Crect fill='%23f0f0f0' width='232' height='232'/%3E%3Ctext fill='%23aaa' font-size='14' x='116' y='116' text-anchor='middle'%3E%E5%8D%95%E5%93%81%3C/text%3E%3C/svg%3E" alt="{{ suit.subSuit }}">
                         {% endif %}
                         <div class="info">
                             <div class="name">
