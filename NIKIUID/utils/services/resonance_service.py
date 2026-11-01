@@ -98,6 +98,7 @@ async def fetch_resonance_with_api(
             try:
                 from .draw_num_service import (
                     compute_pool_stats,
+                    serialize_pool_stats,
                     merge_draw_info_to_suit_card_list,
                     parse_note_book_info_with_suit_list,
                 )
@@ -112,8 +113,12 @@ async def fetch_resonance_with_api(
                     raw_suit_list = merge_draw_info_to_suit_card_list(
                         raw_suit_list, draw_info_map
                     )
-                    pool_stats = compute_pool_stats(
-                        raw_suit_list, draw_info_map, owned_suit_ids
+                    # 转纯 dict: PoolDrawStats 直接进 state 会导致落库
+                    # json.dumps 抛 not JSON serializable, 整次刷新不落库
+                    pool_stats = serialize_pool_stats(
+                        compute_pool_stats(
+                            raw_suit_list, draw_info_map, owned_suit_ids
+                        )
                     )
                     logger.info(f"共鸣抽数计算完成，覆盖 {len(draw_info_map)} 个套装")
                 else:

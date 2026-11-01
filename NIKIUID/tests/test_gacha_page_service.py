@@ -27,7 +27,11 @@ def _no_icon_download(monkeypatch):
     async def _noop(urls, folder, limit=0):
         return None
 
-    monkeypatch.setattr(page_router, "download_blessing_icons", _noop)
+    # page_router 走 bulk_download_icons(分块并发), 兼容旧名字
+    monkeypatch.setattr(page_router, "bulk_download_icons", _noop, raising=False)
+    monkeypatch.setattr(
+        page_router, "download_blessing_icons", _noop, raising=False
+    )
 
 
 def _suit(suit_id, level=5, card_type=2, draws=139, avg=14.9,

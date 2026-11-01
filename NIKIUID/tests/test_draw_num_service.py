@@ -343,3 +343,37 @@ class TestDrawnFilterMode:
             data, "limited_5", None, None, "all", page_size=99
         )
         assert self._names(ctx) == {"甲", "乙"}
+
+
+class TestSerializePoolStats:
+    """回归: PoolDrawStats dataclass 直接进 state 会让刷新落库失败(生产事故)"""
+
+    def test_serialize_json_safe(self):
+        import json
+
+        from gsuid_core.plugins.NIKIUID.NIKIUID.utils.services.draw_num_service import (
+            serialize_pool_stats,
+        )
+
+        suits = [_suit("10355"), _suit("10356", cloths='[{"cloth_id":"1020500128"}]')]
+        info = compute_draw_info([_rec("1020500126", 10)], suits)
+        stats = compute_pool_stats(suits, info, {"10355"})
+
+        blob = json.dumps(serialize_pool_stats(stats), allow_nan=False)
+        parsed = json.loads(blob)
+        assert parsed["limited_5"]["pool_suits"] == 2
+        assert parsed["limited_5"]["suit_total_num"] == 8
+        assert parsed["limited_5"]["average_draw_num"] == 11.0
+
+    def test_raw_dataclass_not_json_serializable(self):
+        import json
+
+        suits = [_suit("10355")]
+        info = compute_draw_info([_rec("1020500126", 10)], suits)
+        stats = compute_pool_stats(suits, info, {"10355"})
+        try:
+            json.dumps(stats)
+            raised = False
+        except TypeError:
+            raised = True
+        assert raised  # 修复前正是这个异常吞掉了整次刷新落库

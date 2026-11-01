@@ -22,7 +22,7 @@ import re
 import json
 from typing import Any
 from collections import defaultdict
-from dataclasses import field, dataclass
+from dataclasses import field, asdict, dataclass
 
 import aiohttp
 
@@ -230,6 +230,17 @@ def parse_note_book_info_with_suit_list(
         return None
 
 
+def serialize_pool_stats(
+    pool_stats: dict[str, PoolDrawStats],
+) -> dict[str, dict]:
+    """PoolDrawStats → 纯 dict(字段名不变), 保证可 JSON 落库。
+
+    PoolDrawStats 是 dataclass, 直接放进 state 会让 save_cached_data 的
+    json.dumps 抛 "not JSON serializable", 整次刷新数据不落库(生产事故)。
+    """
+    return {key: asdict(stats) for key, stats in pool_stats.items()}
+
+
 def compute_pool_stats(
     suit_list: list[dict],
     draw_info_map: dict[str, SuitDrawInfo],
@@ -239,6 +250,7 @@ def compute_pool_stats(
 
     统计键: limited_5 / limited_4 / permanent_5 / permanent_4。
     口径与线上页面一致: 已集齐含进化套装, 总数 = 套装数 × (五星?4:2)。
+    进 state/缓存前必须先经 serialize_pool_stats 转成纯 dict。
     """
     parsed = [_parse_suit(s) for s in suit_list]
     stats: dict[str, PoolDrawStats] = {}
