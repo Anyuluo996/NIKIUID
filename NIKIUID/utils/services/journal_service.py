@@ -10,6 +10,7 @@ from gsuid_core.logger import logger
 
 from ..constants import CLIENT_ID, MYL_API_BASE
 from ..auth.passport import myl_sign_params
+from .explore_service import fetch_resource_map, fetch_explore_res_max
 from .resonance_service import fetch_resonance_with_api
 
 
@@ -110,10 +111,25 @@ async def fetch_journal_data(
             except Exception as e:
                 logger.warning(f"获取地图目录API失败: {e}")
 
+        # 5. 探索总览: 分母(KV 静态文件) + 万相境/丹青屿分子(resourceMap 刷点聚合)
+        explore_res_max = await fetch_explore_res_max()
+        try:
+            resource_map = await fetch_resource_map(
+                token, openid, cid, map_user_info=map_data
+            )
+        except Exception as e:
+            logger.warning(f"获取 resourceMap 失败: {e}")
+            resource_map = {}
+
         # 构建 journal_data 结构
         state = {
             "userData": {},
             "userSelfData": {},
+            # 探索总览(exploreResMax 分母 + resourceMap), 渲染层动态取分母
+            "exploreOverview": {
+                "resMax": explore_res_max or {},
+                "resourceMap": resource_map,
+            },
         }
 
         # 验证用户信息是否有效
@@ -149,6 +165,9 @@ async def fetch_journal_data(
             state["suitCardListData"] = resonance_data.get(
                 "suitCardListData", resonance_data.get("list", [])
             )
+            # 祝福闪光: 配置三层数据 + 用户持有列表(state 层直达, 供渲染器使用)
+            state["magicBallData"] = resonance_data.get("magicBallData", {})
+            state["magicBallList"] = resonance_data.get("magicBallList", [])
 
         journal_data = {"state": state}
 

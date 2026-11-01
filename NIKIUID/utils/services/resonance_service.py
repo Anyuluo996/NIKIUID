@@ -33,12 +33,15 @@ async def fetch_resonance_with_api(
 
     raw_suit_list: list[dict] = []
     owned_suit_ids: set[str] = set()
+    magic_ball_data: dict = {}
+    user_magic_ball_list: list[dict] = []
+    note_decompressed: dict | None = None
 
     try:
         from ..auth.passport import myl_sign_params
 
         async with aiohttp.ClientSession() as session:
-            # suit/list - 获取套装基本信息
+            # suit/list - 获取套装基本信息 + 祝福闪光(magic_ball)三层数据
             suit_api_url = f"{MYL_API_BASE}/v1/strategy/main/suit/list"
             suit_data = myl_sign_params(base_params.copy())
             async with session.post(
@@ -49,7 +52,14 @@ async def fetch_resonance_with_api(
                 if resp.status == 200:
                     suit_result = await resp.json()
                     if suit_result.get("code") == 0:
-                        raw_suit_list = suit_result.get("data", {}).get("list", [])
+                        suit_payload = suit_result.get("data", {})
+                        raw_suit_list = suit_payload.get("list", [])
+                        # 祝福闪光数据挂在同一端点的 3 个新字段上
+                        magic_ball_data = {
+                            "magicBallSuitList": suit_payload.get("magic_ball_suit_list", []),
+                            "magicBallItemList": suit_payload.get("magic_ball_item_list", []),
+                            "magicBallColorList": suit_payload.get("magic_ball_color_list", []),
+                        }
 
             # note/book/info (snappy 压缩) - 获取已共鸣套装 + 共鸣抽数
             note_api_url = f"{MYL_API_BASE}/v1/strategy/user/note/book/info"
@@ -73,6 +83,8 @@ async def fetch_resonance_with_api(
                         owned_suit_ids = {
                             str(sid) for sid in iself.get("suit_list", [])
                         }
+                        # 祝福闪光持有数据: [{magic_ball_id, magic_ball_color}]
+                        user_magic_ball_list = iself.get("magic_ball_list", []) or []
                     except ImportError:
                         logger.error("snappy 未安装，无法解压 note/book/info 数据，请运行: pip install python-snappy")
                     except Exception as e:
@@ -80,10 +92,12 @@ async def fetch_resonance_with_api(
                 else:
                     logger.warning(f"note/book/info API 返回非 200 状态: {resp.status}")
 
-        # 计算共鸣抽数（含进化套装贡献），复用 note_decompressed 避免重复解压
+        # 计算共鸣抽数（复刻前端算法，含单件明细/进化次数），复用 note_decompressed 避免重复解压
+        pool_stats: dict = {}
         if note_decompressed:
             try:
                 from .draw_num_service import (
+                    compute_pool_stats,
                     merge_draw_info_to_suit_card_list,
                     parse_note_book_info_with_suit_list,
                 )
@@ -97,6 +111,9 @@ async def fetch_resonance_with_api(
                 if draw_info_map:
                     raw_suit_list = merge_draw_info_to_suit_card_list(
                         raw_suit_list, draw_info_map
+                    )
+                    pool_stats = compute_pool_stats(
+                        raw_suit_list, draw_info_map, owned_suit_ids
                     )
                     logger.info(f"共鸣抽数计算完成，覆盖 {len(draw_info_map)} 个套装")
                 else:
@@ -183,8 +200,20 @@ async def fetch_resonance_with_api(
             "suitCardListData": raw_suit_list,
             "ownedSuitIds": list(owned_suit_ids),
             "userSelfStats": user_self_stats,
+            # 祝福闪光: 配置三层数据 + 用户持有列表
+            "magicBallData": magic_ball_data,
+            "magicBallList": user_magic_ball_list,
+            # 卡池级共鸣统计(复刻前端 A(): 集齐套数/套装总数/件数/平均)
+            "poolStats": pool_stats,
         }
 
     except Exception as e:
         logger.warning(f"API 获取共鸣数据失败: {e}")
-        return {"suitCardListData": [], "ownedSuitIds": [], "userSelfStats": {}}
+        return {
+            "suitCardListData": [],
+            "ownedSuitIds": [],
+            "userSelfStats": {},
+            "magicBallData": {},
+            "magicBallList": [],
+            "poolStats": {},
+        }

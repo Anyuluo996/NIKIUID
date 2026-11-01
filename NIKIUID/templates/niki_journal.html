@@ -192,6 +192,17 @@
             color: #a69f95;
         }
 
+        .done-tag {
+            display: inline-block;
+            background: #f8dbec;
+            color: #d4719e;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 8px;
+            vertical-align: middle;
+        }
+
         /* 子区域(每行 2 个,放不下自动换行) */
         .sub-sections {
             display: flex;
@@ -364,17 +375,17 @@
                 <div class="item">
                     <div class="item-icon"><img src="images/icon/伊赞奇想星.png" alt="奇想星"></div>
                     <div class="item-name">奇想星</div>
-                    <div class="item-progress"><span class="current">{{ whimsystar_yz }}</span>/413</div>
+                    <div class="item-progress"><span class="current">{{ whimsystar_yz }}</span>/{{ yz_whimystar_total }}</div>
                 </div>
                 <div class="item">
                     <div class="item-icon"><img src="images/icon/伊赞灵感露珠.png" alt="灵感露珠"></div>
                     <div class="item-name">灵感露珠</div>
-                    <div class="item-progress"><span class="current">{{ dew_yz }}</span>/2023</div>
+                    <div class="item-progress"><span class="current">{{ dew_yz }}</span>/{{ yz_dew_total }}</div>
                 </div>
                 <div class="item">
                     <div class="item-icon"><img src="images/icon/流转之柱.png" alt="流转之柱"></div>
                     <div class="item-name">流转之柱</div>
-                    <div class="item-progress"><span class="current">{{ pillar_num }}</span>/204</div>
+                    <div class="item-progress"><span class="current">{{ pillar_num }}</span>/{{ pillar_display_total }}{% if pillar_completed %} <span class="done-tag">已集齐</span>{% endif %}</div>
                 </div>
             </div>
             <div class="sub-sections">
@@ -384,12 +395,17 @@
                         <div class="item">
                             <div class="item-icon"><img src="images/icon/奇想华灯.png" alt="奇想华灯"></div>
                             <div class="item-name">奇想华灯</div>
-                            <div class="item-progress"><span class="current">{{ imagine_lantern_num }}</span>/68</div>
+                            <div class="item-progress"><span class="current">{{ imagine_lantern_num }}</span>/{{ lantern_total }}</div>
                         </div>
                         <div class="item">
                             <div class="item-icon"><img src="images/icon/万相金铃.png" alt="万相金铃"></div>
                             <div class="item-name">万相金铃</div>
-                            <div class="item-progress"><span class="current">{{ imagine_bell_num }}</span>/365</div>
+                            <div class="item-progress"><span class="current">{{ imagine_bell_num }}</span>/{{ bell_total }}</div>
+                        </div>
+                        <div class="item">
+                            <div class="item-icon"><img src="images/icon/流转之柱.png" alt="流转之柱"></div>
+                            <div class="item-name">流转之柱</div>
+                            <div class="item-progress"><span class="current">{{ lantern_pillar_num }}</span>/{{ lantern_pillar_total }}</div>
                         </div>
                     </div>
                 </div>
@@ -403,17 +419,17 @@
                 <div class="item">
                     <div class="item-icon"><img src="images/icon/奇想星.png" alt="奇想星"></div>
                     <div class="item-name">奇想星</div>
-                    <div class="item-progress"><span class="current">{{ whimystar_num }}</span>/378</div>
+                    <div class="item-progress"><span class="current">{{ whimystar_num }}</span>/{{ whimystar_total }}</div>
                 </div>
                 <div class="item">
                     <div class="item-icon"><img src="images/icon/灵感露珠.png" alt="灵感露珠"></div>
                     <div class="item-name">灵感露珠</div>
-                    <div class="item-progress"><span class="current">{{ dew_num }}</span>/1993</div>
+                    <div class="item-progress"><span class="current">{{ dew_num }}</span>/{{ dew_total }}</div>
                 </div>
                 <div class="item">
                     <div class="item-icon"><img src="images/icon/流转之柱.png" alt="流转之柱"></div>
                     <div class="item-name">流转之柱</div>
-                    <div class="item-progress"><span class="current">{{ pillar_num }}</span>/204</div>
+                    <div class="item-progress"><span class="current">{{ pillar_num }}</span>/{{ pillar_display_total }}{% if pillar_completed %} <span class="done-tag">已集齐</span>{% endif %}</div>
                 </div>
             </div>
             <div class="sub-sections">
@@ -423,12 +439,12 @@
                         <div class="item">
                             <div class="item-icon"><img src="images/icon/奇想气球.webp" alt="奇想气球"></div>
                             <div class="item-name">奇想气球</div>
-                            <div class="item-progress"><span class="current">{{ imagine_ballon_num }}</span>/56</div>
+                            <div class="item-progress"><span class="current">{{ imagine_ballon_num }}</span>/{{ balloon_total }}</div>
                         </div>
                         <div class="item">
                             <div class="item-icon"><img src="images/icon/焰光结晶.png" alt="焰光结晶"></div>
                             <div class="item-name">焰光结晶</div>
-                            <div class="item-progress"><span class="current">{{ flame_light_stone_num }}</span>/261</div>
+                            <div class="item-progress"><span class="current">{{ flame_light_stone_num }}</span>/{{ flame_total }}</div>
                         </div>
                     </div>
                 </div>
@@ -438,12 +454,12 @@
                         <div class="item">
                             <div class="item-icon"><img src="images/icon/奇想气泡.webp" alt="奇想气泡"></div>
                             <div class="item-name">奇想气泡</div>
-                            <div class="item-progress"><span class="current">{{ imagine_foam_num }}</span>/41</div>
+                            <div class="item-progress"><span class="current">{{ imagine_foam_num }}</span>/{{ foam_total }}</div>
                         </div>
                         <div class="item">
                             <div class="item-icon"><img src="images/icon/无忧凝珠.png" alt="无忧凝珠"></div>
                             <div class="item-name">无忧凝珠</div>
-                            <div class="item-progress"><span class="current">{{ worry_free_beads_num }}</span>/233</div>
+                            <div class="item-progress"><span class="current">{{ worry_free_beads_num }}</span>/{{ beads_total }}</div>
                         </div>
                     </div>
                 </div>
@@ -453,12 +469,12 @@
                         <div class="item">
                             <div class="item-icon"><img src="images/icon/奇想玉琚.png" alt="奇想玉琚"></div>
                             <div class="item-name">奇想玉琚</div>
-                            <div class="item-progress"><span class="current">{{ imagine_jade_num }}</span>/68</div>
+                            <div class="item-progress"><span class="current">{{ imagine_jade_num }}</span>/{{ jade_total }}</div>
                         </div>
                         <div class="item">
                             <div class="item-icon"><img src="images/icon/丹青玉魄.png" alt="丹青玉魄"></div>
                             <div class="item-name">丹青玉魄</div>
-                            <div class="item-progress"><span class="current">{{ danqing_jade_num }}</span>/389</div>
+                            <div class="item-progress"><span class="current">{{ danqing_jade_num }}</span>/{{ danqing_total }}</div>
                         </div>
                     </div>
                 </div>
@@ -472,14 +488,17 @@
                 <div class="resonance-card">
                     <div class="title">限定池</div>
                     <div class="total">{{ periodic_draw_num }}<span class="draws">抽</span></div>
-                    <div class="detail">已共鸣 {{ limited5_owned }}/{{ limited5_total }}套</div>
-                </div>
-                <div class="resonance-card four-star">
-                    <div class="title">常驻池</div>
-                    <div class="total">{{ permanent_draw_num }}<span class="draws">抽</span></div>
-                    <div class="detail">已共鸣 {{ limited4_owned }}/{{ limited4_total }}套</div>
+                    <div class="detail">五星 集齐 {{ limited5_owned }}/{{ limited5_total }}套</div>
+                    <div class="detail">{{ limited5_pieces }}件 · 每件{{ limited5_avg }}</div>
+                    <div class="suit-count">四星 集齐 {{ limited4_owned }}/{{ limited4_total }}套 · {{ limited4_pieces }}件 · 每件{{ limited4_avg }}</div>
                 </div>
                 <div class="resonance-card permanent">
+                    <div class="title">常驻池</div>
+                    <div class="total">{{ permanent_draw_num }}<span class="draws">抽</span></div>
+                    <div class="detail">五星 集齐 {{ permanent5_owned }}/{{ permanent5_total }}套</div>
+                    <div class="detail">{{ permanent5_pieces }}件 · 每件{{ permanent5_avg }}</div>
+                </div>
+                <div class="resonance-card four-star">
                     <div class="title">总计</div>
                     <div class="total">{{ draw_num }}<span class="draws">抽</span></div>
                     <div class="detail">全部卡池累计</div>

@@ -1,16 +1,28 @@
 """共鸣抽数计算服务
 
-从 note/book/info API 解析 gacha_list 数据，计算各套装的共鸣抽数。
+严格复刻奇想手账前端(live_index.a62deecc.js)的共鸣衣橱算法,
+2026-11-01 已与线上页面逐项对照验证(10/10 命中,参考 D:\\app\\niki\\docs\\BLESSING_SPARKLE.md §2.1):
 
-进化套装（suit_id 如 1035501、1035502）贡献基础套装（suit_id 如 10355）的共鸣抽数。
-通过 suit/list API 获取所有套装（含进化套装）的 cloth 映射（cloths 字段是 JSON 字符串），
-将进化套装的抽数归入其基础套装。
+  P 构建 : gacha -> card_pool_id -> rarity -> result 分组
+  y()    : 对每个 result 组按 pool_cnt 升序取前 2 条
+           第 1 条 -> firstSuit, 第 2 条 -> secondSuit
+           两组各自 times_from_last_five/four_stars 各 +1
+  B()    : 每个 suite 的 cloths 分别匹配 firstSuit/secondSuit 的 result 算 drawNum
+  A()    : collected / suitTotalNum / totalOwnedClothesNum / averageDrawNum
+
+关键口径:
+- 单件 drawNum = times_from_last_*_stars + 1(前端 y() 里 bump),0 表示未抽到
+- 已集齐套数 = |该卡池全部 suit_id + evolutions1/2/3 的 evolution_suit_id ∩ info_from_self.suit_list|
+- 套装总数 = 该卡池套装数 × (五星 ? 4 : 2)(五星=初始+3进化, 四星=初始+1进化)
+- 件数 = 单件槽位里 drawNum > 0 的个数(firstSuit + secondSuit 两个槽位)
+- 每件平均 = 总共鸣数 ÷ 件数
 """
 
 import re
 import json
 from typing import Any
-from dataclasses import dataclass
+from collections import defaultdict
+from dataclasses import field, dataclass
 
 import aiohttp
 
@@ -19,6 +31,9 @@ from gsuid_core.logger import logger
 from ..constants import CLIENT_ID, MYL_API_BASE
 
 # logger 由 gsuid_core.logger 提供
+
+# 进化套装 suit_id 末尾 2 位表示进化序号，前 5 位是基础套装 suit_id
+_EVOLUTION_SUIT_PATTERN = re.compile(r"^(\d{5})(\d{2})$")
 
 
 @dataclass
@@ -33,17 +48,46 @@ class GachaRecord:
 
 
 @dataclass
+class ClothDrawInfo:
+    """单件共鸣信息(复刻前端 B() 的单件槽位)
+
+    每件衣服在衣橱里占两个槽位: firstSuit(初次共鸣) / secondSuit(重复共鸣)。
+    """
+    cloth_id: str
+    name: str = ""
+    display_type: str = ""
+    icon: str = ""
+    image: str = ""
+    draw_num_first: int = 0  # 初次共鸣抽数(0=未抽到)
+    draw_num_second: int = 0  # 重复共鸣抽数(0=未重抽)
+
+    @property
+    def owned(self) -> bool:
+        return self.draw_num_first > 0
+
+
+@dataclass
 class SuitDrawInfo:
     """套装共鸣抽数信息"""
     suit_id: str
-    total_draw_num: int  # 总共鸣次数
-    average_draw_num: float  # 平均共鸣次数
-    collected_count: int  # 已拥有衣服数（drawNum > 0）
-    draw_nums: list[int]  # 每件衣服的 drawNum 列表
+    total_draw_num: int = 0  # 总共鸣次数(firstSuit + secondSuit 槽位求和)
+    average_draw_num: float = 0.0  # 平均共鸣次数(总共鸣 ÷ 件数槽位)
+    collected_count: int = 0  # 已拥有槽位数(drawNum > 0, 含重复共鸣槽位)
+    draw_nums: list[int] = field(default_factory=list)  # 每个槽位的 drawNum 列表
+    cloths: list[ClothDrawInfo] = field(default_factory=list)  # 单件明细
+    evolution_count: int = 0  # 已进化次数(已拥有的 evolution_suit_id 数量)
+    evolution_total: int = 0  # 可进化次数(3=五星 / 1=四星)
 
 
-# 进化套装 suit_id 末尾 2 位表示进化序号，前 5 位是基础套装 suit_id
-_EVOLUTION_SUIT_PATTERN = re.compile(r"^(\d{5})(\d{2})$")
+@dataclass
+class PoolDrawStats:
+    """卡池级共鸣统计(复刻前端 A())"""
+    pool_suits: int = 0  # 该卡池套装数
+    collected: int = 0  # 已集齐套数(含进化套装)
+    suit_total_num: int = 0  # 套装总数(套装数 × 4/2)
+    owned_clothes: int = 0  # 已共鸣件数(drawNum > 0 槽位数)
+    total_draw: int = 0  # 总共鸣数
+    average_draw_num: float = 0.0  # 每件平均共鸣
 
 
 def decompress_snappy_payload(raw: bytes) -> bytes:
@@ -71,9 +115,6 @@ async def parse_note_book_info(
     client_id: int | None = None,
 ) -> dict[str, SuitDrawInfo] | None:
     """解析 note/book/info API，计算各套装共鸣抽数
-
-    从 info_from_gm 获取所有套装（含进化套装）的 cloth 映射，
-    将进化套装的抽数归入其基础套装（suit_id 前 5 位）。
 
     Args:
         token: 登录 token
@@ -131,7 +172,7 @@ def parse_note_book_info_from_raw(raw: bytes) -> dict[str, SuitDrawInfo] | None:
     try:
         decompressed = decompress_snappy_payload(raw)
         data = json.loads(decompressed.decode("utf-8"))
-        return _compute_draw_info(data)
+        return parse_note_book_info_from_decompressed(data)
     except ImportError:
         logger.error("snappy 未安装，请运行: pip install python-snappy")
         return None
@@ -145,7 +186,8 @@ def parse_note_book_info_from_decompressed(
 ) -> dict[str, SuitDrawInfo] | None:
     """从 note/book/info 的已解压数据计算共鸣抽数
 
-    用于复用已解压的数据（避免重复解压）。
+    注意: 此路径没有 suit/list 的 cloths 明细, 单件名字/图标为空,
+    生产环境应使用 parse_note_book_info_with_suit_list。
 
     Args:
         data: note/book/info API 返回的已解压 JSON 数据
@@ -154,7 +196,7 @@ def parse_note_book_info_from_decompressed(
         {suit_id: SuitDrawInfo} 字典，失败返回 None
     """
     try:
-        return _compute_draw_info(data)
+        return compute_draw_info(data.get("info_from_self", {}).get("gacha_list", []), [])
     except Exception as e:
         logger.error(f"计算共鸣抽数失败: {e}")
         return None
@@ -166,101 +208,133 @@ def parse_note_book_info_with_suit_list(
 ) -> dict[str, SuitDrawInfo] | None:
     """从 note/book/info + suit/list 计算共鸣抽数
 
-    note_decompressed 提供 gacha_list（抽卡记录），suit_list 提供 cloth→suit 映射。
+    note_decompressed 提供 gacha_list(抽卡记录)与 suit_list(已拥有),
+    suit_list(API) 提供套装 cloths / evolutions 明细。
 
     Args:
         note_decompressed: note/book/info API 返回的已解压数据
-        suit_list: suit/list API 返回的套装列表（含 cloths JSON 字符串字段）
+        suit_list: suit/list API 返回的套装列表(含 cloths JSON 字符串字段)
 
     Returns:
         {suit_id: SuitDrawInfo} 字典，失败返回 None
     """
     try:
-        # 从 suit/list 构建 cloth→suit 映射（含进化套装）
-        cloth_to_suit = _build_cloth_to_suit_mapping_from_suit_list(suit_list)
-        logger.info(f"从 suit/list 构建 cloth→suit 映射: {len(cloth_to_suit)} 个 cloth")
-
-        return _compute_draw_info_with_mapping(note_decompressed, cloth_to_suit)
+        gacha_list = note_decompressed.get("info_from_self", {}).get("gacha_list", [])
+        owned_ids = {
+            str(sid)
+            for sid in note_decompressed.get("info_from_self", {}).get("suit_list", [])
+        }
+        return compute_draw_info(gacha_list, suit_list, owned_suit_ids=owned_ids)
     except Exception as e:
         logger.error(f"共鸣抽数计算失败: {e}")
         return None
 
 
-def _build_cloth_to_suit_mapping_from_suit_list(suit_list: list[dict]) -> dict[str, str]:
-    """从 suit/list 构建 cloth_id -> suit_id 映射
+def compute_pool_stats(
+    suit_list: list[dict],
+    draw_info_map: dict[str, SuitDrawInfo],
+    owned_suit_ids: set[str],
+) -> dict[str, PoolDrawStats]:
+    """计算卡池级统计(复刻前端 A()),返回 {统计键: PoolDrawStats}
 
-    suit/list 的 cloths 字段是 JSON 字符串，如 '[{"cloth_id": "1020500126", ...}]'
-    进化套装（evolutions1/2/3）的 clothes 共享基础套装，已包含在 cloths 中。
+    统计键: limited_5 / limited_4 / permanent_5 / permanent_4。
+    口径与线上页面一致: 已集齐含进化套装, 总数 = 套装数 × (五星?4:2)。
     """
-    mapping: dict[str, str] = {}
+    parsed = [_parse_suit(s) for s in suit_list]
+    stats: dict[str, PoolDrawStats] = {}
 
-    for suit in suit_list:
-        suit_id = str(suit.get("suit_id", ""))
-        if not suit_id:
+    for key, level, card_type in (
+        ("limited_5", 5, 2),
+        ("limited_4", 4, 2),
+        ("permanent_5", 5, 1),
+        ("permanent_4", 4, 1),
+    ):
+        pool_suits = [
+            p for p in parsed
+            if p["level"] == level and p["card_type"] == card_type
+        ]
+        if not pool_suits:
+            stats[key] = PoolDrawStats()
             continue
 
-        # 解析 cloths 字段（JSON 字符串）
-        cloths_raw = suit.get("cloths", "[]")
-        if isinstance(cloths_raw, str):
-            try:
-                cloths_list = json.loads(cloths_raw)
-            except Exception:
-                cloths_list = []
-        else:
-            cloths_list = cloths_raw or []
+        # 已集齐 = |该卡池全部 suit_id + 进化 suit_id ∩ 已拥有|
+        all_ids: set[str] = set()
+        for p in pool_suits:
+            all_ids.add(p["suit_id"])
+            all_ids.update(p["evolution_ids"])
+        collected = len(all_ids & owned_suit_ids)
 
-        for cloth in cloths_list:
-            if isinstance(cloth, dict):
-                cloth_id = str(cloth.get("cloth_id", ""))
-                if cloth_id:
-                    mapping[cloth_id] = suit_id
+        owned_clothes = 0
+        total_draw = 0
+        for p in pool_suits:
+            info = draw_info_map.get(p["suit_id"])
+            if info is None:
+                continue
+            owned_clothes += info.collected_count
+            total_draw += info.total_draw_num
 
-    return mapping
+        avg = round(total_draw / owned_clothes, 1) if owned_clothes else 0
+        stats[key] = PoolDrawStats(
+            pool_suits=len(pool_suits),
+            collected=collected,
+            suit_total_num=len(pool_suits) * (4 if level == 5 else 2),
+            owned_clothes=owned_clothes,
+            total_draw=total_draw,
+            average_draw_num=avg,
+        )
 
-
-def _compute_draw_info_with_mapping(
-    data: dict[str, Any],
-    cloth_to_suit: dict[str, str],
-) -> dict[str, SuitDrawInfo] | None:
-    """使用已构建的 cloth→suit 映射计算共鸣抽数"""
-    gacha_list = data.get("info_from_self", {}).get("gacha_list", [])
-    if not gacha_list:
-        logger.warning("note/book/info 未返回 gacha_list")
-        return None
-
-    records = _parse_gacha_list(gacha_list)
-    cloth_draw_nums = _calculate_cloth_draw_nums(records)
-
-    result = _aggregate_by_suit_with_evolution(cloth_draw_nums, cloth_to_suit)
-    logger.info(f"共鸣抽数计算完成，覆盖 {len(result)} 个基础套装")
-    return result
+    return stats
 
 
-def _compute_draw_info(data: dict[str, Any]) -> dict[str, SuitDrawInfo] | None:
-    """从 note/book/info 数据计算共鸣抽数（内部函数）
+# ---------------------------------------------------------------------------
+# 内部实现
+# ---------------------------------------------------------------------------
 
-    注意：此函数依赖 info_from_gm.suits 获取 cloth 映射，
-    若 info_from_gm 结构不包含 suits 下的 cloths，映射将为空。
-    生产环境应使用 parse_note_book_info_with_suit_list。
-    """
-    gacha_list = data.get("info_from_self", {}).get("gacha_list", [])
-    if not gacha_list:
-        logger.warning("note/book/info 未返回 gacha_list")
-        return None
 
-    info_gm: dict[str, Any] = data.get("info_from_gm", {})
-    if not info_gm:
-        logger.warning("note/book/info 未返回 info_from_gm")
-        return None
+def _parse_json_field(value: Any, default: Any) -> Any:
+    """cloths / evolutionsN 是 JSON 字符串, 解析失败返回 default。"""
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except Exception:
+            return default
+    return value if value is not None else default
 
-    records = _parse_gacha_list(gacha_list)
-    cloth_draw_nums = _calculate_cloth_draw_nums(records)
-    cloth_to_suit = _build_cloth_to_suit_mapping_from_gm(info_gm)
-    logger.info(f"cloth->suit 映射数（info_from_gm）: {len(cloth_to_suit)}")
 
-    result = _aggregate_by_suit_with_evolution(cloth_draw_nums, cloth_to_suit)
-    logger.info(f"共鸣抽数计算完成（info_from_gm fallback），覆盖 {len(result)} 个基础套装")
-    return result
+def _i18n_text(value: Any) -> str:
+    """i18n 数组 [{lang, text}] -> zh-cn 文本;双重编码 JSON 也兼容。"""
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, dict) and item.get("lang") == "zh-cn":
+                return str(item.get("text", ""))
+        return ""
+    if isinstance(value, str):
+        try:
+            return _i18n_text(json.loads(value))
+        except Exception:
+            return value
+    return ""
+
+
+def _parse_suit(suit: dict) -> dict:
+    """解析套装的 cloths / evolutions 字段(JSON 字符串 -> 结构)。"""
+    cloths = _parse_json_field(suit.get("cloths"), []) or []
+    evolution_ids: list[str] = []
+    evolution_names: list[str] = []
+    for key in ("evolutions1", "evolutions2", "evolutions3"):
+        evo = _parse_json_field(suit.get(key), None)
+        if isinstance(evo, dict) and evo.get("evolution_suit_id"):
+            evolution_ids.append(str(evo["evolution_suit_id"]))
+            evolution_names.append(_i18n_text(evo.get("evolution_suit_name")))
+    return {
+        "suit_id": str(suit.get("suit_id", "")),
+        "level": int(suit.get("level", 5) or 5),
+        "card_type": int(suit.get("card_type", 2) or 2),
+        "card_pool_id": str(suit.get("card_pool_id", "")),
+        "cloths": [c for c in cloths if isinstance(c, dict)],
+        "evolution_ids": evolution_ids,
+        "evolution_names": evolution_names,
+    }
 
 
 def _parse_gacha_list(gacha_list: list[dict]) -> list[GachaRecord]:
@@ -268,105 +342,141 @@ def _parse_gacha_list(gacha_list: list[dict]) -> list[GachaRecord]:
     records = []
     for item in gacha_list:
         record = GachaRecord(
-            cloth_id=item.get("result", ""),
-            rarity=item.get("rarity", "4"),
-            card_pool_id=item.get("card_pool_id", ""),
-            times_from_last_five_stars=item.get("times_from_last_five_stars", 0),
-            times_from_last_four_stars=item.get("times_from_last_four_stars", 0),
-            pool_cnt=item.get("pool_cnt", 0),
+            cloth_id=str(item.get("result", "")),
+            rarity=str(item.get("rarity", "4")),
+            card_pool_id=str(item.get("card_pool_id", "")),
+            times_from_last_five_stars=int(item.get("times_from_last_five_stars", 0) or 0),
+            times_from_last_four_stars=int(item.get("times_from_last_four_stars", 0) or 0),
+            pool_cnt=int(item.get("pool_cnt", 0) or 0),
         )
         records.append(record)
     return records
 
 
-def _calculate_cloth_draw_nums(records: list[GachaRecord]) -> dict[str, list[int]]:
-    """计算每件衣服在各套装中的 drawNum
+def _split_two(groups: dict[str, list[GachaRecord]]) -> tuple[list[GachaRecord], list[GachaRecord]]:
+    """复刻前端 y(): 每个 result 组按 pool_cnt 升序取前 2 条。
 
-    返回 {cloth_id: [drawNum1, drawNum2, ...]}，每个 drawNum 对应一次被抽到。
-    同一件衣服可能被多次抽到（重抽）。
+    第 1 条 -> firstSuit, 第 2 条 -> secondSuit,
+    两组各自 times_from_last_five/four_stars 各 +1。
     """
-    # {cloth_id: [(rarity, times, pool_cnt), ...]}
-    cloth_records: dict[str, list[tuple]] = {}
+    first: list[GachaRecord] = []
+    second: list[GachaRecord] = []
+    for arr in groups.values():
+        s = sorted(arr, key=lambda x: x.pool_cnt)[:2]
+        if len(s) >= 1:
+            first.append(s[0])
+        if len(s) >= 2:
+            second.append(s[1])
 
-    for record in records:
-        if not record.cloth_id:
-            continue
-        if record.cloth_id not in cloth_records:
-            cloth_records[record.cloth_id] = []
-        cloth_records[record.cloth_id].append((
-            record.rarity,
-            record.times_from_last_five_stars if record.rarity == "5" else record.times_from_last_four_stars,
-            record.pool_cnt,
-        ))
+    def bump(lst: list[GachaRecord]) -> list[GachaRecord]:
+        out = []
+        for e in sorted(lst, key=lambda x: x.pool_cnt):
+            e.times_from_last_five_stars += 1
+            e.times_from_last_four_stars += 1
+            out.append(e)
+        return out
 
-    cloth_draw_nums: dict[str, list[int]] = {}
-    for cloth_id, recs in cloth_records.items():
-        draw_nums = []
-        for rarity, times, pool_cnt in recs:
-            # times 是从上次五星/四星到本次抽卡的间隔，drawNum 就是这个 times 值
-            draw_nums.append(times)
-        cloth_draw_nums[cloth_id] = draw_nums
-
-    return cloth_draw_nums
+    return bump(first), bump(second)
 
 
-def _build_cloth_to_suit_mapping_from_gm(info_gm: dict[str, Any]) -> dict[str, str]:
-    """从 info_from_gm 构建 cloth_id -> suit_id 映射
+def _build_first_second_suits(
+    gacha_list: list[dict],
+) -> dict[str, dict[str, list[GachaRecord]]]:
+    """复刻前端 P+y(): {card_pool_id: {rarity: {"first": [...], "second": [...]}}}"""
+    records = _parse_gacha_list(gacha_list)
+    pool_rar: dict[str, dict[str, dict[str, list[GachaRecord]]]] = defaultdict(
+        lambda: defaultdict(lambda: defaultdict(list))
+    )
+    for g in records:
+        pool_rar[g.card_pool_id][g.rarity][g.cloth_id].append(g)
 
-    info_from_gm 可能格式：
-    - {"suits": [{"suit_id": "...", "cloths": [{"cloth_id": "..."}]}]}
-    - {"suit_list": [{"suit_id": "...", "cloths": [...]}]}
-    - {"suits": [{"id": "...", "cloths": [...]}]}  (id 字段)
+    pools: dict[str, dict[str, dict[str, list[GachaRecord]]]] = {}
+    for pid, rarity_map in pool_rar.items():
+        pools[pid] = {}
+        for rar in ("5", "4"):
+            fs, ss = _split_two(rarity_map.get(rar, {}))
+            pools[pid][rar] = {"first": fs, "second": ss}
+    return pools
 
-    尝试多种 key 名称以兼容不同版本。
+
+def compute_draw_info(
+    gacha_list: list[dict],
+    suit_list: list[dict],
+    owned_suit_ids: set[str] | None = None,
+) -> dict[str, SuitDrawInfo] | None:
+    """复刻前端 P/y/B: 计算每个套装的单件共鸣明细与汇总
+
+    Args:
+        gacha_list: note/book/info 的 info_from_self.gacha_list
+        suit_list: suit/list API 的套装列表(cloths/evolutions 为 JSON 字符串)
+        owned_suit_ids: info_from_self.suit_list(已拥有套装, 含进化 id)
+
+    Returns:
+        {suit_id: SuitDrawInfo}, 无抽卡记录时返回 None
     """
-    mapping: dict[str, str] = {}
+    if not gacha_list:
+        logger.warning("gacha_list 为空, 无法计算共鸣抽数")
+        return None
 
-    # 尝试 suits 数组
-    suits: list[dict] | None = None
-    for suits_key in ("suits", "suit_list", "suitInfo"):
-        raw = info_gm.get(suits_key)
-        if isinstance(raw, list):
-            suits = raw
-            break
+    owned = owned_suit_ids or set()
+    pools = _build_first_second_suits(gacha_list)
 
-    if suits is None:
-        logger.warning(f"info_from_gm 不包含 suits/suit_list 字段，keys: {list(info_gm.keys())}")
-        return mapping
-
-    for suit in suits:
-        # suit_id 可能在 "suit_id" 或 "id" 字段
-        suit_id = suit.get("suit_id") or suit.get("id") or ""
-        if not suit_id:
+    result: dict[str, SuitDrawInfo] = {}
+    for suit in suit_list:
+        p = _parse_suit(suit)
+        if not p["suit_id"] or not p["cloths"]:
             continue
 
-        # cloths 可能在 "cloths" 或 "cloth" 或 "clothes"
-        cloths_raw = suit.get("cloths") or suit.get("cloth") or suit.get("clothes") or []
-        if isinstance(cloths_raw, str):
-            try:
-                cloths_raw = json.loads(cloths_raw)
-            except Exception:
-                cloths_raw = []
+        lv = p["level"]
+        rar = "5" if lv == 5 else "4"
+        tk = "times_from_last_five_stars" if lv == 5 else "times_from_last_four_stars"
+        side_records = pools.get(p["card_pool_id"], {}).get(rar, {})
+        first_recs = {g.cloth_id: g for g in side_records.get("first", [])}
+        second_recs = {g.cloth_id: g for g in side_records.get("second", [])}
 
-        for cloth in cloths_raw:
-            cloth_id: str = ""
-            if isinstance(cloth, dict):
-                cloth_id = cloth.get("cloth_id") or cloth.get("id") or ""
-            elif isinstance(cloth, str):
-                cloth_id = cloth
-            if cloth_id:
-                mapping[cloth_id] = str(suit_id)
+        cloths: list[ClothDrawInfo] = []
+        draw_nums: list[int] = []
+        for cloth in p["cloths"]:
+            cloth_id = str(cloth.get("cloth_id", ""))
+            first_hit = first_recs.get(cloth_id)
+            second_hit = second_recs.get(cloth_id)
+            info = ClothDrawInfo(
+                cloth_id=cloth_id,
+                name=_i18n_text(cloth.get("name")),
+                display_type=str(cloth.get("display_type", "") or ""),
+                icon=str(cloth.get("icon", "") or ""),
+                image=str(cloth.get("image", "") or ""),
+                draw_num_first=(getattr(first_hit, tk, 0) if first_hit else 0) or 0,
+                draw_num_second=(getattr(second_hit, tk, 0) if second_hit else 0) or 0,
+            )
+            cloths.append(info)
+            draw_nums.extend([info.draw_num_first, info.draw_num_second])
 
-    logger.info(f"从 info_from_gm 构建 cloth->suit 映射: {len(mapping)} 个 cloth")
-    return mapping
+        total = sum(draw_nums)
+        count = sum(1 for n in draw_nums if n > 0)
+        evo_total = len(p["evolution_ids"])
+        evo_owned = sum(1 for eid in p["evolution_ids"] if eid in owned)
+
+        result[p["suit_id"]] = SuitDrawInfo(
+            suit_id=p["suit_id"],
+            total_draw_num=total,
+            average_draw_num=round(total / count, 1) if count else 0.0,
+            collected_count=count,
+            draw_nums=draw_nums,
+            cloths=cloths,
+            evolution_count=evo_owned,
+            evolution_total=evo_total,
+        )
+
+    logger.info(f"共鸣抽数计算完成(前端复刻算法), 覆盖 {len(result)} 个套装")
+    return result
 
 
 def _get_base_suit_id(suit_id: str) -> str:
     """从 suit_id 提取基础套装 ID
 
     进化套装 suit_id 如 1035501 -> 基础套装 10355
-    进化套装 suit_id 如 1012602 -> 基础套装 10126
-    基础套装 suit_id 如 10355 -> 基础套装 10355（无进化后缀，直接返回）
+    基础套装 suit_id 如 10355 -> 基础套装 10355(无进化后缀, 直接返回)
     """
     m = _EVOLUTION_SUIT_PATTERN.match(suit_id)
     if m:
@@ -374,85 +484,25 @@ def _get_base_suit_id(suit_id: str) -> str:
     return suit_id
 
 
-def _aggregate_by_suit_with_evolution(
-    cloth_draw_nums: dict[str, list[int]],
-    cloth_to_suit: dict[str, str],
-) -> dict[str, SuitDrawInfo]:
-    """按套装汇总抽数数据，并将进化套装归入基础套装
-
-    进化套装的 suit_id 末尾 2 位是进化序号，前 5 位是基础套装 ID。
-    进化套装的 drawNum 贡献累加到基础套装的 totalDrawNum 中。
-    """
-    # {suit_id: [all_draw_nums]}
-    raw_suit_draw_nums: dict[str, list[int]] = {}
-
-    for cloth_id, draw_nums in cloth_draw_nums.items():
-        suit_id = cloth_to_suit.get(cloth_id)
-        if not suit_id:
-            continue
-
-        if suit_id not in raw_suit_draw_nums:
-            raw_suit_draw_nums[suit_id] = []
-        raw_suit_draw_nums[suit_id].extend(draw_nums)
-
-    # 先计算每个 suit_id 的原始数据
-    raw_info: dict[str, SuitDrawInfo] = {}
-    for suit_id, draw_nums in raw_suit_draw_nums.items():
-        # 所有 times 都计入：times=0（第一抽就出了）也算 1 抽
-        total = sum(draw_nums)
-        count = len(draw_nums)
-        # 实际抽数 = times + 1，每次抽出都算 1 抽
-        # 用 1.0 确保浮点除法，避免 round() 返回整数导致小数丢失
-        avg = round((total + count) / 1.0 / count, 1) if count > 0 else 0.0
-
-        raw_info[suit_id] = SuitDrawInfo(
-            suit_id=suit_id,
-            total_draw_num=total,
-            average_draw_num=avg,
-            collected_count=count,
-            draw_nums=draw_nums,
-        )
-
-    # 将进化套装贡献合并到基础套装
-    # {base_suit_id: [所有进化套装 + 基础套装自己的 draw_nums]}
-    base_draw_nums: dict[str, list[int]] = {}
-
-    for suit_id, info in raw_info.items():
-        base_id = _get_base_suit_id(suit_id)
-        if base_id not in base_draw_nums:
-            base_draw_nums[base_id] = []
-        base_draw_nums[base_id].extend(info.draw_nums)
-
-    # 计算合并后的结果
-    result: dict[str, SuitDrawInfo] = {}
-    for base_id, draw_nums in base_draw_nums.items():
-        # 所有 times 都计入：times=0（第一抽就出了）也算 1 抽
-        total = sum(draw_nums)
-        count = len(draw_nums)
-        # 实际抽数 = times + 1，每次抽出都算 1 抽
-        # 用 1.0 确保浮点除法，避免 round() 返回整数导致小数丢失
-        avg = round((total + count) / 1.0 / count, 1) if count > 0 else 0.0
-
-        result[base_id] = SuitDrawInfo(
-            suit_id=base_id,
-            total_draw_num=total,
-            average_draw_num=avg,
-            collected_count=count,
-            draw_nums=draw_nums,
-        )
-
-    return result
-
-
 def merge_draw_info_to_suit_card_list(
     suit_card_list: list[dict],
     draw_info_map: dict[str, SuitDrawInfo],
+    *,
+    with_cloth_details: bool = True,
 ) -> list[dict]:
     """将共鸣抽数数据合并到 suitCardListData
+
+    合并字段:
+    - totalDrawNum / averageDrawNum / collectedCount(兼容旧字段)
+    - ownedClothes: drawNum>0 槽位数(与旧 collectedCount 同义, 命名对齐前端)
+    - evolutionCount / evolutionTotal: 已进化次数 / 可进化次数
+    - clothDetails: 单件明细(cloth_id/name/display_type/image/drawNumFirst/drawNumSecond)
+    - evolutionIds: 各进化形态 id(供渲染显示进化名)
 
     Args:
         suit_card_list: 原始 suit/list API 数据
         draw_info_map: {suit_id: SuitDrawInfo} 映射
+        with_cloth_details: 是否携带单件明细(会增大缓存体积)
 
     Returns:
         合并后的 suitCardListData
@@ -467,10 +517,28 @@ def merge_draw_info_to_suit_card_list(
             card_copy["totalDrawNum"] = draw_info.total_draw_num
             card_copy["averageDrawNum"] = draw_info.average_draw_num
             card_copy["collectedCount"] = draw_info.collected_count
+            card_copy["ownedClothes"] = draw_info.collected_count
+            card_copy["evolutionCount"] = draw_info.evolution_count
+            card_copy["evolutionTotal"] = draw_info.evolution_total
+            if with_cloth_details:
+                card_copy["clothDetails"] = [
+                    {
+                        "clothId": c.cloth_id,
+                        "name": c.name,
+                        "displayType": c.display_type,
+                        "image": c.image,
+                        "drawNumFirst": c.draw_num_first,
+                        "drawNumSecond": c.draw_num_second,
+                    }
+                    for c in draw_info.cloths
+                ]
         else:
             card_copy["totalDrawNum"] = 0
             card_copy["averageDrawNum"] = 0.0
             card_copy["collectedCount"] = 0
+            card_copy["ownedClothes"] = 0
+            card_copy["evolutionCount"] = 0
+            card_copy["evolutionTotal"] = 0
 
         result.append(card_copy)
 
