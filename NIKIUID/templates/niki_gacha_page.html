@@ -307,7 +307,10 @@ body {
     }
 
     function init() {
-        fetch('./data', { cache: 'no-store' }).then(function (r) {
+        // 页面 URL 是 /niki/gacha/{token}(无尾斜杠): 相对路径 ./data 会把
+        // token 段替换掉, 必须基于 location.pathname 显式拼接
+        var dataUrl = location.pathname.replace(/\/+$/, '') + '/data';
+        fetch(dataUrl, { cache: 'no-store' }).then(function (r) {
             if (r.status === 404) throw new Error('expired');
             if (!r.ok) throw new Error('load');
             return r.json();

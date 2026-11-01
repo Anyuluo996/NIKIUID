@@ -27,32 +27,12 @@ from ..utils.render_wardrobe_card import (
 )
 from ..utils.resource.RESOURCE_PATH import USER_DATA_PATH
 from ..utils.services.blessing_service import (
+    bulk_download_icons,
     build_blessing_matrix,
     collect_blessing_icons,
-    download_blessing_icons,
 )
 
 sv_niki_resource = SV("niki资源")
-
-# 分块并发: 每块内顺序下载, 块间并发, 控制对素材 CDN 的并发压力
-_DOWNLOAD_CHUNK = 40
-_DOWNLOAD_CONCURRENCY = 8
-
-
-async def _bulk_download(urls: list[str], folder, tag: str) -> None:
-    """分块并发下载(已缓存的文件由 download_blessing_icons 秒回)。"""
-    urls = [u for u in dict.fromkeys(urls) if u]
-    if not urls:
-        return
-    chunks = [urls[i:i + _DOWNLOAD_CHUNK] for i in range(0, len(urls), _DOWNLOAD_CHUNK)]
-
-    async def _run(chunk: list[str]) -> None:
-        try:
-            await download_blessing_icons(chunk, folder)
-        except Exception as e:
-            logger.warning(f"[niki资源] {tag} 分块下载失败({len(chunk)} 张): {e}")
-
-    await asyncio.gather(*(_run(c) for c in chunks))
 
 
 @sv_niki_resource.on_command(("下载资源", "xzzy"), block=True)
@@ -94,9 +74,9 @@ async def niki_download_resources_cmd(bot: Bot, ev: Event):
 
     t0 = time.monotonic()
     await asyncio.gather(
-        _bulk_download(cloth_urls, CLOTHS_DIR, "单件图标"),
-        _bulk_download(suit_urls, SUITS_DIR, "套装预览图"),
-        _bulk_download(blessing_urls, BLESSING_ASSETS_DIR, "祝福闪光素材"),
+        bulk_download_icons(cloth_urls, CLOTHS_DIR),
+        bulk_download_icons(suit_urls, SUITS_DIR),
+        bulk_download_icons(blessing_urls, BLESSING_ASSETS_DIR),
     )
     elapsed = round(time.monotonic() - t0, 1)
     logger.info(f"[niki资源] 预热完成: {total} 张, 耗时 {elapsed}s")

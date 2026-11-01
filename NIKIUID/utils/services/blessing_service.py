@@ -15,6 +15,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 from pathlib import Path
 from datetime import datetime
@@ -192,6 +193,34 @@ def collect_blessing_icons(matrix: dict[str, Any]) -> list[str]:
                     seen.add(url)
                     urls.append(url)
     return urls
+
+
+async def bulk_download_icons(
+    icon_urls: list[str],
+    icons_dir: Path,
+    chunk_size: int = 40,
+    concurrency: int = 8,
+    log: Any = logger,
+) -> None:
+    """分块并发批量下载(已存在的文件由 download_blessing_icons 秒回)。
+
+    用于「下载资源」预热与抽卡页面生成前的素材预热:
+    上千张图串行要几分钟, 分块并发(默认 8 路)压到几十秒。
+    """
+    urls = [u for u in dict.fromkeys(icon_urls) if u]
+    if not urls:
+        return
+    chunks = [
+        urls[i:i + chunk_size] for i in range(0, len(urls), chunk_size)
+    ]
+
+    async def _run(chunk: list[str]) -> None:
+        try:
+            await download_blessing_icons(chunk, icons_dir)
+        except Exception as e:
+            log.warning(f"[blessing] 分块下载失败({len(chunk)} 张): {e}")
+
+    await asyncio.gather(*(_run(c) for c in chunks))
 
 
 async def download_blessing_icons(

@@ -34,7 +34,7 @@ from ..utils.render_wardrobe_card import (
     build_wardrobe_context,
 )
 from ..utils.resource.RESOURCE_PATH import NIKI_TEMPLATES, USER_DATA_PATH
-from ..utils.services.blessing_service import download_blessing_icons
+from ..utils.services.blessing_service import bulk_download_icons
 
 GACHA_PAGE_TTL = 600  # 10 分钟, 与登录链接一致
 
@@ -147,9 +147,9 @@ async def build_page_payload(
                     cloth_urls.append(cloth["image"])
     try:
         if cloth_urls:
-            await download_blessing_icons(cloth_urls, CLOTHS_DIR)
+            await bulk_download_icons(cloth_urls, CLOTHS_DIR)
         if suit_urls:
-            await download_blessing_icons(suit_urls, SUITS_DIR)
+            await bulk_download_icons(suit_urls, SUITS_DIR)
     except Exception as e:
         logger.warning(f"[niki抽卡页面] 图标下载失败(页面将显示占位图): {e}")
 
