@@ -150,6 +150,54 @@
       border-radius: 4px;
       font-family: monospace;
     }
+    /* 登录方式切换 */
+    .tabs {
+      display: flex;
+      background: #fce4ec;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #880e4f;
+      opacity: 0.6;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 0;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab.on {
+      background: #fff;
+      opacity: 1;
+      box-shadow: 0 2px 8px rgba(233, 30, 99, 0.18);
+    }
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #880e4f;
+      margin: 4px 0 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    .remember input {
+      width: 16px;
+      height: 16px;
+      accent-color: #e91e63;
+    }
+    .note {
+      margin-top: 8px;
+      font-size: 11px;
+      line-height: 1.7;
+      color: #ad1457;
+      opacity: 0.75;
+    }
   </style>
 </head>
 <body>
@@ -170,20 +218,49 @@
         <div class="brand-sub">Infinity Nikki · 奇想手账登录</div>
       </header>
 
+      <div class="tabs">
+        <button class="tab on" id="tabSms" type="button">短信登录</button>
+        <button class="tab" id="tabPwd" type="button">账号密码登录</button>
+      </div>
+
       <form onsubmit="return false">
-        <div class="field">
-          <label class="field-label" for="mobile">手机号</label>
-          <div class="input-row">
-            <input class="input" id="mobile" type="tel" inputmode="numeric" placeholder="请输入手机号" autocomplete="tel" maxlength="11">
+        <div id="paneSms">
+          <div class="field">
+            <label class="field-label" for="mobile">手机号</label>
+            <div class="input-row">
+              <input class="input" id="mobile" type="tel" inputmode="numeric" placeholder="请输入手机号" autocomplete="tel" maxlength="11">
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="code">验证码</label>
+            <div class="input-row">
+              <input class="input" id="code" type="text" inputmode="numeric" placeholder="请输入验证码" maxlength="8">
+              <button class="send-btn" id="sendBtn" type="button" disabled>获取</button>
+            </div>
           </div>
         </div>
 
-        <div class="field">
-          <label class="field-label" for="code">验证码</label>
-          <div class="input-row">
-            <input class="input" id="code" type="text" inputmode="numeric" placeholder="请输入验证码" maxlength="8">
-            <button class="send-btn" id="sendBtn" type="button" disabled>获取</button>
+        <div id="panePwd" hidden>
+          <div class="field">
+            <label class="field-label" for="account">账号</label>
+            <div class="input-row">
+              <input class="input" id="account" type="text" placeholder="手机号 / 邮箱" autocomplete="username">
+            </div>
           </div>
+
+          <div class="field">
+            <label class="field-label" for="password">密码</label>
+            <div class="input-row">
+              <input class="input" id="password" type="password" placeholder="请输入密码" autocomplete="current-password">
+            </div>
+          </div>
+
+          <label class="remember">
+            <input type="checkbox" id="remember">
+            记住账号密码
+          </label>
+          <p class="note">勾选后, 账号密码将以 AES-256-GCM 强加密保存到机器人数据库(加密密钥独立存放), 用于下次「登录」时自动登录。仍存在泄露风险, 公用设备请勿勾选;发送「退出登录」可随时清除。</p>
         </div>
 
         <button class="submit-btn" id="loginBtn" type="button" disabled>完成登录</button>
@@ -206,6 +283,14 @@
     const sendBtn = $('sendBtn');
     const loginBtn = $('loginBtn');
     const statusEl = $('status');
+    const tabSms = $('tabSms');
+    const tabPwd = $('tabPwd');
+    const paneSms = $('paneSms');
+    const panePwd = $('panePwd');
+    const account = $('account');
+    const password = $('password');
+    const remember = $('remember');
+    let mode = 'sms'; // sms | pwd
 
     function showStatus(msg, ok) {
       statusEl.textContent = msg;
@@ -220,15 +305,35 @@
       });
     }
 
+    function setMode(next) {
+      mode = next;
+      tabSms.classList.toggle('on', mode === 'sms');
+      tabPwd.classList.toggle('on', mode === 'pwd');
+      paneSms.hidden = mode !== 'sms';
+      panePwd.hidden = mode !== 'pwd';
+      showStatus('', true);
+      validate();
+    }
+
+    tabSms.addEventListener('click', () => setMode('sms'));
+    tabPwd.addEventListener('click', () => setMode('pwd'));
+
     function validate() {
-      const phoneOk = /^1\d{10}$/.test(mobile.value);
-      const codeOk = /^\d{4,8}$/.test(code.value);
-      sendBtn.disabled = !phoneOk || sendBtn.dataset.cooldown === '1';
-      loginBtn.disabled = !(phoneOk && codeOk);
+      if (mode === 'sms') {
+        const phoneOk = /^1\d{10}$/.test(mobile.value);
+        const codeOk = /^\d{4,8}$/.test(code.value);
+        sendBtn.disabled = !phoneOk || sendBtn.dataset.cooldown === '1';
+        loginBtn.disabled = !(phoneOk && codeOk);
+      } else {
+        loginBtn.disabled = !(account.value.trim().length >= 4 && password.value.trim().length > 0);
+      }
     }
 
     onlyDigits(mobile, 11);
     onlyDigits(code, 8);
+    account.addEventListener('input', validate);
+    password.addEventListener('input', validate);
+    remember.addEventListener('change', validate);
 
     sendBtn.addEventListener('click', async () => {
       sendBtn.dataset.cooldown = '1';
@@ -258,17 +363,36 @@
       showStatus(reply.msg || (reply.ok ? MSG.smsSent : MSG.smsSendFailed), !!reply.ok);
     });
 
+    async function submitSms() {
+      const reply = await fetch('/niki/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auth: AUTH, mobile: mobile.value.trim(), code: code.value.trim() }),
+      }).then((r) => r.json());
+      return reply;
+    }
+
+    async function submitPassword() {
+      const reply = await fetch('/niki/loginPassword', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          auth: AUTH,
+          account: account.value.trim(),
+          password: password.value,
+          remember: remember.checked,
+        }),
+      }).then((r) => r.json());
+      return reply;
+    }
+
     loginBtn.addEventListener('click', async () => {
       loginBtn.disabled = true;
       const origin = loginBtn.textContent;
       loginBtn.textContent = '验证中';
       let reply;
       try {
-        reply = await fetch('/niki/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ auth: AUTH, mobile: mobile.value.trim(), code: code.value.trim() }),
-        }).then((r) => r.json());
+        reply = mode === 'sms' ? await submitSms() : await submitPassword();
       } catch (err) {
         // 网络中断/超时:验证码可能已被消费,让用户回聊天窗口看 bot 通知
         loginBtn.textContent = origin;
@@ -277,11 +401,8 @@
         return;
       }
       if (reply.ok) {
-        mobile.disabled = true;
-        code.disabled = true;
-        sendBtn.disabled = true;
-        loginBtn.textContent = MSG.loginSuccess;
-        showStatus(MSG.loginSuccess, true);
+        loginBtn.textContent = reply.msg || MSG.loginSuccess;
+        showStatus(reply.msg || MSG.loginSuccess, true);
         // 完成页轮询 /niki/status 展示真实登录结果(数据刷新在后台进行)
         window.location.replace('/niki/done?auth=' + encodeURIComponent(AUTH));
         return;

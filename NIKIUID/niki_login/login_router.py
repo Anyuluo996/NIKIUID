@@ -18,7 +18,14 @@ from gsuid_core.logger import logger
 from gsuid_core.web_app import app
 
 from ..utils.msgs import LoginMsg
-from .login_service import LOGIN_CACHE, LoginState, LoginResult, perform_login, send_login_sms
+from .login_service import (
+    LOGIN_CACHE,
+    LoginState,
+    LoginResult,
+    perform_login,
+    send_login_sms,
+    perform_login_password,
+)
 from ..utils.resource.RESOURCE_PATH import NIKI_TEMPLATES
 
 _MOBILE_RE = re.compile(r"^1\d{10}$")
@@ -43,6 +50,13 @@ class _LoginPayload(BaseModel):
     auth: str
     mobile: str
     code: str
+
+
+class _PasswordLoginPayload(BaseModel):
+    auth: str
+    account: str
+    password: str
+    remember: bool = False
 
 
 @app.get("/niki/i/{auth_token}")
@@ -111,6 +125,30 @@ async def niki_perform_login(payload: _LoginPayload, _request: Request) -> JSONR
             f"[niki登录] 登录失败 user_id={_login_user_id(payload.auth)}: {error!r}"
         )
         return _json(LoginResult.fail(LoginMsg.SMS_LOGIN_FAILED))
+
+
+@app.post("/niki/loginPassword")
+async def niki_perform_login_password(payload: _PasswordLoginPayload, _request: Request) -> JSONResponse:
+    """网页侧:账号密码登录(remember=true 时保存凭证供自动登录)。"""
+    account = payload.account.strip()
+    # 密码不做 strip:游戏密码可能包含首尾空格,剥掉会永远登不上
+    password = payload.password
+    if not account or len(account) < 4:
+        return _json(LoginResult.fail("请输入正确的账号(手机号/邮箱)"))
+    if not password:
+        return _json(LoginResult.fail("请输入密码"))
+
+    try:
+        return _json(
+            await perform_login_password(
+                payload.auth, account, password, payload.remember
+            )
+        )
+    except Exception as error:
+        logger.warning(
+            f"[niki登录] 密码登录失败 user_id={_login_user_id(payload.auth)}: {error!r}"
+        )
+        return _json(LoginResult.fail(LoginMsg.USER_CENTER_LOGIN_FAILED))
 
 
 @app.get("/niki/status/{auth_token}")

@@ -20,10 +20,13 @@ from gsuid_core.webconsole.mount_app import PageSchema, GsAdminModel, site
 from gsuid_core.utils.database.startup import exec_list
 from gsuid_core.utils.database.base_models import User, with_session
 
+from ..auth.credential_store import decrypt_text, encrypt_text, mask_account
+
 exec_list.extend(
     [
         "CREATE INDEX IF NOT EXISTS ix_nikiuser_uid ON nikiuser (uid)",
         "CREATE INDEX IF NOT EXISTS ix_nikiuser_openid ON nikiuser (openid)",
+        "CREATE INDEX IF NOT EXISTS ix_nikicredential_uid ON nikicredential (user_id)",
         # ── schema 迁移:旧表(继承 BaseIDModel)→ 新表(继承 User) ──
         # User 基类新增的列,旧表不存在,用 ALTER TABLE ADD COLUMN 补上。
         # SQLite 的 ADD COLUMN 对已存在的列会报错,用 try-except 在 GS Core 层吞掉。
@@ -42,6 +45,7 @@ exec_list.extend(
 )
 
 T_NikiUser = TypeVar("T_NikiUser", bound="NikiUser")
+T_NikiCredential = TypeVar("T_NikiCredential", bound="NikiCredential")
 
 
 class NikiUser(User, table=True):
@@ -304,3 +308,158 @@ class NikiUserAdmin(GsAdminModel):
     pk_name = "id"
     page_schema = PageSchema(label="无限暖暖用户管理", icon="fa fa-users")  # type: ignore
     model = NikiUser
+
+
+class NikiCredential(User, table=True):
+    """一行 = 一个聊天用户保存的一组账号密码(用于自动登录)。
+
+    account/password 均为 AES-256-GCM 强加密密文(逐行独立 nonce,
+    密钥独立存放在 MAIN_PATH/credential.key, 不入库不入源码), 可逆;
+    account_mask 为打码展示用明文。明文密码绝不入库、不写日志。
+    """
+
+    __table_args__: dict[str, Any] = {"extend_existing": True}
+
+    account_enc: str = Field(default="", title="加密后的登录账号")
+    password_enc: str = Field(default="", title="加密后的登录密码")
+    # 旧"逐行盐"列: 强加密后 nonce 已并入密文, 列保留但不再使用(SQLite 不便删列)
+    salt: str = Field(default="", title="已废弃(历史盐列)")
+    account_mask: str = Field(default="", title="账号打码展示")
+    updated_at: datetime = Field(
+        default_factory=datetime.now,
+        sa_column_kwargs={"onupdate": datetime.now},
+        title="更新时间",
+    )
+
+    def reveal(self) -> tuple[str, str]:
+        """还原 (账号, 密码) 明文。
+
+        密文缺失/损坏/密钥不匹配时返回空对(不抛), 由调用方按
+        "凭证损坏"回退网页登录;保存时的明文比对同样安全。
+        """
+        if not (self.account_enc and self.password_enc):
+            return "", ""
+        try:
+            return decrypt_text(self.account_enc), decrypt_text(self.password_enc)
+        except Exception:
+            return "", ""
+
+    @classmethod
+    @with_session
+    async def save_credential(
+        cls: type[T_NikiCredential],
+        session: AsyncSession,
+        *,
+        user_id: str,
+        bot_id: str,
+        account: str,
+        password: str,
+    ) -> T_NikiCredential:
+        """保存/更新一组账号密码(按同一账号 upsert, 单用户最多留 5 组)。"""
+        mask = mask_account(account)
+        result = await session.execute(
+            select(cls)
+            .where(
+                cls.user_id == user_id,
+                cls.bot_id == bot_id,
+                col(cls.account_enc) != "",
+            )
+            .order_by(col(cls.updated_at).desc())
+        )
+        rows = list(result.scalars().all())
+        target = None
+        for row in rows:
+            if mask == row.account_mask:
+                existing_account, _ = row.reveal()
+                if existing_account == account:
+                    target = row
+                    break
+        now = datetime.now()
+        if target is not None:
+            target.account_enc = encrypt_text(account)
+            target.password_enc = encrypt_text(password)
+            target.account_mask = mask
+            target.updated_at = now
+            return target
+
+        row = cls(
+            user_id=user_id,
+            bot_id=bot_id,
+            account_enc=encrypt_text(account),
+            password_enc=encrypt_text(password),
+            account_mask=mask,
+            updated_at=now,
+        )
+        session.add(row)
+        # 单用户最多保留 5 组凭证,超出删最旧的
+        for old in rows[4:]:
+            await session.delete(old)
+        return row
+
+    @classmethod
+    @with_session
+    async def list_credentials(
+        cls: type[T_NikiCredential],
+        session: AsyncSession,
+        *,
+        user_id: str,
+        bot_id: str,
+    ) -> list[T_NikiCredential]:
+        """列出该用户保存的全部凭证,按更新时间倒序。"""
+        result = await session.execute(
+            select(cls)
+            .where(
+                cls.user_id == user_id,
+                cls.bot_id == bot_id,
+                col(cls.account_enc) != "",
+            )
+            .order_by(col(cls.updated_at).desc())
+        )
+        return list(result.scalars().all())
+
+    @classmethod
+    @with_session
+    async def get_latest_credential(
+        cls: type[T_NikiCredential],
+        session: AsyncSession,
+        *,
+        user_id: str,
+        bot_id: str,
+    ) -> T_NikiCredential | None:
+        """取最近保存的一组凭证;无则 None。"""
+        result = await session.execute(
+            select(cls)
+            .where(
+                cls.user_id == user_id,
+                cls.bot_id == bot_id,
+                col(cls.account_enc) != "",
+            )
+            .order_by(col(cls.updated_at).desc())
+            .limit(1)
+        )
+        return result.scalars().first()
+
+    @classmethod
+    @with_session
+    async def delete_credentials(
+        cls: type[T_NikiCredential],
+        session: AsyncSession,
+        *,
+        user_id: str,
+        bot_id: str,
+    ) -> int:
+        """清除该用户保存的全部凭证(退出登录时调用)。"""
+        result = await session.execute(
+            delete(cls).where(
+                cls.user_id == user_id,
+                cls.bot_id == bot_id,
+            )
+        )
+        return result.rowcount or 0
+
+
+@site.register_admin
+class NikiCredentialAdmin(GsAdminModel):
+    pk_name = "id"
+    page_schema = PageSchema(label="无限暖暖保存的凭证", icon="fa fa-key")  # type: ignore
+    model = NikiCredential
