@@ -77,6 +77,30 @@ def _to_local_file_url(path: Any) -> str:
         return ""
 
 
+def collect_render_resource_urls(state: dict) -> tuple[list[str], list[str]]:
+    """从原始 suitCardListData 收集渲染资源 URL(去重保序)。
+
+    返回 (套装预览图 URL 列表, 单件图标 URL 列表), 供「下载资源」
+    命令批量预热本地缓存, 避免首次渲染时边渲染边下载数百张图。
+    """
+    suit_urls: list[str] = []
+    cloth_urls: list[str] = []
+    for suit in state.get("suitCardListData", []) or []:
+        img = suit.get("preview_image") or suit.get("image") or ""
+        if img:
+            suit_urls.append(img)
+        raw_cloths = suit.get("cloths", "[]")
+        try:
+            cloths = json.loads(raw_cloths) if isinstance(raw_cloths, str) else raw_cloths
+        except Exception:
+            cloths = []
+        for cloth in cloths or []:
+            url = cloth.get("image") or ""
+            if url:
+                cloth_urls.append(url)
+    return list(dict.fromkeys(suit_urls)), list(dict.fromkeys(cloth_urls))
+
+
 async def localize_images(clothes: list[dict]) -> None:
     """把套装预览图与单件图标替换为本地路径(下载缓存, 缺失时保留远程 URL)。"""
     cloth_urls: list[str] = []

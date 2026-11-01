@@ -98,6 +98,15 @@
                 "need_admin": false
             },
             {
+                "name": "下载资源",
+                "desc": "预先批量下载渲染素材(套装/单件/祝福闪光图标,已缓存的自动跳过),避免首次渲染卡顿数分钟",
+                "eg": "下载资源",
+                "highlight": 4,
+                "need_ck": false,
+                "need_sk": false,
+                "need_admin": false
+            },
+            {
                 "name": "体力",
                 "desc": "实时查询活跃能量/朝夕心愿/美鸭梨挖掘(派遣任务剩余时间),每次都实时拉取",
                 "eg": "体力",

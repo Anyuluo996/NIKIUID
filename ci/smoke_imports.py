@@ -23,6 +23,7 @@ MODULES = [
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_help",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_login",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_refresh",
+    "gsuid_core.plugins.NIKIUID.NIKIUID.niki_resources",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_stamina",
 ]
 

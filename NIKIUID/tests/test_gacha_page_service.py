@@ -268,3 +268,42 @@ class TestDefaultFilterMode:
 
     def test_scope_token_overrides(self):
         assert parse_gacha_args_text("全").filter_mode == "all"
+
+
+class TestCollectResourceUrls:
+    """下载资源指令的 URL 收集"""
+
+    def test_collect_from_raw_state(self):
+        from gsuid_core.plugins.NIKIUID.NIKIUID.utils.render_wardrobe_card import (
+            collect_render_resource_urls,
+        )
+
+        state = {
+            "suitCardListData": [
+                {
+                    "preview_image": "https://cdn/s1.png",
+                    "cloths": json.dumps([
+                        {"cloth_id": "c1", "image": "https://cdn/c1.png"},
+                        {"cloth_id": "c2", "image": ""},
+                    ]),
+                },
+                {
+                    "preview_image": "https://cdn/s1.png",
+                    "cloths": [{"cloth_id": "c3", "image": "https://cdn/c3.png"}],
+                },
+            ]
+        }
+        suit_urls, cloth_urls = collect_render_resource_urls(state)
+        assert suit_urls == ["https://cdn/s1.png"]  # 去重
+        assert cloth_urls == ["https://cdn/c1.png", "https://cdn/c3.png"]
+
+    def test_collect_empty_and_bad_json(self):
+        from gsuid_core.plugins.NIKIUID.NIKIUID.utils.render_wardrobe_card import (
+            collect_render_resource_urls,
+        )
+
+        suit_urls, cloth_urls = collect_render_resource_urls(
+            {"suitCardListData": [{"cloths": "{bad json"}]}
+        )
+        assert suit_urls == [] and cloth_urls == []
+        assert collect_render_resource_urls({}) == ([], [])
