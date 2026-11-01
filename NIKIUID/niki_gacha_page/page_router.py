@@ -12,12 +12,18 @@ ww-login /waves/gacha 协议(数据带 TTL, 资产固定路径长缓存):
 
 静态资产按内容文件名固定路径, 跨 token / 跨用户可命中浏览器与反代缓存;
 页面与数据仅 10 分钟有效, 与登录链接口径一致。
+
+页面图标一律走 WebP 压缩缓存(image_service): 原图最大 7.8MB,
+页面显示只有 64~118px, 全量 PNG 会打穿反代/CDN 回源; .png 请求
+仍回原图目录(兼容已缓存的旧页面)。
 """
 
 from __future__ import annotations
 
+import asyncio
 import secrets
 from typing import Any, Callable
+from pathlib import Path
 from datetime import datetime
 from urllib.parse import quote
 
@@ -34,6 +40,14 @@ from ..utils.render_wardrobe_card import (
     build_wardrobe_context,
 )
 from ..utils.resource.RESOURCE_PATH import NIKI_TEMPLATES, USER_DATA_PATH
+from ..utils.services.image_service import (
+    WEBP_SUITS_DIR,
+    WEBP_CLOTHS_DIR,
+    webp_name,
+    png_name_of_url,
+    bulk_convert_webp,
+    convert_png_to_webp,
+)
 from ..utils.services.blessing_service import bulk_download_icons
 
 GACHA_PAGE_TTL = 600  # 10 分钟, 与登录链接一致
@@ -54,10 +68,8 @@ _POOL_ORDER = ["limited_5", "limited_4", "permanent_5", "permanent_4"]
 
 
 def _asset_fname(url: str) -> str:
-    fname = url.split("/")[-1]
-    if not fname.endswith(".png"):
-        fname += ".png"
-    return fname
+    """远程图标 URL → 页面 WebP 资产文件名。"""
+    return webp_name(png_name_of_url(url))
 
 
 def _asset_url(url: str, base_url: str, folder: str) -> str:
@@ -152,6 +164,19 @@ async def build_page_payload(
             await bulk_download_icons(suit_urls, SUITS_DIR)
     except Exception as e:
         logger.warning(f"[niki抽卡页面] 图标下载失败(页面将显示占位图): {e}")
+
+    # 预转换 WebP 压缩缓存(漏掉的由资产路由按需兜底); 失败不阻塞生成
+    try:
+        await asyncio.gather(
+            bulk_convert_webp(
+                [png_name_of_url(u) for u in cloth_urls], CLOTHS_DIR, WEBP_CLOTHS_DIR
+            ),
+            bulk_convert_webp(
+                [png_name_of_url(u) for u in suit_urls], SUITS_DIR, WEBP_SUITS_DIR
+            ),
+        )
+    except Exception as e:
+        logger.warning(f"[niki抽卡页面] WebP 压缩失败(路由将按需转换): {e}")
 
     # 跨星级行聚合后再按固定池序输出(限定五星→限定四星→常驻五星→常驻四星)
     groups: dict[str, list[dict[str, Any]]] = {}
@@ -261,10 +286,26 @@ def _safe_fname(fname: str) -> bool:
     )
 
 
-def _serve_asset(folder: Any, fname: str) -> FileResponse | JSONResponse:
+async def _serve_icon(
+    fname: str, src_dir: Path, webp_dir: Path
+) -> FileResponse | JSONResponse:
+    """页面图标: .webp 走压缩缓存(缺则现场转换), 其余回原图目录。"""
     if not _safe_fname(fname):
         return JSONResponse({"error": "bad_request"}, status_code=400)
-    path = folder / fname
+    if fname.endswith(".webp"):
+        path = webp_dir / fname
+        if not path.is_file():
+            # 按需兜底: 预转换漏掉的(如下载晚于转换)现场补一张
+            src = src_dir / (fname[:-5] + ".png")
+            if not src.is_file():
+                return JSONResponse({"error": "not_found"}, status_code=404)
+            if not await asyncio.to_thread(convert_png_to_webp, src, path):
+                return JSONResponse({"error": "convert_failed"}, status_code=404)
+        return FileResponse(
+            path, media_type="image/webp",
+            headers={"Cache-Control": "public, max-age=604800"},
+        )
+    path = src_dir / fname
     if not path.is_file():
         return JSONResponse({"error": "not_found"}, status_code=404)
     return FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
@@ -272,14 +313,14 @@ def _serve_asset(folder: Any, fname: str) -> FileResponse | JSONResponse:
 
 @app.get("/niki/gacha/asset/cloth/{fname}")
 async def niki_gacha_asset_cloth(fname: str):
-    """单件图标(固定路径, 长缓存)。"""
-    return _serve_asset(CLOTHS_DIR, fname)
+    """单件图标(WebP 压缩资产, 固定路径长缓存; .png 兼容旧页面)。"""
+    return await _serve_icon(fname, CLOTHS_DIR, WEBP_CLOTHS_DIR)
 
 
 @app.get("/niki/gacha/asset/suit/{fname}")
 async def niki_gacha_asset_suit(fname: str):
-    """套装预览图(固定路径, 长缓存)。"""
-    return _serve_asset(SUITS_DIR, fname)
+    """套装预览图(WebP 压缩资产, 固定路径长缓存; .png 兼容旧页面)。"""
+    return await _serve_icon(fname, SUITS_DIR, WEBP_SUITS_DIR)
 
 
 @app.get("/niki/gacha/asset/avatar/{uid}.png")

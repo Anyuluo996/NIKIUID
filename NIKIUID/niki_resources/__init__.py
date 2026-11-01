@@ -1,7 +1,8 @@
 """NIKIUID 资源预热命令。
 
 - niki下载资源 / nk下载资源 / nkxzzy - 批量预下载渲染所需素材
-  (套装预览图 / 单件图标 / 祝福闪光球图标与预览图)
+  (套装预览图 / 单件图标 / 祝福闪光球图标与预览图),
+  并顺带生成抽卡页面用的 WebP 压缩缓存
 - 已存在的文件自动跳过; 首次全量下载数百到上千张, 分块并发拉取,
   避免首次「抽卡/详情/页面」渲染时边渲染边下载卡数分钟
 """
@@ -26,6 +27,12 @@ from ..utils.render_wardrobe_card import (
     collect_render_resource_urls,
 )
 from ..utils.resource.RESOURCE_PATH import USER_DATA_PATH
+from ..utils.services.image_service import (
+    WEBP_SUITS_DIR,
+    WEBP_CLOTHS_DIR,
+    png_name_of_url,
+    bulk_convert_webp,
+)
 from ..utils.services.blessing_service import (
     bulk_download_icons,
     build_blessing_matrix,
@@ -77,6 +84,13 @@ async def niki_download_resources_cmd(bot: Bot, ev: Event):
         bulk_download_icons(cloth_urls, CLOTHS_DIR),
         bulk_download_icons(suit_urls, SUITS_DIR),
         bulk_download_icons(blessing_urls, BLESSING_ASSETS_DIR),
+        # 顺带预热 WebP 压缩缓存(抽卡页面用), 原图转一次即可
+        bulk_convert_webp(
+            [png_name_of_url(u) for u in cloth_urls], CLOTHS_DIR, WEBP_CLOTHS_DIR
+        ),
+        bulk_convert_webp(
+            [png_name_of_url(u) for u in suit_urls], SUITS_DIR, WEBP_SUITS_DIR
+        ),
     )
     elapsed = round(time.monotonic() - t0, 1)
     logger.info(f"[niki资源] 预热完成: {total} 张, 耗时 {elapsed}s")

@@ -193,7 +193,7 @@ class TestBuildPagePayload:
         suit = payload["pools"][0]["suits"][0]
         assert suit["name"] == "套装202"
         assert suit["preview"].startswith("https://nik.example.com/niki/gacha/asset/suit/")
-        assert suit["preview"].endswith(".png")
+        assert suit["preview"].endswith(".webp")
         assert suit["clothTotal"] == 10
         assert suit["evolutionCount"] == 2
         cloth = suit["cloths"][0]
