@@ -555,7 +555,10 @@ body {
     }
 
     function waitImages(timeoutMs) {
-        var imgs = Array.prototype.slice.call(document.querySelectorAll('#app img'));
+        // 只等可见图: 收起的单件明细/被筛选隐藏的卡片(display:none)不会
+        // 被截进图, 强制 eager 反而要白等上千张隐藏图下载
+        var imgs = Array.prototype.slice.call(document.querySelectorAll('#app img'))
+            .filter(function (img) { return img.offsetParent !== null; });
         imgs.forEach(function (img) { img.loading = 'eager'; });
         var deadline = Date.now() + timeoutMs;
         return Promise.all(imgs.map(function (img) {
@@ -593,7 +596,8 @@ body {
                 scale: 2,
                 backgroundColor: '#efeadb',
                 useCORS: true,
-                logging: false
+                logging: false,
+                imageTimeout: 10000
             });
         }).then(function (canvas) {
             return new Promise(function (resolve, reject) {
