@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣艺术刊 · 典藏名录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        .serif {
+            font-family: "Noto Serif SC", "Source Han Serif SC", "STSong", "SimSun", serif;
+        }
+
+        body {
+            background-color: #efeadb;
+            min-height: 100vh;
+            padding: 22px 16px 30px;
+        }
+
+        .paper {
+            width: 768px;
+            margin: 0 auto;
+            background: #f9f6ec;
+            border: 1px solid #d9cfb4;
+            outline: 4px solid #f9f6ec;
+            box-shadow: 0 0 0 1px #d9cfb4;
+            padding: 24px 20px 20px;
+        }
+
+        /* 刊头 */
+        .masthead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .cap {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: #9a8c6a;
+            font-weight: bold;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 42px;
+            font-weight: bold;
+            letter-spacing: 10px;
+            color: #2e2a22;
+            margin-top: 10px;
+            line-height: 46px;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            letter-spacing: 6px;
+            color: #ab8a55;
+            margin-top: 8px;
+        }
+
+        .rule {
+            margin-top: 14px;
+            border-top: 3px solid #2e2a22;
+        }
+
+        .rule-thin {
+            margin-top: 2px;
+            border-top: 1px solid #2e2a22;
+        }
+
+        /* 策展人条 */
+        .curator {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: #ece5d2;
+            border: 1px solid #d9cfb4;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 14px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ab8a55;
+        }
+
+        .who {
+            flex: 1;
+            min-width: 0;
+            padding-left: 12px;
+        }
+
+        .who-tag {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #ab8a55;
+            font-weight: bold;
+        }
+
+        .who-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2e2a22;
+            margin-top: 2px;
+        }
+
+        .who-meta {
+            font-size: 11px;
+            color: #9a8c6a;
+            margin-top: 2px;
+        }
+
+        .curator-stats {
+            flex: 0 0 auto;
+            display: flex;
+            text-align: center;
+        }
+
+        .cs-cell {
+            padding: 0 16px;
+            border-left: 1px solid #d3c8aa;
+        }
+
+        .cs-num {
+            font-size: 21px;
+            font-weight: bold;
+            color: #2e2a22;
+            line-height: 25px;
+        }
+
+        .cs-num small {
+            font-size: 11px;
+            color: #9a8c6a;
+            font-weight: normal;
+        }
+
+        .cs-label {
+            font-size: 10px;
+            color: #9a8c6a;
+            margin-top: 3px;
+            letter-spacing: 1px;
+        }
+
+        /* 本期焦点 */
+        .spotlight {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: #fffdf4;
+            border: 1px solid #e3dac2;
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 14px;
+        }
+
+        .spot-pic {
+            flex: 0 0 auto;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #c9b68c;
+            background: #efe8d5;
+        }
+
+        .spot-main {
+            flex: 1;
+            min-width: 0;
+            padding-left: 18px;
+        }
+
+        .spot-chip {
+            display: inline-block;
+            background: #b99a63;
+            color: #fdf8ea;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            padding: 3px 10px;
+        }
+
+        .spot-src {
+            font-size: 11px;
+            color: #9a8c6a;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        .spot-name {
+            font-size: 30px;
+            font-weight: bold;
+            color: #2e2a22;
+            margin-top: 4px;
+            line-height: 36px;
+        }
+
+        .spot-stars {
+            font-size: 14px;
+            color: #c9a34e;
+            letter-spacing: 4px;
+            margin-top: 2px;
+        }
+
+        .spot-stats {
+            display: flex;
+            margin-top: 12px;
+            border-top: 1px solid #e8e0c8;
+            padding-top: 12px;
+        }
+
+        .spot-cell {
+            flex: 1;
+            min-width: 0;
+            padding: 0 10px;
+            border-left: 1px solid #e8e0c8;
+        }
+
+        .spot-cell:first-child {
+            border-left: none;
+            padding-left: 0;
+        }
+
+        .spot-num {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2e2a22;
+            line-height: 22px;
+        }
+
+        .spot-num small {
+            font-size: 11px;
+            color: #9a8c6a;
+            font-weight: normal;
+        }
+
+        .spot-num.done {
+            color: #4e8a5e;
+        }
+
+        .spot-num.collecting {
+            color: #9a8c6a;
+        }
+
+        .spot-k {
+            font-size: 10px;
+            color: #9a8c6a;
+            margin-top: 3px;
+            letter-spacing: 1px;
+        }
+
+        /* 典藏长廊 */
+        .gallery-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+            margin-bottom: 12px;
+        }
+
+        .gallery-title {
+            font-size: 17px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            color: #2e2a22;
+        }
+
+        .gallery-count {
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #ab8a55;
+            font-weight: bold;
+        }
+
+        .g-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        .g-card {
+            flex: 0 0 auto;
+            width: 170px;
+            min-width: 0;
+            margin-right: 16px;
+            background: #fffdf4;
+            border: 1px solid #e3dac2;
+            border-radius: 12px;
+            padding: 10px 8px 8px;
+            text-align: center;
+        }
+
+        .g-card:last-child {
+            margin-right: 0;
+        }
+
+        .g-pic {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            border: 2px solid #d5c8a2;
+            display: block;
+            margin: 0 auto;
+            background: #efe8d5;
+        }
+
+        .g-pic.dim {
+            opacity: 0.3;
+        }
+
+        .g-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2e2a22;
+            margin-top: 8px;
+            line-height: 18px;
+        }
+
+        .g-src {
+            font-size: 10px;
+            color: #a5967f;
+            margin-top: 2px;
+            line-height: 13px;
+        }
+
+        .g-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding-top: 7px;
+            border-top: 1px dotted #e0d6ba;
+        }
+
+        .g-draws {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2e2a22;
+            padding-left: 4px;
+        }
+
+        .g-draws small {
+            font-size: 10px;
+            color: #a5967f;
+            font-weight: normal;
+        }
+
+        .g-chip {
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 999px;
+            padding: 1px 9px;
+        }
+
+        .g-chip.ok {
+            background: #e3efdd;
+            color: #4e8a5e;
+        }
+
+        .g-chip.part {
+            background: #efe9d8;
+            color: #9a8c6a;
+        }
+
+        /* 落款 */
+        .foot-rule {
+            margin-top: 6px;
+            border-top: 2px solid #2e2a22;
+        }
+
+        .foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .foot-left {
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: #9a8c6a;
+            line-height: 15px;
+        }
+
+        .foot-right {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #ab8a55;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="paper">
+        <div class="masthead">
+            <span class="cap">HAUTE COUTURE ARCHIVE</span>
+            <span class="cap">VOL. 2026 // {{ suit_count }} SUITS</span>
+            <span class="cap">AUTHENTICATED</span>
+        </div>
+        <div class="title serif">NIKI COUTURE</div>
+        <div class="subtitle serif">共鸣艺术刊 · {{ pool_subtitle }}</div>
+        <div class="rule"></div>
+        <div class="rule-thin"></div>
+
+        <div class="curator">
+            {% if avatar_path %}
+            <img src="{{ avatar_path }}" alt="" class="avatar">
+            {% else %}
+            <div class="avatar" style="background:#e0d6ba;"></div>
+            {% endif %}
+            <div class="who">
+                <div class="who-tag">CURATED BY · 典藏策展人</div>
+                <div class="who-name">{{ nickname }}</div>
+                <div class="who-meta">UID: {{ role_id }} · 等级 Lv.{{ level }}</div>
+            </div>
+            <div class="curator-stats">
+                <div class="cs-cell">
+                    <div class="cs-num">{{ total_draws }}</div>
+                    <div class="cs-label">全池总抽数</div>
+                </div>
+                <div class="cs-cell">
+                    <div class="cs-num">{{ owned_count }}<small> / {{ suit_count }}</small></div>
+                    <div class="cs-label">齐套达成率</div>
+                </div>
+                <div class="cs-cell">
+                    <div class="cs-num">{{ avg_draw }}</div>
+                    <div class="cs-label">单件均耗抽数</div>
+                </div>
+            </div>
+        </div>
+
+        {% if spotlight %}
+        <div class="spotlight">
+            {% if spotlight.imgUrl %}
+            <img src="{{ spotlight.imgUrl }}" alt="" class="spot-pic{{ '' if spotlight.isCollected or spotlight.totalDrawNum > 0 else ' dim' }}">
+            {% else %}
+            <div class="spot-pic"></div>
+            {% endif %}
+                <div class="spot-main">
+                    <span class="spot-chip">SPOTLIGHT · 本期焦点</span>
+                    <div class="spot-src">入手于 {{ spotlight.bigSuit or "共鸣衣橱" }}</div>
+                    <div class="spot-name serif">{{ spotlight.subSuit }}</div>
+                    <div class="spot-stars">{% for i in range(spotlight.level) %}★{% endfor %}</div>
+                    <div class="spot-stats">
+                    <div class="spot-cell">
+                        <div class="spot-num">{{ spotlight.totalDrawNum }}<small> 抽</small></div>
+                        <div class="spot-k">投入抽数</div>
+                    </div>
+                    <div class="spot-cell">
+                        <div class="spot-num">{{ spotlight.ownedClothCount }}<small> / {{ spotlight.cloths | length }} 件</small></div>
+                        <div class="spot-k">全套收集</div>
+                    </div>
+                    <div class="spot-cell">
+                        <div class="spot-num">{{ spotlight.avgDrawNum }}<small> 抽/件</small></div>
+                        <div class="spot-k">出货均率</div>
+                    </div>
+                    <div class="spot-cell">
+                        {% if spotlight.ownedClothCount >= spotlight.cloths | length and spotlight.cloths | length > 0 %}
+                        <div class="spot-num done">✓ 完美齐套</div>
+                        <div class="spot-k">典藏状态</div>
+                        {% else %}
+                        <div class="spot-num collecting">◐ 收集中</div>
+                        <div class="spot-k">典藏状态</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="gallery-head">
+            <div class="gallery-title serif">CURATED GALLERY · 典藏长廊展架</div>
+            <div class="gallery-count">COLLECTED ITEMS ({{ owned_count }})</div>
+        </div>
+
+        {% for row_start in range(0, clothes | length, 4) %}
+        <div class="g-row">
+            {% for suit in clothes[row_start:row_start + 4] %}
+            <div class="g-card">
+                {% if suit.imgUrl %}
+                <img src="{{ suit.imgUrl }}" alt="" class="g-pic{{ '' if suit.isCollected or suit.totalDrawNum > 0 else ' dim' }}">
+                {% else %}
+                <div class="g-pic{{ '' if suit.isCollected or suit.totalDrawNum > 0 else ' dim' }}"></div>
+                {% endif %}
+                <div class="g-name">{{ suit.subSuit }}</div>
+                <div class="g-src">{{ suit.bigSuit }}</div>
+                <div class="g-meta">
+                    <span class="g-draws">{{ suit.totalDrawNum }} <small>抽</small></span>
+                    {% if suit.cloths | length > 0 and suit.ownedClothCount >= suit.cloths | length %}
+                    <span class="g-chip ok">齐套✓</span>
+                    {% else %}
+                    <span class="g-chip part">{{ suit.ownedClothCount }}/{{ suit.cloths | length }}件</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="foot-rule"></div>
+        <div class="foot">
+            <div class="foot-left">
+                ARCHIVAL REGISTRY CODE: NK-{{ role_id }}-{{ pool_type | upper }}<br>
+                PRINTED AT {{ update_time }} · 共 {{ suit_count }} 套 · 已共鸣 {{ owned_count }} 套
+            </div>
+            <div class="foot-right serif">★ CERTIFICATE OF COUTURE ★</div>
+        </div>
+    </div>
+</body>
+</html>

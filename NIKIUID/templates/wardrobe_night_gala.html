@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣衣橱 · 夜幕礼堂</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-image: url("images/bg/HGxGdbSbMAAGa2n.jpg");
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            padding: 34px 20px 40px;
+        }
+
+        .frame {
+            width: 820px;
+            margin: 0 auto;
+            background: linear-gradient(160deg, #191d31 0%, #232041 55%, #2a1e44 100%);
+            border: 1px solid rgba(233, 199, 135, 0.35);
+            border-radius: 20px;
+            padding: 26px 24px 18px;
+        }
+
+        /* 顶部 */
+        .top {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .top .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid #e9c787;
+        }
+
+        .top .who {
+            padding-left: 16px;
+        }
+
+        .top .who .name {
+            font-size: 21px;
+            font-weight: bold;
+            color: #f2ead8;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        .top .who .meta {
+            font-size: 12px;
+            color: #8d92b3;
+            margin-top: 4px;
+        }
+
+        .top .right {
+            flex: 1;
+            text-align: right;
+        }
+
+        .top .pool-chip {
+            display: inline-block;
+            border: 1px solid rgba(233, 199, 135, 0.7);
+            color: #e9c787;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 999px;
+            padding: 5px 18px;
+            margin-bottom: 6px;
+        }
+
+        .top .page-chip {
+            display: block;
+            color: #8d92b3;
+            font-size: 12px;
+        }
+
+        /* 金线分隔 */
+        .gold-rule {
+            height: 2px;
+            background: linear-gradient(90deg, rgba(233,199,135,0) 0%, rgba(233,199,135,0.8) 50%, rgba(233,199,135,0) 100%);
+            margin-bottom: 18px;
+        }
+
+        /* 三列统计 */
+        .ledger {
+            display: flex;
+            width: 100%;
+            margin-bottom: 22px;
+        }
+
+        .ledger-cell {
+            flex: 1;
+            text-align: center;
+            padding: 12px 4px;
+            background: rgba(233, 199, 135, 0.07);
+            border: 1px solid rgba(233, 199, 135, 0.18);
+        }
+
+        .ledger-cell:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        .ledger-cell:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .ledger-num {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e9c787;
+        }
+
+        .ledger-num small {
+            font-size: 13px;
+            color: #b7a680;
+        }
+
+        .ledger-label {
+            font-size: 12px;
+            color: #8d92b3;
+            margin-top: 3px;
+        }
+
+        /* 套装横排 */
+        .act {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid rgba(233, 199, 135, 0.16);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+
+        .act-head {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .act-preview {
+            flex: 0 0 58px;
+            width: 58px;
+            border-radius: 10px;
+            border: 1px solid rgba(233, 199, 135, 0.4);
+        }
+
+        .act-title {
+            flex: 1;
+            padding-left: 14px;
+        }
+
+        .act-name {
+            font-size: 19px;
+            font-weight: bold;
+            color: #f2ead8;
+        }
+
+        .act-name .lv {
+            font-size: 12px;
+            color: #e9c787;
+            border: 1px solid rgba(233, 199, 135, 0.5);
+            border-radius: 6px;
+            padding: 1px 8px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .act-name .lv.four {
+            color: #9db6e8;
+            border-color: rgba(157, 182, 232, 0.5);
+        }
+
+        .act-sub {
+            font-size: 12px;
+            color: #8d92b3;
+            margin-top: 3px;
+        }
+
+        .act-nums {
+            flex: 0 0 auto;
+            display: flex;
+            text-align: right;
+        }
+
+        .act-nums .n-cell {
+            padding: 0 14px;
+            border-left: 1px solid rgba(233, 199, 135, 0.2);
+        }
+
+        .act-nums .n-cell:first-child {
+            border-left: none;
+        }
+
+        .act-nums .n-val {
+            font-size: 19px;
+            font-weight: bold;
+            color: #e9c787;
+        }
+
+        .act-nums .n-val.pink {
+            color: #ff9ec7;
+        }
+
+        .act-nums .n-label {
+            font-size: 11px;
+            color: #8d92b3;
+            margin-top: 2px;
+        }
+
+        /* 进化:星条 */
+        .evo-track {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 12px;
+            color: #e9c787;
+            letter-spacing: 2px;
+        }
+
+        .evo-track .off {
+            color: #565a78;
+        }
+
+        /* 单件胶片排 */
+        .film {
+            display: flex;
+            width: 100%;
+        }
+
+        .frame-cell {
+            flex: 0 0 78px;
+            min-width: 0;
+            margin-right: 8px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+
+        .frame-cell.owned {
+            border-color: rgba(233, 199, 135, 0.45);
+            background: rgba(233, 199, 135, 0.06);
+        }
+
+        .frame-img {
+            width: 100%;
+        }
+
+        .frame-img.dim {
+            opacity: 0.22;
+        }
+
+        .frame-badge {
+            position: absolute;
+            right: -4px;
+            bottom: -4px;
+            min-width: 26px;
+            text-align: center;
+            background: #e9c787;
+            color: #1d1a12;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 8px;
+            padding: 1px 7px;
+        }
+
+        .frame-badge.second {
+            right: auto;
+            left: -4px;
+            background: #ff9ec7;
+        }
+
+        .frame-badge.zero {
+            background: #3a3f5c;
+            color: #8d92b3;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 14px 0 4px;
+            color: #8d92b3;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="frame">
+        <div class="top">
+            {% if avatar_path %}
+            <img src="{{ avatar_path }}" alt="" class="avatar">
+            {% else %}
+            <div class="avatar" style="background:#232041;"></div>
+            {% endif %}
+            <div class="who">
+                <div class="name">{{ nickname }}</div>
+                <div class="meta">Lv.{{ level }} · UID {{ role_id }}</div>
+            </div>
+            <div class="right">
+                <span class="pool-chip">{{ pool_label }}</span>
+                <span class="page-chip">第 {{ page }}/{{ total_pages }} 页 · {{ update_time }}</span>
+            </div>
+        </div>
+        <div class="gold-rule"></div>
+
+        <div class="ledger">
+            <div class="ledger-cell">
+                <div class="ledger-num">{{ owned_count }}<small> / {{ suit_count }}</small></div>
+                <div class="ledger-label">已共鸣套装</div>
+            </div>
+            <div class="ledger-cell">
+                <div class="ledger-num">{{ total_draws }}</div>
+                <div class="ledger-label">总共鸣次数</div>
+            </div>
+            <div class="ledger-cell">
+                <div class="ledger-num">{{ avg_draw }}</div>
+                <div class="ledger-label">每件平均</div>
+            </div>
+            <div class="ledger-cell">
+                <div class="ledger-num">{{ total_collected }}</div>
+                <div class="ledger-label">已共鸣件数</div>
+            </div>
+            <div class="ledger-cell">
+                <div class="ledger-num">{{ total_evolutions }}<small> / {{ max_evolutions }}</small></div>
+                <div class="ledger-label">套装进化</div>
+            </div>
+        </div>
+
+        {% for suit in clothes %}
+        <div class="act">
+            <div class="act-head">
+                {% if suit.imgUrl %}
+                <img src="{{ suit.imgUrl }}" alt="" class="act-preview">
+                {% else %}
+                <div class="act-preview" style="background:#232041;"></div>
+                {% endif %}
+                <div class="act-title">
+                    <div class="act-name">{{ suit.subSuit }}<span class="lv{{ ' four' if suit.level == 4 else '' }}">{{ suit.level }}★</span></div>
+                    <div class="act-sub">{{ suit.bigSuit }}</div>
+                </div>
+                <div class="act-nums">
+                    <div class="n-cell">
+                        <div class="n-val pink">{{ suit.avgDrawNum }}</div>
+                        <div class="n-label">每件平均</div>
+                    </div>
+                    <div class="n-cell">
+                        <div class="n-val">{{ suit.totalDrawNum }}</div>
+                        <div class="n-label">总计抽数</div>
+                    </div>
+                    <div class="n-cell">
+                        <div class="n-val">{{ suit.collectedCount }}</div>
+                        <div class="n-label">件数</div>
+                    </div>
+                    <div class="n-cell">
+                        <div class="n-val"><span class="evo-track">{% for i in range(suit.evolutionTotal) %}<span class="{{ '' if i < suit.evolutionCount else 'off' }}">★</span>{% endfor %}</span></div>
+                        <div class="n-label">进化 {{ suit.evolutionCount }}/{{ suit.evolutionTotal }}</div>
+                    </div>
+                </div>
+            </div>
+            {% for row_start in range(0, suit.cloths | length, 8) %}
+            <div class="film" style="margin-bottom: 8px;">
+                {% for cloth in suit.cloths[row_start:row_start + 8] %}
+                <div class="frame-cell{% if cloth.owned %} owned{% endif %}">
+                    {% if cloth.image %}
+                    <img src="{{ cloth.image }}" alt="" class="frame-img{% if not cloth.owned %} dim{% endif %}">
+                    {% endif %}
+                    {% if cloth.owned %}
+                    <div class="frame-badge">{{ cloth.drawNumFirst }}</div>
+                    {% if cloth.drawNumSecond > 0 %}
+                    <div class="frame-badge second">{{ cloth.drawNumSecond }}</div>
+                    {% endif %}
+                    {% else %}
+                    <div class="frame-badge zero">—</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="footer">数据来源: 奇想手账 · {{ update_time }}</div>
+    </div>
+</body>
+</html>

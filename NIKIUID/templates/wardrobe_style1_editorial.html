@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣衣橱 · 优雅画报风</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-image: url("images/bg/G2AUrrxbIAA1jca.jpg");
+            background-size: cover;
+            background-position: center top;
+            min-height: 100vh;
+            padding: 36px 20px 40px;
+        }
+
+        .container {
+            width: 760px;
+            margin: 0 auto;
+        }
+
+        /* 杂志标头 */
+        .magazine-masthead {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .masthead-sub {
+            font-size: 11px;
+            letter-spacing: 5px;
+            color: rgba(255, 255, 255, 0.92);
+            text-transform: uppercase;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(60, 30, 40, 0.4);
+            margin-bottom: 6px;
+        }
+
+        .masthead-title {
+            font-size: 32px;
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-shadow: 0 3px 8px rgba(70, 30, 50, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .masthead-title .deco-diamond {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #f8c858;
+            transform: rotate(45deg);
+        }
+
+        .masthead-tagline {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.95);
+            margin-top: 6px;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(60, 30, 40, 0.4);
+        }
+
+        /* 主体卡片 */
+        .main-card {
+            background: rgba(255, 252, 248, 0.95);
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 10px 30px rgba(80, 50, 60, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            margin-bottom: 22px;
+        }
+
+        /* 顶部用户档案行 */
+        .profile-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 18px;
+            border-bottom: 1px dashed #eedcd0;
+        }
+
+        .profile-user {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar-wrap {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(135deg, #f7d58b, #ff9eb5);
+            box-shadow: 0 3px 10px rgba(255, 158, 181, 0.35);
+        }
+
+        .avatar-wrap img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .avatar-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #fff;
+            color: #d4a5b8;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .profile-meta h2 {
+            font-size: 20px;
+            color: #4a3831;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .profile-meta .badge-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .role-badge {
+            background: #fcedf4;
+            color: #d15684;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .uid-tag {
+            font-size: 12px;
+            color: #9c8a80;
+        }
+
+        .lucky-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .lucky-badge {
+            background: linear-gradient(135deg, #f8c858, #ff8da4);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 14px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px rgba(255, 141, 164, 0.3);
+        }
+
+        .lucky-sub {
+            font-size: 11px;
+            color: #a89489;
+        }
+
+        /* 统计数据看板 (4 宫格) */
+        .stats-grid {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .stat-item {
+            flex: 1;
+            background: #fff9f6;
+            border: 1px solid #fae8df;
+            border-radius: 12px;
+            padding: 12px 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #9c8a80;
+            margin-bottom: 4px;
+        }
+
+        .stat-val {
+            font-size: 22px;
+            font-weight: 800;
+            color: #4a3831;
+            line-height: 1.1;
+        }
+
+        .stat-val .unit {
+            font-size: 12px;
+            font-weight: 500;
+            color: #9c8a80;
+            margin-left: 2px;
+        }
+
+        .stat-val.gold {
+            color: #d48b19;
+        }
+
+        .stat-foot {
+            font-size: 10px;
+            color: #b5a49a;
+            margin-top: 3px;
+        }
+
+        /* 展阁区块头部 */
+        .gallery-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+
+        .gallery-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gallery-title h3 {
+            font-size: 17px;
+            color: #4a3831;
+            font-weight: 700;
+        }
+
+        .gallery-pill {
+            background: #edd8bf;
+            color: #684a37;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .gallery-count {
+            font-size: 12px;
+            color: #9c8a80;
+        }
+
+        /* 套装网格 3 列严格固定宽 */
+        .suit-grid {
+            width: 100%;
+        }
+
+        .suit-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .suit-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .suit-cell {
+            flex: 0 0 auto;
+            width: 232px;
+        }
+
+        .suit-row.partial {
+            justify-content: center;
+        }
+
+        /* 画报卡片 */
+        .art-card {
+            background: #ffffff;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #f0e4dc;
+            box-shadow: 0 3px 10px rgba(120, 90, 80, 0.08);
+        }
+
+        .art-thumb-wrap {
+            width: 232px;
+            background: #fbf7f4;
+            display: block;
+        }
+
+        .art-thumb-wrap img.suit-img {
+            width: 232px;
+            display: block;
+        }
+
+        .art-info {
+            padding: 10px 12px 12px;
+            background: #ffffff;
+        }
+
+        .art-tags-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .art-stars {
+            height: 14px;
+            display: inline-block;
+        }
+
+        .art-pool-badge {
+            font-size: 10px;
+            color: #8c7b73;
+            background: #f4ece7;
+            padding: 1px 6px;
+            border-radius: 4px;
+            max-width: 130px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .art-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #3f2f28;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .art-footer-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 6px;
+            border-top: 1px solid #f5ece6;
+            margin-top: 2px;
+        }
+
+        .art-avg-pill {
+            background: #fff4db;
+            color: #b87c0e;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            border: 1px solid #f9e2b0;
+        }
+
+        .art-total-draws {
+            font-size: 11px;
+            color: #a89489;
+            font-weight: 500;
+        }
+
+        /* 页脚 */
+        .footer-note {
+            text-align: center;
+            padding: 10px 0 0;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 3px rgba(60, 30, 40, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 杂志标头 -->
+        <div class="magazine-masthead">
+            <div class="masthead-sub">Collection Archive // Vol.01</div>
+            <div class="masthead-title">
+                <span class="deco-diamond"></span>
+                <span>共鸣衣橱 · 典藏录</span>
+                <span class="deco-diamond"></span>
+            </div>
+            <div class="masthead-tagline">INFINITY NIKI · 奇想共鸣盛典图鉴</div>
+        </div>
+
+        <!-- 综合数据面板卡片 -->
+        <div class="main-card">
+            <!-- 搭配师信息 -->
+            <div class="profile-row">
+                <div class="profile-user">
+                    <div class="avatar-wrap">
+                        {% if avatar_path %}
+                        <img src="{{ avatar_path }}" alt="头像">
+                        {% else %}
+                        <div class="avatar-placeholder">?</div>
+                        {% endif %}
+                    </div>
+                    <div class="profile-meta">
+                        <h2>{{ nickname }}</h2>
+                        <div class="badge-line">
+                            <span class="role-badge">Lv.{{ level }}</span>
+                            <span class="uid-tag">搭配师 UID: {{ role_id }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lucky-status">
+                    {% if avg_draw > 0 and avg_draw <= 15.5 %}
+                    <span class="lucky-badge">★ 欧皇降世 · 极品运势 ★</span>
+                    <span class="lucky-sub">平均抽数领跑全国</span>
+                    {% elif avg_draw > 0 and avg_draw <= 16.5 %}
+                    <span class="lucky-badge">★ 星愿眷顾 · 极品欧气 ★</span>
+                    <span class="lucky-sub">共鸣感应超群出众</span>
+                    {% elif avg_draw > 0 and avg_draw <= 17.5 %}
+                    <span class="lucky-badge">★ 稳健共鸣 · 岁月安澜 ★</span>
+                    <span class="lucky-sub">稳扎稳打收藏家</span>
+                    {% else %}
+                    <span class="lucky-badge">★ 愿力汇聚 · 执念大成 ★</span>
+                    <span class="lucky-sub">每一份热爱皆有回响</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 四宫格统计看板 -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">已收录套装</div>
+                    <div class="stat-val">{{ owned_count }}<span class="unit">/{{ suit_count }}</span></div>
+                    <div class="stat-foot">收集率 100%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">累计共鸣抽数</div>
+                    <div class="stat-val">{{ total_draws }}<span class="unit">抽</span></div>
+                    <div class="stat-foot">全卡池投入</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">平均单件消耗</div>
+                    <div class="stat-val gold">{{ avg_draw }}<span class="unit">抽</span></div>
+                    <div class="stat-foot">套均综合成本</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">当前卡池分类</div>
+                    <div class="stat-val" style="font-size: 16px; padding-top: 3px;">{{ pool_label }}</div>
+                    <div class="stat-foot">{% if filter_mode == 'owned' %}已集齐典藏{% else %}全部套装{% endif %}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 套装画报展阁卡片 -->
+        <div class="main-card" style="padding-top: 20px;">
+            <div class="gallery-header">
+                <div class="gallery-title">
+                    <h3>五星套装典藏</h3>
+                    <span class="gallery-pill">{{ pool_label }}</span>
+                </div>
+                <div class="gallery-count">共展现 {{ clothes|length }} 件华丽衣装</div>
+            </div>
+
+            {% if clothes %}
+            <div class="suit-grid">
+                {% for suit in clothes %}
+                {% set loop_index = loop.index0 %}
+                {% if loop_index % 3 == 0 %}<div class="suit-row{% if loop.length - loop.index0 < 3 %} partial{% endif %}">{% endif %}
+                <div class="suit-cell">
+                    <div class="art-card">
+                        <div class="art-thumb-wrap">
+                            {% if suit.imgUrl %}
+                            <img class="suit-img" src="{{ suit.imgUrl }}" alt="{{ suit.subSuit }}">
+                            {% else %}
+                            <div style="width:232px;height:232px;background:#f0f0f0;"></div>
+                            {% endif %}
+                        </div>
+                        <div class="art-info">
+                            <div class="art-tags-row">
+                                <img class="art-stars" src="images/icon/{% if suit.level == 5 %}五星.webp{% else %}四星.webp{% endif %}" alt="星级">
+                                {% if suit.bigSuit %}<span class="art-pool-badge">{{ suit.bigSuit }}</span>{% endif %}
+                            </div>
+                            <div class="art-name">{{ suit.subSuit }}</div>
+                            <div class="art-footer-row">
+                                {% if suit.avgDrawNum > 0 %}
+                                <span class="art-avg-pill">{{ "%.1f"|format(suit.avgDrawNum) }} 抽/件</span>
+                                <span class="art-total-draws">共 {{ suit.actualDrawCount }} 抽</span>
+                                {% else %}
+                                <span class="art-avg-pill">已收录</span>
+                                <span class="art-total-draws">完美共鸣</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if loop_index % 3 == 2 or loop.last %}</div>{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 杂志底栏 -->
+        <div class="footer-note">
+            INFINITY NIKI ARCHIVE · 数据来源: 奇想手账 · {{ update_time }}
+        </div>
+    </div>
+</body>
+</html>

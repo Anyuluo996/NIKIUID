@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣衣橱 · 墨砂手帐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #f6f1e6;
+            min-height: 100vh;
+            padding: 34px 24px 40px;
+        }
+
+        /* 顶部色带 */
+        .band {
+            width: 768px;
+            height: 10px;
+            background: repeating-linear-gradient(90deg,
+                #b08256 0 42px, #c25e4a 42px 84px,
+                #7a9a6d 84px 126px, #6d8aa5 126px 168px);
+            border-radius: 5px;
+            margin: 0 auto 26px;
+        }
+
+        .container {
+            width: 768px;
+            margin: 0 auto;
+        }
+
+        /* 手帐标头 */
+        .masthead {
+            display: flex;
+            align-items: flex-end;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .masthead .title-zh {
+            font-size: 34px;
+            font-weight: bold;
+            color: #3f3226;
+            letter-spacing: 6px;
+        }
+
+        .masthead .title-en {
+            font-size: 13px;
+            color: #b08256;
+            letter-spacing: 4px;
+            padding-bottom: 8px;
+            margin-left: 14px;
+        }
+
+        .masthead .page-no {
+            flex: 1;
+            text-align: right;
+            color: #a5967f;
+            font-size: 13px;
+            padding-bottom: 6px;
+        }
+
+        .user-strip {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: #fffdf8;
+            border: 2px dashed #d9cbae;
+            border-radius: 14px;
+            padding: 12px 18px;
+            margin-bottom: 22px;
+        }
+
+        .avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            border: 2px solid #c25e4a;
+        }
+
+        .user-name {
+            font-size: 19px;
+            font-weight: bold;
+            color: #3f3226;
+            margin-left: 14px;
+        }
+
+        .user-meta {
+            font-size: 12px;
+            color: #a5967f;
+            margin-left: 14px;
+        }
+
+        .stamp {
+            flex: 1;
+            text-align: right;
+        }
+
+        .stamp-inner {
+            display: inline-block;
+            border: 2px solid #c25e4a;
+            color: #c25e4a;
+            border-radius: 8px;
+            padding: 4px 14px;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        /* 汇总:手帐索引条 */
+        .index-note {
+            display: flex;
+            width: 100%;
+            background: #fffdf8;
+            border: 2px solid #e5dac1;
+            border-radius: 14px;
+            padding: 14px 10px;
+            margin-bottom: 26px;
+        }
+
+        .idx-cell {
+            flex: 1;
+            text-align: center;
+            border-left: 2px dotted #e5dac1;
+        }
+
+        .idx-cell:first-child {
+            border-left: none;
+        }
+
+        .idx-num {
+            font-size: 22px;
+            font-weight: bold;
+            color: #b08256;
+        }
+
+        .idx-num small {
+            font-size: 12px;
+            color: #a5967f;
+            font-weight: normal;
+        }
+
+        .idx-label {
+            font-size: 12px;
+            color: #a5967f;
+            margin-top: 3px;
+        }
+
+        /* 套装手帐页 */
+        .journal-page {
+            width: 100%;
+            background: #fffdf8;
+            border: 2px solid #e5dac1;
+            border-radius: 16px;
+            padding: 20px 20px 16px;
+            margin-bottom: 24px;
+        }
+
+        .page-head {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 12px;
+            border-bottom: 2px dotted #e5dac1;
+            margin-bottom: 14px;
+        }
+
+        .suit-no {
+            flex: 0 0 44px;
+            height: 44px;
+            border: 2px solid #3f3226;
+            border-radius: 50%;
+            color: #3f3226;
+            font-size: 17px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 40px;
+        }
+
+        .head-main {
+            flex: 1;
+            padding-left: 14px;
+        }
+
+        .suit-name {
+            display: flex;
+            align-items: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #3f3226;
+            line-height: 26px;
+        }
+
+        .lv-icon {
+            width: 42px;
+            height: 12px;
+            margin-left: 10px;
+        }
+
+        .suit-sub {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #a5967f;
+            margin-top: 4px;
+            line-height: 16px;
+        }
+
+        .head-stats {
+            flex: 0 0 auto;
+            text-align: right;
+        }
+
+        .head-stats .avg-line {
+            font-size: 13px;
+            color: #a5967f;
+        }
+
+        .head-stats .avg-num {
+            font-size: 20px;
+            font-weight: bold;
+            color: #c25e4a;
+        }
+
+        /* 进化印章:★ 实心 ☆ 空心 */
+        .evo-seal {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 13px;
+            color: #b08256;
+            letter-spacing: 2px;
+        }
+
+        /* 单件贴纸墙(显式分行, pytakumi 对 flex-wrap 高度计算不可靠) */
+        .cloth-wall {
+            display: flex;
+            width: 100%;
+        }
+
+        .cloth-card {
+            flex: 0 0 auto;
+            width: 92px;
+            min-width: 0;
+            margin: 0 8px 8px 0;
+            position: relative;
+            background: #f9f4e9;
+            border: 1px solid #e5dac1;
+            border-radius: 10px;
+        }
+
+        .cloth-card.owned {
+            background: #fffdf8;
+            border-color: #d9cbae;
+        }
+
+        .cloth-img {
+            width: 100%;
+            display: block;
+        }
+
+        .cloth-unowned {
+            opacity: 0.22;
+        }
+
+        .cloth-num {
+            position: absolute;
+            right: 3px;
+            bottom: 3px;
+            background: #3f3226;
+            color: #f6ecd9;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 8px;
+            padding: 1px 9px;
+        }
+
+        .cloth-num.redraw {
+            right: auto;
+            left: 3px;
+            background: #c25e4a;
+            font-size: 12px;
+            padding: 1px 7px;
+        }
+
+        .cloth-num.zero {
+            background: #d9cbae;
+            color: #fffdf8;
+        }
+
+        .page-footer {
+            text-align: center;
+            color: #a5967f;
+            font-size: 12px;
+            padding: 8px 0 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 18px 0;
+            color: #a5967f;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="band"></div>
+    <div class="container">
+        <div class="masthead">
+            <div class="title-zh">共鸣衣橱</div>
+            <div class="title-en">RESONANCE WARDROBE</div>
+            <div class="page-no">{{ pool_label }} · 第 {{ page }}/{{ total_pages }} 页</div>
+        </div>
+
+        <div class="user-strip">
+            {% if avatar_path %}
+            <img src="{{ avatar_path }}" alt="" class="avatar">
+            {% else %}
+            <div class="avatar" style="background:#f3ead6;"></div>
+            {% endif %}
+            <div class="user-name">{{ nickname }}</div>
+            <div class="user-meta">Lv.{{ level }} · UID {{ role_id }} · {{ update_time }}</div>
+            <div class="stamp"><span class="stamp-inner">{{ "已共鸣" if filter_mode == "owned" else "全收录" }}</span></div>
+        </div>
+
+        <div class="index-note">
+            <div class="idx-cell">
+                <div class="idx-num">{{ owned_count }}<small> / {{ suit_count }}</small></div>
+                <div class="idx-label">已共鸣套装</div>
+            </div>
+            <div class="idx-cell">
+                <div class="idx-num">{{ total_draws }}</div>
+                <div class="idx-label">总共鸣次数</div>
+            </div>
+            <div class="idx-cell">
+                <div class="idx-num">{{ avg_draw }}</div>
+                <div class="idx-label">每件平均</div>
+            </div>
+            <div class="idx-cell">
+                <div class="idx-num">{{ total_collected }}</div>
+                <div class="idx-label">已共鸣件数</div>
+            </div>
+            <div class="idx-cell">
+                <div class="idx-num">{{ total_evolutions }}<small> / {{ max_evolutions }}</small></div>
+                <div class="idx-label">进化次数</div>
+            </div>
+        </div>
+
+        {% for suit in clothes %}
+        <div class="journal-page">
+            <div class="page-head">
+                <div class="suit-no">{{ '%02d' % loop.index }}</div>
+                <div class="head-main">
+                    <div class="suit-name">{{ suit.subSuit }}<img src="images/icon/{{ '五星' if suit.level == 5 else '四星' }}.webp" alt="" class="lv-icon"><span class="evo-seal">{% for i in range(suit.evolutionTotal) %}{{ "★" if i < suit.evolutionCount else "☆" }}{% endfor %}</span></div>
+                    <div class="suit-sub">{{ suit.bigSuit }} · 共 {{ suit.cloths | length }} 件</div>
+                </div>
+                <div class="head-stats">
+                    <div class="avg-line">每件平均 <span class="avg-num">{{ suit.avgDrawNum }}</span></div>
+                    <div class="avg-line">总计 {{ suit.totalDrawNum }} 抽 · {{ suit.collectedCount }} 件</div>
+                </div>
+            </div>
+            <div>
+                {% for row_start in range(0, suit.cloths | length, 7) %}
+                <div class="cloth-wall">
+                    {% for cloth in suit.cloths[row_start:row_start + 7] %}
+                    <div class="cloth-card{% if cloth.owned %} owned{% endif %}">
+                        {% if cloth.image %}
+                        <img src="{{ cloth.image }}" alt="" class="cloth-img{% if not cloth.owned %} cloth-unowned{% endif %}">
+                        {% else %}
+                        <div class="cloth-img" style="height: 90px; background: #f3ead6;"></div>
+                        {% endif %}
+                        {% if cloth.owned %}
+                        <span class="cloth-num">{{ cloth.drawNumFirst }}</span>
+                        {% if cloth.drawNumSecond > 0 %}
+                        <span class="cloth-num redraw">{{ cloth.drawNumSecond }}</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="cloth-num zero">—</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="footer">
+            <p>数据来源: 奇想手账 | {{ update_time }}</p>
+        </div>
+        <div style="height:10px;"></div>
+    </div>
+</body>
+</html>

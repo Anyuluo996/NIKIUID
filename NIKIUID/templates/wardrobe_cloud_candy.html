@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣衣橱 · 云糖乐园</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-image: url("images/bg/G2AUrrxbIAA1jca.jpg");
+            background-size: cover;
+            background-position: center top;
+            min-height: 100vh;
+            padding: 36px 20px 40px;
+        }
+
+        .container {
+            width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 顶部泡泡标头 */
+        .bubble-head {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.88);
+            border-radius: 26px;
+            padding: 18px 22px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 4px solid #ffd9e8;
+        }
+
+        .head-info {
+            flex: 1;
+            padding-left: 16px;
+        }
+
+        .head-info .name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #6b5566;
+        }
+
+        .head-info .meta {
+            font-size: 12px;
+            color: #b39aa8;
+            margin-top: 4px;
+        }
+
+        .head-title {
+            flex: 0 0 auto;
+            text-align: right;
+        }
+
+        .head-title .big {
+            font-size: 26px;
+            font-weight: bold;
+            color: #f088ae;
+            text-shadow: 0 2px 0 #fff;
+        }
+
+        .head-title .sub {
+            font-size: 12px;
+            color: #b39aa8;
+            margin-top: 4px;
+        }
+
+        /* 糖果统计条 */
+        .candy-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 22px;
+        }
+
+        .candy {
+            flex: 1;
+            margin-right: 10px;
+            border-radius: 18px;
+            padding: 12px 6px;
+            text-align: center;
+        }
+
+        .candy:last-child {
+            margin-right: 0;
+        }
+
+        .candy.strawberry { background: #ffe1ec; }
+        .candy.mint { background: #dcf5ec; }
+        .candy.lemon { background: #fff3d1; }
+        .candy.lavender { background: #e9e2ff; }
+        .candy.sky { background: #ddefff; }
+
+        .candy .num {
+            font-size: 22px;
+            font-weight: bold;
+            color: #6b5566;
+        }
+
+        .candy .num small {
+            font-size: 12px;
+            color: #b39aa8;
+        }
+
+        .candy .label {
+            font-size: 12px;
+            color: #9d8b96;
+            margin-top: 3px;
+        }
+
+        /* 套装大卡 */
+        .cloud-card {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 26px;
+            padding: 20px;
+            margin-bottom: 22px;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        .suit-photo {
+            flex: 0 0 84px;
+            width: 84px;
+            border-radius: 18px;
+            border: 3px solid #ffe1ec;
+        }
+
+        .card-title-block {
+            flex: 1;
+            padding-left: 16px;
+        }
+
+        .suit-name {
+            font-size: 21px;
+            font-weight: bold;
+            color: #6b5566;
+        }
+
+        .suit-pool {
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            border-radius: 999px;
+            padding: 2px 12px;
+        }
+
+        .suit-pool.five { background: #f5a8c5; }
+        .suit-pool.four { background: #9db4e8; }
+
+        /* 进化进度圆点 */
+        .evo-dots {
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .evo-dot {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 7px;
+            background: #ecdce4;
+            margin-right: 5px;
+        }
+
+        .evo-dot.on {
+            background: #f088ae;
+        }
+
+        .big-nums {
+            flex: 0 0 auto;
+            display: flex;
+            text-align: center;
+        }
+
+        .big-num-cell {
+            padding: 0 16px;
+        }
+
+        .big-num-cell .v {
+            font-size: 24px;
+            font-weight: bold;
+            color: #f088ae;
+        }
+
+        .big-num-cell .v.deep {
+            color: #6b5566;
+        }
+
+        .big-num-cell .k {
+            font-size: 11px;
+            color: #b39aa8;
+            margin-top: 2px;
+        }
+
+        /* 单件糖格(显式分行, pytakumi 对 flex-wrap 高度计算不可靠) */
+        .sugar-grid {
+            display: flex;
+            width: 100%;
+        }
+
+        .sugar {
+            flex: 0 0 122px;
+            min-width: 0;
+            margin: 0 12px 12px 0;
+            position: relative;
+            background: #faf4f7;
+            border-radius: 18px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .sugar.owned.mint { background: #e7f8f1; }
+        .sugar.owned.lemon { background: #fff8e2; }
+        .sugar.owned.sky { background: #e8f4fd; }
+        .sugar.owned.lavender { background: #f0ebff; }
+        .sugar.owned.strawberry { background: #ffeef5; }
+
+        .sugar-img {
+            width: 100%;
+        }
+
+        .sugar-img.off {
+            opacity: 0.2;
+        }
+
+        .draw-bubble {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            min-width: 30px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            border-radius: 999px;
+            padding: 2px 9px;
+        }
+
+        .draw-bubble.t1 { background: #6fc9a8; }
+        .draw-bubble.t2 { background: #f0b95c; }
+        .draw-bubble.t3 { background: #f2849e; }
+
+        .draw-bubble.second {
+            right: auto;
+            left: 6px;
+            top: 6px;
+            background: #b49ae0;
+            font-size: 12px;
+        }
+
+        .draw-bubble.none {
+            background: #e4d9e0;
+            color: #b39aa8;
+        }
+
+        .sugar-name {
+            font-size: 11px;
+            color: #9d8b96;
+            margin-top: 4px;
+            background: rgba(255,255,255,0.75);
+            border-radius: 8px;
+            padding: 2px 4px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 16px 0;
+            color: #b39aa8;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="bubble-head">
+            {% if avatar_path %}
+            <img src="{{ avatar_path }}" alt="" class="avatar">
+            {% else %}
+            <div class="avatar" style="background:#ffe1ec;"></div>
+            {% endif %}
+            <div class="head-info">
+                <div class="name">{{ nickname }}</div>
+                <div class="meta">Lv.{{ level }} · UID {{ role_id }} · {{ update_time }}</div>
+            </div>
+            <div class="head-title">
+                <div class="big">共鸣衣橱</div>
+                <div class="sub">{{ pool_label }} · 第 {{ page }}/{{ total_pages }} 页</div>
+            </div>
+        </div>
+
+        <div class="candy-row">
+            <div class="candy strawberry">
+                <div class="num">{{ owned_count }}<small> / {{ suit_count }}</small></div>
+                <div class="label">已共鸣套装</div>
+            </div>
+            <div class="candy mint">
+                <div class="num">{{ total_draws }}</div>
+                <div class="label">总共鸣次数</div>
+            </div>
+            <div class="candy lemon">
+                <div class="num">{{ avg_draw }}</div>
+                <div class="label">每件平均</div>
+            </div>
+            <div class="candy lavender">
+                <div class="num">{{ total_collected }}</div>
+                <div class="label">已共鸣件数</div>
+            </div>
+            <div class="candy sky">
+                <div class="num">{{ total_evolutions }}<small> / {{ max_evolutions }}</small></div>
+                <div class="label">套装进化</div>
+            </div>
+        </div>
+
+        {% for suit in clothes %}
+        <div class="cloud-card">
+            <div class="card-top">
+                {% if suit.imgUrl %}
+                <img src="{{ suit.imgUrl }}" alt="" class="suit-photo">
+                {% else %}
+                <div class="suit-photo" style="background:#ffe1ec;"></div>
+                {% endif %}
+                <div class="card-title-block">
+                    <div class="suit-name">
+                        {{ suit.subSuit }}
+                        <span class="evo-dots">{% for i in range(suit.evolutionTotal) %}<span class="evo-dot{{ ' on' if i < suit.evolutionCount else '' }}"></span>{% endfor %}</span>
+                    </div>
+                    <div><span class="suit-pool{{ ' four' if suit.level == 4 else ' five' }}">{{ suit.level }}星 · {{ suit.bigSuit }}</span></div>
+                </div>
+                <div class="big-nums">
+                    <div class="big-num-cell">
+                        <div class="v">{{ suit.avgDrawNum }}</div>
+                        <div class="k">每件平均</div>
+                    </div>
+                    <div class="big-num-cell">
+                        <div class="v deep">{{ suit.totalDrawNum }}</div>
+                        <div class="k">总计抽数</div>
+                    </div>
+                    <div class="big-num-cell">
+                        <div class="v deep">{{ suit.collectedCount }} 件</div>
+                        <div class="k">已共鸣</div>
+                    </div>
+                    <div class="big-num-cell">
+                        <div class="v deep">{{ suit.evolutionCount }}/{{ suit.evolutionTotal }}</div>
+                        <div class="k">进化次数</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% for row_start in range(0, suit.cloths | length, 5) %}
+                <div class="sugar-grid">
+                    {% for cloth in suit.cloths[row_start:row_start + 5] %}
+                    {% set tone = ['strawberry', 'mint', 'lemon', 'sky', 'lavender'][loop.index0 % 5] %}
+                    <div class="sugar {{ 'owned ' + tone if cloth.owned else 'not' }}">
+                        {% if cloth.image %}
+                        <img src="{{ cloth.image }}" alt="" class="sugar-img{% if not cloth.owned %} off{% endif %}">
+                        {% endif %}
+                        {% if cloth.owned %}
+                        {% if cloth.drawNumFirst <= 10 %}
+                        <div class="draw-bubble t1">{{ cloth.drawNumFirst }}</div>
+                        {% elif cloth.drawNumFirst <= 17 %}
+                        <div class="draw-bubble t2">{{ cloth.drawNumFirst }}</div>
+                        {% else %}
+                        <div class="draw-bubble t3">{{ cloth.drawNumFirst }}</div>
+                        {% endif %}
+                        {% if cloth.drawNumSecond > 0 %}
+                        <div class="draw-bubble second">{{ cloth.drawNumSecond }}</div>
+                        {% endif %}
+                        {% else %}
+                        <div class="draw-bubble none">—</div>
+                        {% endif %}
+                        <div class="sugar-name">{{ cloth.displayType or "—" }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="footer">数据来源: 奇想手账 · {{ update_time }}</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣星轨 · 抽卡编年史</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #0b0e17;
+            background-image: url("images/bg/HJawK_5aUAAd19x.jpg");
+            background-size: cover;
+            background-position: center top;
+            min-height: 100vh;
+            padding: 32px 20px 40px;
+        }
+
+        .canvas-wrap {
+            width: 760px;
+            margin: 0 auto;
+        }
+
+        /* 顶部编年史卷首档案 */
+        .chronicle-header {
+            background: linear-gradient(135deg, rgba(16, 21, 36, 0.94), rgba(24, 30, 52, 0.94));
+            border: 1px solid rgba(220, 195, 140, 0.35);
+            border-radius: 18px;
+            padding: 24px 28px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            margin-bottom: 26px;
+        }
+
+        .header-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(220, 195, 140, 0.2);
+            padding-bottom: 18px;
+        }
+
+        .profile-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar-frame {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid #e2c082;
+            box-shadow: 0 0 16px rgba(226, 192, 130, 0.4);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1e2e;
+        }
+
+        .avatar-img {
+            width: 64px;
+            height: 64px;
+            display: block;
+        }
+
+        .avatar-fallback {
+            color: #e2c082;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .profile-texts {
+            margin-left: 16px;
+        }
+
+        .user-title-tag {
+            display: inline-block;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #e2c082;
+            text-transform: uppercase;
+            font-weight: 700;
+            background: rgba(226, 192, 130, 0.12);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(226, 192, 130, 0.25);
+            margin-bottom: 4px;
+        }
+
+        .user-name-line {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
+        .user-nickname {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        }
+
+        .user-uid-badge {
+            font-size: 12px;
+            color: #9aa8c2;
+            letter-spacing: 0.5px;
+        }
+
+        .chronicle-badge {
+            text-align: right;
+        }
+
+        .chronicle-main-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #f7e0b5;
+            letter-spacing: 3px;
+            text-shadow: 0 0 12px rgba(247, 224, 181, 0.4);
+        }
+
+        .chronicle-sub-title {
+            font-size: 11px;
+            color: #8391af;
+            letter-spacing: 4px;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        /* 核心指标统计带 */
+        .stats-ribbon {
+            display: flex;
+            margin-top: 18px;
+            padding-top: 6px;
+            gap: 14px;
+        }
+
+        .stat-block {
+            flex: 1;
+            background: rgba(11, 15, 26, 0.65);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 12px 14px;
+            text-align: center;
+        }
+
+        .stat-block-val {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-block-val .unit {
+            font-size: 12px;
+            font-weight: 400;
+            color: #9aa8c2;
+            margin-left: 2px;
+        }
+
+        .stat-block-lbl {
+            font-size: 11px;
+            color: #7b8aa6;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        .gold-glow {
+            color: #f3cf88 !important;
+            text-shadow: 0 0 10px rgba(243, 207, 136, 0.35);
+        }
+
+        /* 时间轴主展区 */
+        .timeline-container {
+            position: relative;
+            padding-left: 56px;
+        }
+
+        /* 贯穿全图的发光时间轨 */
+        .timeline-rail {
+            position: absolute;
+            left: 24px;
+            top: 10px;
+            bottom: 20px;
+            width: 3px;
+            background: linear-gradient(180deg, #e2c082 0%, rgba(135, 175, 245, 0.6) 50%, rgba(226, 192, 130, 0.2) 100%);
+            box-shadow: 0 0 10px rgba(226, 192, 130, 0.45);
+            border-radius: 2px;
+        }
+
+        /* 单条时间轴节点卡片 (横向胶囊) */
+        .timeline-item {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        /* 轨上的发光星轴微章节点 */
+        .timeline-node-dot {
+            position: absolute;
+            left: -44px;
+            top: 26px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #141b2d;
+            border: 2px solid #e2c082;
+            box-shadow: 0 0 12px rgba(226, 192, 130, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 800;
+            color: #f7e0b5;
+            z-index: 2;
+        }
+
+        /* 横向长条胶囊卡片 */
+        .capsule-card {
+            background: linear-gradient(90deg, rgba(20, 27, 46, 0.94) 0%, rgba(16, 21, 36, 0.92) 100%);
+            border: 1px solid rgba(226, 192, 130, 0.22);
+            border-radius: 14px;
+            padding: 10px 16px 10px 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+        }
+
+        /* 微型精致立绘窗口 */
+        .capsule-thumb-wrap {
+            width: 68px;
+            height: 68px;
+            flex: 0 0 68px;
+            border-radius: 10px;
+            border: 1px solid rgba(226, 192, 130, 0.35);
+            overflow: hidden;
+            background: #0f1422;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .capsule-thumb {
+            width: 68px;
+            height: 68px;
+            display: block;
+        }
+
+        /* 中间信息列 */
+        .capsule-main-col {
+            flex: 1;
+            padding-left: 16px;
+            min-width: 0;
+        }
+
+        .capsule-header-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .pool-type-tag {
+            font-size: 9px;
+            font-weight: 700;
+            color: #f5d17a;
+            background: rgba(245, 209, 122, 0.15);
+            border: 1px solid rgba(245, 209, 122, 0.3);
+            border-radius: 4px;
+            padding: 1px 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .pool-name-label {
+            font-size: 11px;
+            color: #8c9cb8;
+            letter-spacing: 0.5px;
+        }
+
+        .suit-title-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .suit-badges-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars-row {
+            display: flex;
+            gap: 2px;
+        }
+
+        .star-shape {
+            width: 10px;
+            height: 10px;
+            background: #f7cb6b;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+
+        .status-chip {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .status-chip.completed {
+            background: rgba(94, 212, 168, 0.14);
+            border: 1px solid rgba(94, 212, 168, 0.35);
+            color: #5ed4a8;
+        }
+
+        .status-chip.partial {
+            background: rgba(235, 175, 85, 0.14);
+            border: 1px solid rgba(235, 175, 85, 0.35);
+            color: #ebaf55;
+        }
+
+        /* 右侧抽卡统计与欧气指示区 */
+        .capsule-stats-col {
+            flex: 0 0 170px;
+            width: 170px;
+            border-left: 1px dashed rgba(255, 255, 255, 0.1);
+            padding-left: 14px;
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .draw-total-num {
+            font-size: 20px;
+            font-weight: 800;
+            color: #f7cb6b;
+            letter-spacing: 0.5px;
+        }
+
+        .draw-total-num .draw-unit {
+            font-size: 11px;
+            font-weight: 400;
+            color: #9aa8c2;
+            margin-left: 2px;
+        }
+
+        .draw-avg-rate {
+            font-size: 11px;
+            color: #8c9cb8;
+            margin-top: 2px;
+        }
+
+        .luck-badge {
+            margin-top: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .luck-super {
+            background: linear-gradient(90deg, rgba(247, 203, 107, 0.2), rgba(255, 175, 85, 0.2));
+            border: 1px solid #f7cb6b;
+            color: #f7cb6b;
+            box-shadow: 0 0 8px rgba(247, 203, 107, 0.3);
+        }
+
+        .luck-normal {
+            background: rgba(135, 175, 245, 0.15);
+            border: 1px solid rgba(135, 175, 245, 0.35);
+            color: #9ebff5;
+        }
+
+        .luck-deep {
+            background: rgba(210, 140, 245, 0.15);
+            border: 1px solid rgba(210, 140, 245, 0.35);
+            color: #d69dfa;
+        }
+
+        /* 编年史底款 */
+        .chronicle-footer {
+            margin-top: 24px;
+            text-align: center;
+            padding: 16px;
+            border-top: 1px solid rgba(220, 195, 140, 0.15);
+            color: #6c7994;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+        }
+
+        .chronicle-footer .mark {
+            color: #e2c082;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas-wrap">
+        <!-- 顶部编年史卷首档案 -->
+        <div class="chronicle-header">
+            <div class="header-top-row">
+                <div class="profile-group">
+                    <div class="avatar-frame">
+                        {% if avatar_path %}
+                        <img src="{{ avatar_path }}" alt="Avatar" class="avatar-img">
+                        {% else %}
+                        <div class="avatar-fallback">✦</div>
+                        {% endif %}
+                    </div>
+                    <div class="profile-texts">
+                        <span class="user-title-tag">ARCHIVAL RESONANCE · 搭配师档案</span>
+                        <div class="user-name-line">
+                            <span class="user-nickname">{{ nickname }}</span>
+                            <span class="user-uid-badge">UID: {{ role_id }} · Lv.{{ level }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chronicle-badge">
+                    <div class="chronicle-main-title">共鸣星轨 · 编年史</div>
+                    <div class="chronicle-sub-title">NIKI GACHA CHRONICLE</div>
+                </div>
+            </div>
+
+            <!-- 核心统计四宫带 -->
+            <div class="stats-ribbon">
+                <div class="stat-block">
+                    <div class="stat-block-val gold-glow">{{ total_draws }}<span class="unit">抽</span></div>
+                    <div class="stat-block-lbl">全池累计投入</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-block-val">{{ suits_completed }} / {{ suits_total }}<span class="unit">套</span></div>
+                    <div class="stat-block-lbl">典藏达成率 100%</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-block-val gold-glow">{{ avg_draw }}<span class="unit">抽/件</span></div>
+                    <div class="stat-block-lbl">综合出货均抽</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-block-val">{{ num_items }}<span class="unit">期</span></div>
+                    <div class="stat-block-lbl">收录共鸣池数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 纵向时间轴星轨 -->
+        <div class="timeline-container">
+            <div class="timeline-rail"></div>
+
+            {% for item in clothes %}
+            <div class="timeline-item">
+                <!-- 轨道节点序号 -->
+                <div class="timeline-node-dot">{{ loop.index }}</div>
+
+                <!-- 横向胶囊卡片 -->
+                <div class="capsule-card">
+                    <!-- 左侧缩略预览窗 -->
+                    <div class="capsule-thumb-wrap">
+                        <img src="{{ item.imgUrl }}" class="capsule-thumb" alt="{{ item.subSuit }}">
+                    </div>
+
+                    <!-- 中间信息流 -->
+                    <div class="capsule-main-col">
+                        <div class="capsule-header-line">
+                            <span class="pool-type-tag">LIMITED 5★</span>
+                            <span class="pool-name-label">{{ item.bigSuit }}</span>
+                        </div>
+
+                        <div class="suit-title-name">{{ item.subSuit }}</div>
+
+                        <div class="suit-badges-row">
+                            <div class="stars-row">
+                                {% for _ in range(item.level) %}
+                                <div class="star-shape"></div>
+                                {% endfor %}
+                            </div>
+
+                            {% if item.isCollected %}
+                            <div class="status-chip completed">✓ {{ item.collectedCount }}/{{ item.collectedCount }} 齐套达成</div>
+                            {% else %}
+                            <div class="status-chip partial">{{ item.collectedCount }} 件已收录</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 右侧抽卡战绩 -->
+                    <div class="capsule-stats-col">
+                        <div class="draw-total-num">{{ item.totalDrawNum }}<span class="draw-unit">抽</span></div>
+                        <div class="draw-avg-rate">单件均耗 {{ item.avgDrawNum }} 抽</div>
+
+                        {% if item.avgDrawNum < 15.0 %}
+                        <div class="luck-badge luck-super">★ 极品欧气</div>
+                        {% elif item.avgDrawNum <= 17.0 %}
+                        <div class="luck-badge luck-normal">★ 平稳出货</div>
+                        {% else %}
+                        <div class="luck-badge luck-deep">◆ 深度共鸣</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 编年史底标 -->
+        <div class="chronicle-footer">
+            <span>记录生成时间: {{ update_time }} · 奇想共鸣观测站 · 搭配师 <span class="mark">{{ nickname }}</span> 典藏星轨</span>
+        </div>
+    </div>
+</body>
+</html>

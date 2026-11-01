@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>高定艺术展刊 · 典藏 Lookbook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #24222a;
+            background-image: url("images/bg/G2AUrrxbIAA1jca.jpg");
+            background-size: cover;
+            background-position: center top;
+            min-height: 100vh;
+            padding: 30px 20px 40px;
+        }
+
+        .lookbook-wrap {
+            width: 760px;
+            margin: 0 auto;
+            background: rgba(250, 248, 245, 0.96);
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+            padding: 32px 30px 36px;
+            border: 1px solid rgba(210, 190, 160, 0.4);
+            position: relative;
+        }
+
+        /* 顶部法式杂志大字标头 (Editorial Masthead) */
+        .masthead {
+            text-align: center;
+            border-bottom: 2px solid #2d2621;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+        }
+
+        .masthead-meta-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #8c7e75;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .masthead-title {
+            font-size: 34px;
+            font-weight: 900;
+            letter-spacing: 6px;
+            color: #241d18;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+
+        .masthead-subtitle {
+            font-size: 12px;
+            letter-spacing: 5px;
+            color: #a48259;
+            text-transform: uppercase;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        /* 策展人与搭配师身份签名带 */
+        .curator-ribbon {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f1ede6;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(190, 175, 155, 0.3);
+        }
+
+        .curator-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .curator-avatar-frame {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid #c8a870;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .curator-avatar {
+            width: 48px;
+            height: 48px;
+            display: block;
+        }
+
+        .curator-meta {
+            margin-left: 14px;
+        }
+
+        .curator-title-lbl {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #a48259;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .curator-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #2d2621;
+        }
+
+        .curator-uid {
+            font-size: 11px;
+            color: #8c7e75;
+            margin-top: 1px;
+        }
+
+        .curator-stats-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .curator-stat-col {
+            text-align: right;
+        }
+
+        .c-stat-val {
+            font-size: 18px;
+            font-weight: 800;
+            color: #2d2621;
+        }
+
+        .c-stat-lbl {
+            font-size: 10px;
+            color: #8c7e75;
+            letter-spacing: 1px;
+        }
+
+        /* 封面级主角展位 (Hero Spotlight) */
+        .hero-spotlight {
+            background: #ffffff;
+            border: 1px solid #e5ded3;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(120, 100, 80, 0.08);
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .hero-visual-frame {
+            width: 260px;
+            height: 260px;
+            flex: 0 0 260px;
+            border-radius: 10px;
+            border: 2px solid #dfd4c4;
+            overflow: hidden;
+            background: #f7f5f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hero-visual-img {
+            width: 260px;
+            height: 260px;
+            display: block;
+        }
+
+        .hero-story-col {
+            flex: 1;
+            padding-left: 24px;
+        }
+
+        .hero-badge-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #ffffff;
+            background: #a48259;
+            padding: 3px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .hero-pool-title {
+            font-size: 12px;
+            color: #8c7e75;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .hero-suit-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: #241d18;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .hero-stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .h-star {
+            width: 12px;
+            height: 12px;
+            background: #c8a870;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+
+        .hero-desc {
+            font-size: 12px;
+            color: #6a5d54;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            border-left: 2px solid #c8a870;
+            padding-left: 10px;
+        }
+
+        .hero-metrics-pill {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #f7f5f0;
+            border: 1px solid #e8e0d4;
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+
+        .h-pill-item {
+            flex: 1;
+        }
+
+        .h-pill-val {
+            font-size: 16px;
+            font-weight: 800;
+            color: #241d18;
+        }
+
+        .h-pill-lbl {
+            font-size: 10px;
+            color: #8c7e75;
+        }
+
+        /* 典藏画廊展架 (Curated Showcase Gallery) */
+        .gallery-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid #dfd4c4;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .gallery-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: #241d18;
+            text-transform: uppercase;
+        }
+
+        .gallery-count-lbl {
+            font-size: 11px;
+            color: #a48259;
+            font-weight: 700;
+        }
+
+        /* 画廊展架单元流 (5列优雅立式卡牌，5*128 + 4*15 = 700px 完美对齐) */
+        .lookbook-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .lookbook-card {
+            flex: 0 0 128px;
+            width: 128px;
+            background: #ffffff;
+            border: 1px solid #e8e2d8;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 2px 8px rgba(100, 80, 60, 0.05);
+            text-align: center;
+        }
+
+        .lb-card-thumb-frame {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto;
+            border-radius: 6px;
+            border: 1px solid #ebe4d8;
+            overflow: hidden;
+            background: #f7f5f0;
+        }
+
+        .lb-card-thumb {
+            width: 110px;
+            height: 110px;
+            display: block;
+        }
+
+        .lb-card-name {
+            font-size: 12px;
+            font-weight: 800;
+            color: #241d18;
+            margin-top: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lb-card-pool {
+            font-size: 9px;
+            color: #9c8e84;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lb-card-footer {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed #e8e2d8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+        }
+
+        .lb-draw-tag {
+            font-weight: 800;
+            color: #a48259;
+        }
+
+        .lb-done-tag {
+            color: #4b8c6a;
+            font-weight: 700;
+        }
+
+        /* 底部艺术典藏认证 (Certificate) */
+        .lookbook-footer-cert {
+            margin-top: 26px;
+            border-top: 2px solid #2d2621;
+            padding-top: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #8c7e75;
+            letter-spacing: 1px;
+        }
+
+        .cert-seal {
+            font-size: 11px;
+            font-weight: 800;
+            color: #a48259;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="lookbook-wrap">
+        <!-- 顶部法式杂志大字标头 -->
+        <div class="masthead">
+            <div class="masthead-meta-top">
+                <span>HAUTE COUTURE ARCHIVE</span>
+                <span>LIMITED VOL. 2026 // ISSUE 14</span>
+                <span>AUTHENTICATED</span>
+            </div>
+            <div class="masthead-title">NIKI COUTURE</div>
+            <div class="masthead-subtitle">共鸣艺术展刊 · 五星限定典藏名录</div>
+        </div>
+
+        <!-- 策展人与搭配师签名带 -->
+        <div class="curator-ribbon">
+            <div class="curator-left">
+                <div class="curator-avatar-frame">
+                    {% if avatar_path %}
+                    <img src="{{ avatar_path }}" alt="Avatar" class="curator-avatar">
+                    {% else %}
+                    <div style="font-weight:bold; color:#a48259;">N</div>
+                    {% endif %}
+                </div>
+                <div class="curator-meta">
+                    <div class="curator-title-lbl">CURATED BY · 典藏策展人</div>
+                    <div class="curator-name">{{ nickname }}</div>
+                    <div class="curator-uid">UID: {{ role_id }} · 等级 Lv.{{ level }}</div>
+                </div>
+            </div>
+
+            <div class="curator-stats-group">
+                <div class="curator-stat-col">
+                    <div class="c-stat-val">{{ total_draws }}</div>
+                    <div class="c-stat-lbl">全池总抽数</div>
+                </div>
+                <div class="curator-stat-col">
+                    <div class="c-stat-val">{{ suits_completed }} / {{ suits_total }}</div>
+                    <div class="c-stat-lbl">齐套达成率</div>
+                </div>
+                <div class="curator-stat-col">
+                    <div class="c-stat-val">{{ avg_draw }}</div>
+                    <div class="c-stat-lbl">单件均耗抽数</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 封面级焦点巨幅展位 (以第一套为 Hero) -->
+        {% if clothes and clothes|length > 0 %}
+        {% set hero = clothes[0] %}
+        <div class="hero-spotlight">
+            <div class="hero-visual-frame">
+                <img src="{{ hero.imgUrl }}" class="hero-visual-img" alt="{{ hero.subSuit }}">
+            </div>
+            <div class="hero-story-col">
+                <span class="hero-badge-tag">SPOTLIGHT FEATURE · 本期焦点</span>
+                <div class="hero-pool-title">{{ hero.bigSuit }}</div>
+                <div class="hero-suit-title">{{ hero.subSuit }}</div>
+                <div class="hero-stars">
+                    {% for _ in range(hero.level) %}
+                    <div class="h-star"></div>
+                    {% endfor %}
+                </div>
+                <div class="hero-desc">
+                    万物共鸣在此凝聚，重构光织与梦境的华美交响。作为本次典藏册的核心珍品，凝聚了至臻搭配工艺与纯粹之美。
+                </div>
+                <div class="hero-metrics-pill">
+                    <div class="h-pill-item">
+                        <div class="h-pill-val">{{ hero.totalDrawNum }} 抽</div>
+                        <div class="h-pill-lbl">投入抽数</div>
+                    </div>
+                    <div class="h-pill-item">
+                        <div class="h-pill-val">{{ hero.collectedCount }} 件</div>
+                        <div class="h-pill-lbl">全套收集</div>
+                    </div>
+                    <div class="h-pill-item">
+                        <div class="h-pill-val">{{ hero.avgDrawNum }} 抽/件</div>
+                        <div class="h-pill-lbl">出货均率</div>
+                    </div>
+                    <div class="h-pill-item">
+                        <div class="h-pill-val" style="color: #4b8c6a;">✓ 完美齐套</div>
+                        <div class="h-pill-lbl">典藏状态</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 典藏画廊展架 (所有套装) -->
+        <div class="gallery-header-row">
+            <div class="gallery-title">CURATED GALLERY · 典藏长廊展架</div>
+            <div class="gallery-count-lbl">COLLECTED ITEMS ({{ clothes|length }})</div>
+        </div>
+
+        <div class="lookbook-grid">
+            {% for item in clothes %}
+            <div class="lookbook-card">
+                <div class="lb-card-thumb-frame">
+                    <img src="{{ item.imgUrl }}" class="lb-card-thumb" alt="{{ item.subSuit }}">
+                </div>
+                <div class="lb-card-name">{{ item.subSuit }}</div>
+                <div class="lb-card-pool">{{ item.bigSuit }}</div>
+                <div class="lb-card-footer">
+                    <span class="lb-draw-tag">{{ item.totalDrawNum }} 抽</span>
+                    <span class="lb-done-tag">齐套 ✓</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 底部艺术典藏认证 -->
+        <div class="lookbook-footer-cert">
+            <div>
+                <span>ARCHIVAL REGISTRY CODE: NK-2026-COUTURE-{{ role_id }}</span>
+                <div style="margin-top: 2px;">PRINTED AT {{ update_time }} · DESIGNED FOR ANYUL</div>
+            </div>
+            <div class="cert-seal">
+                ★ CERTIFICATE OF COUTURE ★
+            </div>
+        </div>
+    </div>
+</body>
+</html>

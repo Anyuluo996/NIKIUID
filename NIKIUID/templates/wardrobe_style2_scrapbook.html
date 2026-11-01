@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣衣橱 · 奇想手账风</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-image: url("images/bg/HGxGdbSbMAAGa2n.jpg");
+            background-size: cover;
+            background-position: center top;
+            min-height: 100vh;
+            padding: 32px 20px 40px;
+        }
+
+        .container {
+            width: 760px;
+            margin: 0 auto;
+        }
+
+        /* 手账封口胶带装饰条 */
+        .washi-tape-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: -14px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .washi-tape {
+            width: 220px;
+            height: 28px;
+            background: linear-gradient(135deg, rgba(255, 182, 193, 0.9), rgba(255, 218, 185, 0.9));
+            box-shadow: 0 2px 8px rgba(100, 80, 60, 0.18);
+            border-left: 2px dashed rgba(255, 255, 255, 0.7);
+            border-right: 2px dashed rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #8c5b4d;
+            font-weight: 700;
+        }
+
+        /* 手账主体卡片 */
+        .journal-book {
+            background: #fffdf9;
+            border-radius: 20px;
+            border: 2px dashed #dec8b5;
+            padding: 26px 20px;
+            box-shadow: 0 10px 28px rgba(80, 70, 60, 0.2);
+            margin-bottom: 22px;
+        }
+
+        /* 顶部标题区 */
+        .journal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 18px;
+            border-bottom: 2px solid #f2e4d8;
+        }
+
+        .journal-title-box h1 {
+            font-size: 24px;
+            color: #5a4238;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .journal-title-box .subtitle {
+            font-size: 12px;
+            color: #9e8477;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        .date-stamp {
+            border: 1.5px solid #d4a373;
+            border-radius: 8px;
+            padding: 4px 10px;
+            text-align: center;
+            background: #fff9f2;
+        }
+
+        .date-stamp .stamp-title {
+            font-size: 9px;
+            color: #b08053;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .date-stamp .stamp-val {
+            font-size: 11px;
+            color: #5a4238;
+            font-weight: bold;
+        }
+
+        /* 搭配师手账档案条 */
+        .traveler-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 18px;
+            background: #fbf7ee;
+            border-radius: 14px;
+            padding: 14px 16px;
+            border: 1px solid #ede1d1;
+        }
+
+        .traveler-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .traveler-avatar-box {
+            width: 58px;
+            height: 58px;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 3px;
+            box-shadow: 0 2px 6px rgba(120, 100, 80, 0.15);
+            border: 1px solid #e8d9c5;
+        }
+
+        .traveler-avatar-box img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .avatar-placeholder {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            background: #edd8bf;
+            color: #684a37;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .traveler-info h2 {
+            font-size: 18px;
+            color: #4a3429;
+            font-weight: 700;
+        }
+
+        .traveler-meta {
+            font-size: 11px;
+            color: #8f776a;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .traveler-tag {
+            background: #ecdac5;
+            color: #5c4133;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .stamp-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            border: 1.5px solid #e07a5f;
+            border-radius: 10px;
+            padding: 6px 12px;
+            box-shadow: 0 2px 6px rgba(224, 122, 95, 0.15);
+        }
+
+        .stamp-text {
+            text-align: right;
+        }
+
+        .stamp-text .stamp-grade {
+            font-size: 12px;
+            color: #e07a5f;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .stamp-text .stamp-desc {
+            font-size: 10px;
+            color: #a88070;
+        }
+
+        /* 收集温度计 / 进度条看板 */
+        .progress-section {
+            margin-top: 16px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .progress-title {
+            font-size: 12px;
+            color: #7a6154;
+            font-weight: 600;
+        }
+
+        .progress-number {
+            font-size: 12px;
+            color: #d97736;
+            font-weight: 700;
+        }
+
+        .meter-bar {
+            width: 100%;
+            height: 12px;
+            background: #ede3d8;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #dccdc0;
+        }
+
+        .meter-fill {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #f4a261, #e76f51);
+            border-radius: 8px;
+        }
+
+        /* 手账数据印章 (4联) */
+        .journal-stats-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .journal-stat-card {
+            flex: 1;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 10px 8px;
+            border: 1px solid #ebd9c8;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(120, 100, 80, 0.05);
+        }
+
+        .stat-pin {
+            font-size: 10px;
+            color: #a68b7c;
+            margin-bottom: 2px;
+        }
+
+        .stat-main {
+            font-size: 20px;
+            font-weight: 800;
+            color: #5c4133;
+        }
+
+        .stat-main.highlight {
+            color: #e07a5f;
+        }
+
+        .stat-unit {
+            font-size: 11px;
+            font-weight: normal;
+            color: #9c8375;
+            margin-left: 2px;
+        }
+
+        /* 拍立得 2 列大画幅陈列展架 */
+        .scrap-gallery {
+            background: #fffdf9;
+            border-radius: 20px;
+            border: 2px dashed #dec8b5;
+            padding: 24px 20px;
+            box-shadow: 0 10px 28px rgba(80, 70, 60, 0.2);
+        }
+
+        .gallery-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding: 0 4px;
+        }
+
+        .gallery-top-bar h3 {
+            font-size: 18px;
+            color: #5a4238;
+            font-weight: 800;
+        }
+
+        .gallery-top-bar .tag {
+            background: #ecdac5;
+            color: #5c4133;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* 2 列网格：每列 352px，间隙 16px，总宽 720px */
+        .polaroid-grid {
+            width: 100%;
+        }
+
+        .polaroid-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .polaroid-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .polaroid-cell {
+            flex: 0 0 auto;
+            width: 352px;
+        }
+
+        .polaroid-row.partial {
+            justify-content: center;
+        }
+
+        /* 经典拍立得相纸卡片 */
+        .polaroid-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 10px 10px 14px;
+            box-shadow: 0 4px 12px rgba(100, 80, 60, 0.12);
+            border: 1px solid #ebd9c8;
+        }
+
+        /* 图片宽度 352 - 20 = 332px */
+        .polaroid-photo {
+            width: 332px;
+            background: #f7f1eb;
+            border-radius: 8px;
+            overflow: hidden;
+            display: block;
+        }
+
+        .polaroid-photo img.suit-img {
+            width: 332px;
+            display: block;
+        }
+
+        /* 拍立得留白底座区 */
+        .polaroid-footer {
+            margin-top: 10px;
+            padding: 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .polaroid-caption {
+            flex: 1;
+        }
+
+        .polaroid-stars-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 3px;
+        }
+
+        .polaroid-stars {
+            width: 48px;
+            height: 14px;
+            display: inline-block;
+        }
+
+        .polaroid-pool {
+            font-size: 10px;
+            color: #a38d80;
+            background: #f5ebe1;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .polaroid-name {
+            font-size: 15px;
+            color: #4a3429;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        /* 手账印章式抽数印 */
+        .polaroid-stamp {
+            background: #fff8f5;
+            border: 1.5px dashed #e07a5f;
+            border-radius: 8px;
+            padding: 4px 8px;
+            text-align: right;
+            box-shadow: 0 2px 4px rgba(224, 122, 95, 0.1);
+        }
+
+        .stamp-avg-val {
+            font-size: 13px;
+            font-weight: 800;
+            color: #e07a5f;
+        }
+
+        .stamp-total-val {
+            font-size: 10px;
+            color: #a88474;
+        }
+
+        /* 手账底栏 */
+        .journal-foot {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 1px 3px rgba(60, 50, 40, 0.6);
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 封口胶带装饰 -->
+        <div class="washi-tape-wrap">
+            <div class="washi-tape">★ TRAVEL NOTES ★</div>
+        </div>
+
+        <!-- 手账本主体卡片 -->
+        <div class="journal-book">
+            <div class="journal-header">
+                <div class="journal-title-box">
+                    <h1>奇想手账 · 共鸣拾光</h1>
+                    <div class="subtitle">INFINITY NIKI · 搭配师的专属服饰印记</div>
+                </div>
+                <div class="date-stamp">
+                    <div class="stamp-title">RECORD DATE</div>
+                    <div class="stamp-val">{{ update_time }}</div>
+                </div>
+            </div>
+
+            <!-- 旅人档案卡 -->
+            <div class="traveler-card">
+                <div class="traveler-left">
+                    <div class="traveler-avatar-box">
+                        {% if avatar_path %}
+                        <img src="{{ avatar_path }}" alt="头像">
+                        {% else %}
+                        <div class="avatar-placeholder">?</div>
+                        {% endif %}
+                    </div>
+                    <div class="traveler-info">
+                        <h2>{{ nickname }}</h2>
+                        <div class="traveler-meta">
+                            <span class="traveler-tag">Lv.{{ level }}</span>
+                            <span>搭配师编号: {{ role_id }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stamp-badge">
+                    <div class="stamp-text">
+                        {% if avg_draw > 0 and avg_draw <= 15.5 %}
+                        <div class="stamp-grade">★ 极品欧皇 ★</div>
+                        <div class="stamp-desc">均抽领跑奇迹大陆</div>
+                        {% elif avg_draw > 0 and avg_draw <= 16.5 %}
+                        <div class="stamp-grade">★ 幸运星眷 ★</div>
+                        <div class="stamp-desc">超凡共鸣好运气</div>
+                        {% elif avg_draw > 0 and avg_draw <= 17.5 %}
+                        <div class="stamp-grade">★ 岁月静好 ★</div>
+                        <div class="stamp-desc">稳稳当当入囊中</div>
+                        {% else %}
+                        <div class="stamp-grade">★ 满愿而归 ★</div>
+                        <div class="stamp-desc">持之以恒终相遇</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 收集进度温度计 -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span class="progress-title">五星套装收集进度</span>
+                    <span class="progress-number">{{ owned_count }} / {{ suit_count }} (100%)</span>
+                </div>
+                <div class="meter-bar">
+                    <div class="meter-fill"></div>
+                </div>
+            </div>
+
+            <!-- 四枚手账印章卡 -->
+            <div class="journal-stats-row">
+                <div class="journal-stat-card">
+                    <div class="stat-pin">收纳套装</div>
+                    <div class="stat-main">{{ owned_count }}<span class="stat-unit">件</span></div>
+                </div>
+                <div class="journal-stat-card">
+                    <div class="stat-pin">累计共鸣</div>
+                    <div class="stat-main">{{ total_draws }}<span class="stat-unit">抽</span></div>
+                </div>
+                <div class="journal-stat-card">
+                    <div class="stat-pin">单套均抽</div>
+                    <div class="stat-main highlight">{{ avg_draw }}<span class="stat-unit">抽</span></div>
+                </div>
+                <div class="journal-stat-card">
+                    <div class="stat-pin">当前展示</div>
+                    <div class="stat-main" style="font-size: 15px; padding-top: 4px;">{{ pool_label }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 拍立得相框 2 列大画幅展架 -->
+        <div class="scrap-gallery">
+            <div class="gallery-top-bar">
+                <h3>拍立得相簿 · 套装特写</h3>
+                <span class="tag">大画幅写真 · 共 {{ clothes|length }} 套</span>
+            </div>
+
+            {% if clothes %}
+            <div class="polaroid-grid">
+                {% for suit in clothes %}
+                {% set loop_index = loop.index0 %}
+                {% if loop_index % 2 == 0 %}<div class="polaroid-row{% if loop.length - loop.index0 < 2 %} partial{% endif %}">{% endif %}
+                <div class="polaroid-cell">
+                    <div class="polaroid-card">
+                        <div class="polaroid-photo">
+                            {% if suit.imgUrl %}
+                            <img class="suit-img" src="{{ suit.imgUrl }}" alt="{{ suit.subSuit }}">
+                            {% else %}
+                            <div style="width:332px;height:332px;background:#f5ebe1;"></div>
+                            {% endif %}
+                        </div>
+                        <div class="polaroid-footer">
+                            <div class="polaroid-caption">
+                                <div class="polaroid-stars-row">
+                                    <img class="polaroid-stars" src="images/icon/{% if suit.level == 5 %}五星.webp{% else %}四星.webp{% endif %}" alt="星级">
+                                    {% if suit.bigSuit %}<span class="polaroid-pool">{{ suit.bigSuit }}</span>{% endif %}
+                                </div>
+                                <div class="polaroid-name">{{ suit.subSuit }}</div>
+                            </div>
+                            <div class="polaroid-stamp">
+                                {% if suit.avgDrawNum > 0 %}
+                                <div class="stamp-avg-val">{{ "%.1f"|format(suit.avgDrawNum) }} 抽/件</div>
+                                <div class="stamp-total-val">共 {{ suit.actualDrawCount }} 抽</div>
+                                {% else %}
+                                <div class="stamp-avg-val">已收录</div>
+                                <div class="stamp-total-val">完美达成</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if loop_index % 2 == 1 or loop.last %}</div>{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="journal-foot">
+            奇想手账旅行日志 · 无限暖暖共鸣数据记录
+        </div>
+    </div>
+</body>
+</html>

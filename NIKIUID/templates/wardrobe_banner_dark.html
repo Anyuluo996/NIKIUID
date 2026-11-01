@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣衣橱 · 横幅名录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-image: url("images/bg/G2AUrrxbIAA1jca.jpg");
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            padding: 30px 14px 36px;
+        }
+
+        .container {
+            width: 760px;
+            margin: 0 auto;
+        }
+
+        /* 页头 */
+        .head-card {
+            width: 100%;
+            background: rgba(30, 34, 51, 0.92);
+            border: 1px solid rgba(233, 199, 135, 0.35);
+            border-radius: 18px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+        }
+
+        .head-row {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid #e9c787;
+        }
+
+        .head-who {
+            flex: 1;
+            padding-left: 14px;
+        }
+
+        .head-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #f2ead8;
+        }
+
+        .head-meta {
+            font-size: 12px;
+            color: #8d92b3;
+            margin-top: 4px;
+        }
+
+        .head-right {
+            flex: 0 0 auto;
+            text-align: right;
+        }
+
+        .pool-chip {
+            display: inline-block;
+            border: 1px solid rgba(233, 199, 135, 0.7);
+            color: #e9c787;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 999px;
+            padding: 4px 16px;
+        }
+
+        .page-chip {
+            display: block;
+            color: #8d92b3;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .ledger {
+            display: flex;
+            width: 100%;
+            margin-top: 14px;
+        }
+
+        .ledger-cell {
+            flex: 1;
+            text-align: center;
+            padding: 10px 4px;
+            background: rgba(233, 199, 135, 0.07);
+            border: 1px solid rgba(233, 199, 135, 0.18);
+        }
+
+        .ledger-cell:first-child {
+            border-radius: 10px 0 0 10px;
+        }
+
+        .ledger-cell:last-child {
+            border-radius: 0 10px 10px 0;
+        }
+
+        .ledger-num {
+            font-size: 21px;
+            font-weight: bold;
+            color: #e9c787;
+        }
+
+        .ledger-num small {
+            font-size: 12px;
+            color: #b7a680;
+        }
+
+        .ledger-label {
+            font-size: 11px;
+            color: #8d92b3;
+            margin-top: 2px;
+        }
+
+        /* 横幅名录 */
+        .roster-row {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 14px;
+        }
+
+        .num-col {
+            flex: 0 0 44px;
+            min-width: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .num-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #15182a;
+            border: 2px solid #e9c787;
+            color: #e9c787;
+            font-size: 15px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 28px;
+        }
+
+        .banner {
+            flex: 1;
+            min-width: 0;
+            background: rgba(32, 36, 54, 0.94);
+            border: 1px solid rgba(233, 199, 135, 0.28);
+            border-radius: 16px;
+            padding: 12px 14px;
+        }
+
+        .banner-head {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .suit-icon {
+            flex: 0 0 auto;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid rgba(233, 199, 135, 0.55);
+        }
+
+        .suit-icon.dim {
+            opacity: 0.35;
+        }
+
+        .banner-main {
+            flex: 1;
+            min-width: 0;
+            padding-left: 14px;
+        }
+
+        .pool-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .limited-chip {
+            display: inline-block;
+            background: rgba(233, 199, 135, 0.12);
+            border: 1px solid rgba(233, 199, 135, 0.55);
+            color: #e9c787;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border-radius: 999px;
+            padding: 2px 10px;
+            margin-right: 8px;
+        }
+
+        .limited-chip.perm {
+            border-color: rgba(157, 182, 232, 0.55);
+            color: #9db6e8;
+            background: rgba(157, 182, 232, 0.1);
+        }
+
+        .pool-name {
+            font-size: 12px;
+            color: #9aa0b8;
+        }
+
+        .suit-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #f2f0fa;
+            margin-top: 4px;
+            line-height: 24px;
+        }
+
+        .status-line {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .lv-icon {
+            width: 38px;
+            height: 11px;
+            margin-right: 10px;
+        }
+
+        .collect-chip {
+            display: inline-block;
+            background: rgba(63, 191, 143, 0.16);
+            border: 1px solid rgba(63, 191, 143, 0.6);
+            color: #7de8c3;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 999px;
+            padding: 1px 12px;
+        }
+
+        .collect-chip.partial {
+            background: rgba(154, 160, 184, 0.12);
+            border-color: rgba(154, 160, 184, 0.45);
+            color: #b7bdd4;
+        }
+
+        .evo-chip {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #e9c787;
+            letter-spacing: 1px;
+        }
+
+        .evo-chip .off {
+            color: #565a78;
+        }
+
+        .banner-right {
+            flex: 0 0 150px;
+            min-width: 0;
+            text-align: right;
+        }
+
+        .draws-big {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ffffff;
+            line-height: 28px;
+        }
+
+        .draws-big small {
+            font-size: 13px;
+            color: #b7a680;
+            font-weight: normal;
+        }
+
+        .avg-line {
+            font-size: 12px;
+            color: #9aa0b8;
+            margin-top: 3px;
+        }
+
+        .avg-line b {
+            color: #d9dcea;
+            font-size: 13px;
+        }
+
+        .luck-badge {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 999px;
+            padding: 2px 14px;
+        }
+
+        .luck-best {
+            background: rgba(233, 199, 135, 0.14);
+            border: 1px solid rgba(233, 199, 135, 0.7);
+            color: #f5d78f;
+        }
+
+        .luck-normal {
+            background: rgba(157, 182, 232, 0.12);
+            border: 1px solid rgba(157, 182, 232, 0.6);
+            color: #9db6e8;
+        }
+
+        .luck-deep {
+            background: rgba(180, 154, 224, 0.14);
+            border: 1px solid rgba(180, 154, 224, 0.6);
+            color: #b49ae0;
+        }
+
+        /* 横幅内单件条 */
+        .item-strip {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(233, 199, 135, 0.15);
+        }
+
+        .item-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .item-cell {
+            flex: 0 0 auto;
+            width: 44px;
+            min-width: 0;
+            margin-right: 4px;
+            position: relative;
+        }
+
+        .item-img {
+            width: 44px;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .item-img.dim {
+            opacity: 0.25;
+        }
+
+        .item-badge {
+            position: absolute;
+            right: 1px;
+            bottom: 1px;
+            background: #e9c787;
+            color: #1d1a12;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 6px;
+            padding: 0 5px;
+        }
+
+        .item-badge.second {
+            right: auto;
+            left: 1px;
+            background: #ff9ec7;
+        }
+
+        .item-badge.zero {
+            background: #3a3f5c;
+            color: #8d92b3;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 14px 0 4px;
+            color: #8d92b3;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="head-card">
+            <div class="head-row">
+                {% if avatar_path %}
+                <img src="{{ avatar_path }}" alt="" class="avatar">
+                {% else %}
+                <div class="avatar" style="background:#232041;"></div>
+                {% endif %}
+                <div class="head-who">
+                    <div class="head-name">{{ nickname }}</div>
+                    <div class="head-meta">Lv.{{ level }} · UID {{ role_id }} · {{ update_time }}</div>
+                </div>
+                <div class="head-right">
+                    <span class="pool-chip">{{ pool_label }}</span>
+                    <span class="page-chip">第 {{ page }}/{{ total_pages }} 页 · {{ "已共鸣" if filter_mode == "owned" else "全部套装" }}</span>
+                </div>
+            </div>
+            <div class="ledger">
+                <div class="ledger-cell">
+                    <div class="ledger-num">{{ owned_count }}<small> / {{ suit_count }}</small></div>
+                    <div class="ledger-label">已共鸣套装</div>
+                </div>
+                <div class="ledger-cell">
+                    <div class="ledger-num">{{ total_draws }}</div>
+                    <div class="ledger-label">总共鸣次数</div>
+                </div>
+                <div class="ledger-cell">
+                    <div class="ledger-num">{{ avg_draw }}</div>
+                    <div class="ledger-label">每件平均</div>
+                </div>
+                <div class="ledger-cell">
+                    <div class="ledger-num">{{ total_collected }}</div>
+                    <div class="ledger-label">已共鸣件数</div>
+                </div>
+                <div class="ledger-cell">
+                    <div class="ledger-num">{{ total_evolutions }}<small> / {{ max_evolutions }}</small></div>
+                    <div class="ledger-label">套装进化</div>
+                </div>
+            </div>
+        </div>
+
+        {% for suit in clothes %}
+        <div class="roster-row">
+            <div class="num-col"><div class="num-circle">{{ loop.index }}</div></div>
+            <div class="banner">
+                <div class="banner-head">
+                    {% if suit.imgUrl %}
+                    <img src="{{ suit.imgUrl }}" alt="" class="suit-icon{{ '' if suit.isCollected or suit.totalDrawNum > 0 else ' dim' }}">
+                    {% else %}
+                    <div class="suit-icon" style="background:#232041;"></div>
+                    {% endif %}
+                    <div class="banner-main">
+                        <div class="pool-line">
+                            <span class="limited-chip{{ ' perm' if suit.level == 4 or 'permanent' in pool_type else '' }}">{{ "PERMANENT" if "permanent" in pool_type else "LIMITED" }} {{ suit.level }}★</span>
+                            <span class="pool-name">{{ suit.bigSuit }}</span>
+                        </div>
+                        <div class="suit-name">{{ suit.subSuit }}</div>
+                        <div class="status-line">
+                            <img src="images/icon/{{ '五星' if suit.level == 5 else '四星' }}.webp" alt="" class="lv-icon">
+                            <span class="collect-chip{{ ' partial' if suit.ownedClothCount < suit.cloths | length else '' }}">✓ {{ suit.ownedClothCount }}/{{ suit.cloths | length }}{% if suit.cloths | length > 0 and suit.ownedClothCount >= suit.cloths | length %} 集齐达成{% endif %}</span>
+                            <span class="evo-chip">{% for i in range(suit.evolutionTotal) %}<span class="{{ '' if i < suit.evolutionCount else 'off' }}">★</span>{% endfor %} {{ suit.evolutionCount }}/{{ suit.evolutionTotal }}</span>
+                        </div>
+                    </div>
+                    <div class="banner-right">
+                        <div class="draws-big">{{ suit.totalDrawNum }}<small> 抽</small></div>
+                        <div class="avg-line">单件均耗 <b>{{ suit.avgDrawNum }}</b> 抽</div>
+                        {% if suit.isCollected %}
+                        {% if suit.avgDrawNum > 0 and suit.avgDrawNum < 15 %}
+                        <span class="luck-badge luck-best">★ 极品欧气</span>
+                        {% elif suit.avgDrawNum >= 17 %}
+                        <span class="luck-badge luck-deep">★ 深度共鸣</span>
+                        {% else %}
+                        <span class="luck-badge luck-normal">★ 平稳出货</span>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="item-strip">
+                    {% for row_start in range(0, suit.cloths | length, 14) %}
+                    <div class="item-row">
+                        {% for cloth in suit.cloths[row_start:row_start + 14] %}
+                        <div class="item-cell">
+                            {% if cloth.image %}
+                            <img src="{{ cloth.image }}" alt="" class="item-img{% if not cloth.owned %} dim{% endif %}">
+                            {% else %}
+                            <div class="item-img" style="height: 44px; background: #2a2f45;"></div>
+                            {% endif %}
+                            {% if cloth.owned %}
+                            <span class="item-badge">{{ cloth.drawNumFirst }}</span>
+                            {% if cloth.drawNumSecond > 0 %}
+                            <span class="item-badge second">{{ cloth.drawNumSecond }}</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="item-badge zero">—</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="footer">数据来源: 奇想手账 · {{ update_time }}</div>
+    </div>
+</body>
+</html>

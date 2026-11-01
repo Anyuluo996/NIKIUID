@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣数据中枢 · 欧气分析大屏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-color: #0b1118;
+            background-image: url("images/bg/GeQ0EtibMAA-hVa.jpg");
+            background-size: cover;
+            background-position: center top;
+            min-height: 100vh;
+            padding: 28px 20px 36px;
+        }
+
+        .dashboard-wrapper {
+            width: 760px;
+            margin: 0 auto;
+        }
+
+        /* 顶部指挥中枢面板 */
+        .hub-header {
+            background: linear-gradient(135deg, rgba(13, 22, 34, 0.96) 0%, rgba(18, 30, 48, 0.95) 100%);
+            border: 1px solid rgba(64, 180, 229, 0.35);
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .hub-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(64, 180, 229, 0.18);
+            padding-bottom: 16px;
+        }
+
+        .hub-user-side {
+            display: flex;
+            align-items: center;
+        }
+
+        .hub-avatar-box {
+            width: 58px;
+            height: 58px;
+            border-radius: 12px;
+            border: 2px solid #40b4e5;
+            box-shadow: 0 0 14px rgba(64, 180, 229, 0.4);
+            overflow: hidden;
+            background: #09131d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hub-avatar-img {
+            width: 58px;
+            height: 58px;
+            display: block;
+        }
+
+        .hub-avatar-fallback {
+            color: #40b4e5;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .hub-user-meta {
+            margin-left: 14px;
+        }
+
+        .sys-status-chip {
+            display: inline-flex;
+            align-items: center;
+            font-size: 10px;
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.12);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            border-radius: 4px;
+            padding: 2px 7px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .sys-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4ade80;
+            box-shadow: 0 0 6px #4ade80;
+            margin-right: 6px;
+        }
+
+        .hub-user-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .hub-user-id {
+            font-size: 12px;
+            color: #7d96b3;
+            margin-top: 2px;
+        }
+
+        /* 右侧欧气雷达评级 */
+        .hub-rating-side {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: rgba(8, 15, 25, 0.7);
+            border: 1px solid rgba(64, 180, 229, 0.25);
+            border-radius: 12px;
+            padding: 10px 16px;
+        }
+
+        .rating-shield {
+            font-size: 32px;
+            font-weight: 900;
+            color: #f7cb6b;
+            text-shadow: 0 0 16px rgba(247, 203, 107, 0.6);
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .rating-desc-wrap {
+            text-align: right;
+        }
+
+        .rating-grade-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        .rating-percentile {
+            font-size: 11px;
+            color: #40b4e5;
+            margin-top: 2px;
+        }
+
+        /* 4 维核心数据仪表微卡 */
+        .kpi-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .kpi-card {
+            flex: 1;
+            background: rgba(10, 18, 30, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 12px 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 3px;
+        }
+
+        .kpi-card.cyan::before { background: #40b4e5; box-shadow: 0 0 8px #40b4e5; }
+        .kpi-card.gold::before { background: #f7cb6b; box-shadow: 0 0 8px #f7cb6b; }
+        .kpi-card.green::before { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+        .kpi-card.purple::before { background: #c084fc; box-shadow: 0 0 8px #c084fc; }
+
+        .kpi-label {
+            font-size: 11px;
+            color: #7d96b3;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-val {
+            font-size: 21px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-val .unit {
+            font-size: 11px;
+            font-weight: 400;
+            color: #8da4be;
+            margin-left: 2px;
+        }
+
+        .kpi-sub {
+            font-size: 10px;
+            color: #647b95;
+            margin-top: 3px;
+        }
+
+        /* 中部欧气横向对比柱状图面板 */
+        .section-panel {
+            background: linear-gradient(135deg, rgba(13, 22, 34, 0.95) 0%, rgba(16, 26, 42, 0.95) 100%);
+            border: 1px solid rgba(64, 180, 229, 0.25);
+            border-radius: 16px;
+            padding: 20px 22px;
+            box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .panel-header-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .panel-title-text {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title-tag {
+            font-size: 10px;
+            color: #40b4e5;
+            background: rgba(64, 180, 229, 0.15);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(64, 180, 229, 0.3);
+        }
+
+        .panel-legend {
+            display: flex;
+            gap: 12px;
+            font-size: 10px;
+            color: #8da4be;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        /* 柱状条流列表 */
+        .chart-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chart-row {
+            display: flex;
+            align-items: center;
+            background: rgba(8, 14, 23, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            padding: 6px 12px;
+        }
+
+        /* 左侧微标与名称 */
+        .chart-info-cell {
+            flex: 0 0 170px;
+            width: 170px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-mini-thumb {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid rgba(64, 180, 229, 0.3);
+            display: block;
+        }
+
+        .chart-name-block {
+            overflow: hidden;
+        }
+
+        .chart-suit-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            white-space: nowrap;
+        }
+
+        .chart-big-title {
+            font-size: 10px;
+            color: #6d849e;
+            white-space: nowrap;
+        }
+
+        /* 中部进度条 */
+        .chart-bar-cell {
+            flex: 1;
+            padding: 0 16px;
+        }
+
+        .bar-groove {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        /* 颜色分段 */
+        .fill-lucky {
+            background: linear-gradient(90deg, #10b981, #34d399);
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+        }
+
+        .fill-normal {
+            background: linear-gradient(90deg, #0284c7, #38bdf8);
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+        }
+
+        .fill-deep {
+            background: linear-gradient(90deg, #7c3aed, #c084fc);
+            box-shadow: 0 0 8px rgba(192, 132, 252, 0.4);
+        }
+
+        /* 右侧抽数战果 */
+        .chart-data-cell {
+            flex: 0 0 140px;
+            width: 140px;
+            text-align: right;
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .chart-draw-val {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .chart-draw-val .draw-unit {
+            font-size: 10px;
+            color: #7d96b3;
+            font-weight: normal;
+        }
+
+        .chart-avg-val {
+            font-size: 11px;
+            color: #8da4be;
+        }
+
+        /* 第三层：紧凑资产徽章矩阵 (Asset Badges) */
+        .badge-matrix {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .matrix-badge-card {
+            flex: 0 0 89px;
+            width: 89px;
+            background: rgba(9, 15, 25, 0.7);
+            border: 1px solid rgba(64, 180, 229, 0.2);
+            border-radius: 10px;
+            padding: 8px 6px;
+            text-align: center;
+        }
+
+        .badge-img-frame {
+            width: 54px;
+            height: 54px;
+            margin: 0 auto;
+            border-radius: 8px;
+            border: 1px solid #f7cb6b;
+            overflow: hidden;
+            background: #000;
+            position: relative;
+        }
+
+        .badge-img {
+            width: 54px;
+            height: 54px;
+            display: block;
+        }
+
+        .badge-full-tag {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            background: #10b981;
+            color: #fff;
+            font-size: 8px;
+            font-weight: bold;
+            padding: 1px 3px;
+            border-top-left-radius: 4px;
+        }
+
+        .badge-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge-draw {
+            font-size: 10px;
+            color: #f7cb6b;
+            margin-top: 2px;
+            font-weight: bold;
+        }
+
+        /* 底部状态 */
+        .hub-footer {
+            text-align: center;
+            font-size: 11px;
+            color: #55687f;
+            letter-spacing: 1px;
+            padding-top: 10px;
+        }
+
+        .hub-footer .active-text {
+            color: #40b4e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- 顶部指挥中枢 -->
+        <div class="hub-header">
+            <div class="hub-top-bar">
+                <div class="hub-user-side">
+                    <div class="hub-avatar-box">
+                        {% if avatar_path %}
+                        <img src="{{ avatar_path }}" alt="Avatar" class="hub-avatar-img">
+                        {% else %}
+                        <div class="hub-avatar-fallback">✦</div>
+                        {% endif %}
+                    </div>
+                    <div class="hub-user-meta">
+                        <div class="sys-status-chip">
+                            <span class="sys-dot"></span>
+                            GACHA TELEMETRY ONLINE
+                        </div>
+                        <div class="hub-user-name">{{ nickname }}</div>
+                        <div class="hub-user-id">UID: {{ role_id }} · 搭配师等级 Lv.{{ level }}</div>
+                    </div>
+                </div>
+
+                <div class="hub-rating-side">
+                    <div class="rating-shield">SS</div>
+                    <div class="rating-desc-wrap">
+                        <div class="rating-grade-title">欧气神域达成</div>
+                        <div class="rating-percentile">超越全服 93.6% 搭配师</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 维核心数据仪表微卡 -->
+            <div class="kpi-row">
+                <div class="kpi-card cyan">
+                    <div class="kpi-label">全池累计投入</div>
+                    <div class="kpi-val">{{ total_draws }}<span class="unit">抽</span></div>
+                    <div class="kpi-sub">约合 30.1 万钻</div>
+                </div>
+                <div class="kpi-card gold">
+                    <div class="kpi-label">限定典藏达成率</div>
+                    <div class="kpi-val">{{ suits_completed }} / {{ suits_total }}<span class="unit">套</span></div>
+                    <div class="kpi-sub">全收集达成 100%</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">出货期望均抽</div>
+                    <div class="kpi-val">{{ avg_draw }}<span class="unit">抽/件</span></div>
+                    <div class="kpi-sub">优于官方基准 20.0</div>
+                </div>
+                <div class="kpi-card purple">
+                    <div class="kpi-label">历史巅峰战绩</div>
+                    <div class="kpi-val">130<span class="unit">抽</span></div>
+                    <div class="kpi-sub">群星绽放时 齐套</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中部：欧气效率横向对比图 -->
+        <div class="section-panel">
+            <div class="panel-header-line">
+                <div class="panel-title-text">
+                    各期共鸣池欧气效率分布图
+                    <span class="panel-title-tag">GACHA EFFICIENCY DISTRIBUTION</span>
+                </div>
+                <div class="panel-legend">
+                    <div class="legend-item"><span class="legend-color" style="background: #10b981;"></span>欧气 (&lt;15)</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #0284c7;"></span>平稳 (15~17)</div>
+                    <div class="legend-item"><span class="legend-color" style="background: #7c3aed;"></span>深潜 (&gt;17)</div>
+                </div>
+            </div>
+
+            <div class="chart-list">
+                {% for item in clothes %}
+                <div class="chart-row">
+                    <!-- 左侧信息 -->
+                    <div class="chart-info-cell">
+                        <img src="{{ item.imgUrl }}" class="chart-mini-thumb" alt="{{ item.subSuit }}">
+                        <div class="chart-name-block">
+                            <div class="chart-suit-title">{{ item.subSuit }}</div>
+                            <div class="chart-big-title">{{ item.bigSuit }}</div>
+                        </div>
+                    </div>
+
+                    <!-- 中部柱状条 -->
+                    <div class="chart-bar-cell">
+                        <div class="bar-groove">
+                            {# 根据抽数计算柱状条宽度比例，最大按 300 抽换算 #}
+                            {% set pct = (item.totalDrawNum / 300.0 * 100.0) %}
+                            {% if pct > 100 %}{% set pct = 100 %}{% endif %}
+                            {% if item.avgDrawNum < 15.0 %}
+                            <div class="bar-fill fill-lucky" style="width: {{ pct }}%;"></div>
+                            {% elif item.avgDrawNum <= 17.0 %}
+                            <div class="bar-fill fill-normal" style="width: {{ pct }}%;"></div>
+                            {% else %}
+                            <div class="bar-fill fill-deep" style="width: {{ pct }}%;"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 右侧数据 -->
+                    <div class="chart-data-cell">
+                        <div class="chart-draw-val">{{ item.totalDrawNum }}<span class="draw-unit">抽</span></div>
+                        <div class="chart-avg-val">{{ item.avgDrawNum }}抽/件</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 底部：微型典藏徽章墙 -->
+        <div class="section-panel">
+            <div class="panel-header-line">
+                <div class="panel-title-text">
+                    五星限定共鸣典藏图鉴墙
+                    <span class="panel-title-tag">COLLECTION ARCHIVE MATRIX ({{ suits_completed }} / {{ suits_total }})</span>
+                </div>
+            </div>
+
+            <div class="badge-matrix">
+                {% for item in clothes %}
+                <div class="matrix-badge-card">
+                    <div class="badge-img-frame">
+                        <img src="{{ item.imgUrl }}" class="badge-img" alt="{{ item.subSuit }}">
+                        <div class="badge-full-tag">FULL</div>
+                    </div>
+                    <div class="badge-name">{{ item.subSuit }}</div>
+                    <div class="badge-draw">{{ item.totalDrawNum }}抽</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- 底部终端状态 -->
+        <div class="hub-footer">
+            <span>DATA ENGINE: <span class="active-text">NIKI TELEMETRY V2</span> · GENERATED AT: {{ update_time }} · ARCHIVE INTEGRITY: 100%</span>
+        </div>
+    </div>
+</body>
+</html>

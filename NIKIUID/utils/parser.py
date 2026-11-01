@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from .models import PoolType, WardrobeFilterMode
 
-CommandKind = Literal["login", "refresh", "card", "help", "gacha"]
+CommandKind = Literal["login", "refresh", "card", "help", "gacha", "gacha_detail", "gacha_page"]
 
 _PREFIXES = ("niki", "nk")
 _SIMPLE_COMMANDS: dict[str, CommandKind] = {
@@ -23,6 +23,23 @@ _SIMPLE_COMMANDS: dict[str, CommandKind] = {
     "bz": "help",
 }
 _GACHA_BASES = ("抽卡", "ck")
+# 抽卡详情/抽卡页面: 必须先于 _GACHA_BASES 匹配("抽卡详情" 也以 "抽卡" 开头)
+# 列表按长度降序排列, 避免 "详情" 抢先吃掉 "抽卡详情" 的尾巴
+_GACHA_SUB_BASES: list[tuple[str, CommandKind]] = sorted(
+    [
+        ("抽卡详情", "gacha_detail"),
+        ("ck详情", "gacha_detail"),
+        ("抽卡页面", "gacha_page"),
+        ("ck页面", "gacha_page"),
+        ("抽卡网页", "gacha_page"),
+        ("ck网页", "gacha_page"),
+        ("详情", "gacha_detail"),
+        ("页面", "gacha_page"),
+        ("网页", "gacha_page"),
+    ],
+    key=lambda item: len(item[0]),
+    reverse=True,
+)
 _GACHA_DISPLAY_TOKENS = {
     "统计": "统计",
     "tj": "统计",
@@ -77,6 +94,12 @@ _EXACT_GACHA_COMMANDS = {
     "nkcktj",
     "nikickjl",
     "nkckjl",
+    "niki抽卡详情",
+    "nk抽卡详情",
+    "niki抽卡页面",
+    "nk抽卡页面",
+    "niki抽卡网页",
+    "nk抽卡网页",
 }
 
 
@@ -84,8 +107,10 @@ _EXACT_GACHA_COMMANDS = {
 class ParsedCommand:
     kind: CommandKind
     pool_type: PoolType = "limited_5"
-    filter_mode: WardrobeFilterMode = "owned"
+    # 默认"抽到过"(含未抽齐): ownedSuitIds 只含齐套套装, 会漏掉抽了一部分的
+    filter_mode: WardrobeFilterMode = "drawn"
     display_label: str = "统计"
+    page: int = 1
 
 
 class CommandParseError(ValueError):
@@ -106,6 +131,10 @@ def parse_prefixed_command(text: str) -> ParsedCommand | None:
     if kind is not None:
         return ParsedCommand(kind=kind)
 
+    for base, kind in _GACHA_SUB_BASES:
+        if rest.startswith(base):
+            return _parse_gacha_tail(rest[len(base):], kind)
+
     for base in _GACHA_BASES:
         if rest.startswith(base):
             tail = rest[len(base):]
@@ -115,8 +144,16 @@ def parse_prefixed_command(text: str) -> ParsedCommand | None:
 
 
 def parse_gacha_args_text(text: str) -> ParsedCommand:
-    """只解析抽卡参数部分，空文本使用默认五星已共鸣视图。"""
-    return _parse_gacha_tail(_compact(text))
+    """只解析抽卡参数部分，空文本使用默认五星"抽到过"视图。
+
+    on_command 命令("抽卡"/"ck")已被 gsuid_core 剥离, ev.text 以
+    "详情"/"页面" 等子命令词开头时返回对应类型。
+    """
+    compact = _compact(text)
+    for base, kind in _GACHA_SUB_BASES:
+        if compact.startswith(base):
+            return _parse_gacha_tail(compact[len(base):], kind)
+    return _parse_gacha_tail(compact)
 
 
 def should_handle_compact_gacha_message(text: str) -> bool:
@@ -147,18 +184,19 @@ def should_handle_compact_gacha_message(text: str) -> bool:
 def build_gacha_parse_error_message() -> str:
     return (
         "抽卡参数无法识别，请使用：\n"
-        "nk抽卡[全][4|5|四星|五星]\n"
-        "示例：nk抽卡4、nk抽卡全、nk抽卡记录全、nkckjla"
+        "nk抽卡[全][4|5|四星|五星] / nk抽卡详情 / nk抽卡页面\n"
+        "示例：nk抽卡4、nk抽卡全、nk抽卡详情第2页、nk抽卡页面"
     )
 
 
-def _parse_gacha_tail(tail: str) -> ParsedCommand:
+def _parse_gacha_tail(tail: str, kind: CommandKind = "gacha") -> ParsedCommand:
     if not tail:
-        return ParsedCommand(kind="gacha")
+        return ParsedCommand(kind=kind)
 
     pool_type: PoolType = "limited_5"
-    filter_mode: WardrobeFilterMode = "owned"
+    filter_mode: WardrobeFilterMode = "drawn"
     display_label = "统计"
+    page = 1
     seen_pool: PoolType | None = None
     remaining = tail
 
@@ -185,13 +223,27 @@ def _parse_gacha_tail(tail: str) -> ParsedCommand:
             break
 
         if not matched:
+            # 页码 token: p2 / 页2 / 第2页
+            page_match = re.match(r"^(?:第?页?p?(\d+)页?|p(\d+))", remaining)
+            if page_match:
+                parsed_page = int(page_match.group(1) or page_match.group(2))
+                if parsed_page >= 1:
+                    page = parsed_page
+                    remaining = remaining[page_match.end():]
+                    if remaining and not remaining.isdigit():
+                        # 还有未识别的剩余内容才算错误
+                        raise CommandParseError(build_gacha_parse_error_message())
+                    matched = True
+
+        if not matched:
             raise CommandParseError(build_gacha_parse_error_message())
 
     return ParsedCommand(
-        kind="gacha",
+        kind=kind,
         pool_type=pool_type,
         filter_mode=filter_mode,
         display_label=display_label,
+        page=page,
     )
 
 

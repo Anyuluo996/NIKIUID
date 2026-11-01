@@ -15,9 +15,11 @@ import importlib
 MODULES = [
     "gsuid_core.plugins.NIKIUID",
     "gsuid_core.plugins.NIKIUID.NIKIUID.__full__",
+    "gsuid_core.plugins.NIKIUID.NIKIUID.niki_blessing",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_card",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_calendar",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_config",
+    "gsuid_core.plugins.NIKIUID.NIKIUID.niki_gacha_page.page_router",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_help",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_login",
     "gsuid_core.plugins.NIKIUID.NIKIUID.niki_refresh",

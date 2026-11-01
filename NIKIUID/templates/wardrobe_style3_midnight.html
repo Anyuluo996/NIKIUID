@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>共鸣衣橱 · 夜空星璨风</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "MiSans", "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            background-image: url("images/bg/HJawK_5aUAAd19x.jpg");
+            background-size: cover;
+            background-position: center top;
+            min-height: 100vh;
+            padding: 36px 20px 42px;
+            background-color: #0d0b18;
+        }
+
+        .container {
+            width: 760px;
+            margin: 0 auto;
+        }
+
+        /* 顶部星曜标头 */
+        .night-masthead {
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .night-sub {
+            font-size: 11px;
+            letter-spacing: 6px;
+            color: #f5d17a;
+            text-transform: uppercase;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(245, 209, 122, 0.5);
+            margin-bottom: 6px;
+        }
+
+        .night-title {
+            font-size: 32px;
+            color: #ffffff;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(180, 150, 255, 0.6), 0 2px 6px rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .night-title .star-dot {
+            color: #f5d17a;
+            font-size: 14px;
+            text-shadow: 0 0 8px #f5d17a;
+        }
+
+        .night-tagline {
+            font-size: 12px;
+            color: rgba(220, 215, 245, 0.85);
+            margin-top: 6px;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+        }
+
+        /* 暗曜黑晶大面板 */
+        .obsidian-card {
+            background: rgba(18, 15, 28, 0.88);
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(245, 209, 122, 0.25);
+            margin-bottom: 22px;
+        }
+
+        /* 顶部档案行 */
+        .profile-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(245, 209, 122, 0.18);
+        }
+
+        .profile-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .avatar-frame {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(135deg, #f5d17a, #9d71fd);
+            box-shadow: 0 0 16px rgba(245, 209, 122, 0.45);
+        }
+
+        .avatar-frame img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .avatar-placeholder {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #2a223d;
+            color: #f5d17a;
+            font-size: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .profile-meta h2 {
+            font-size: 20px;
+            color: #ffffff;
+            font-weight: 700;
+            line-height: 1.2;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .profile-meta .badge-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .level-pill {
+            background: linear-gradient(90deg, #6c3ce9, #a855f7);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(168, 85, 247, 0.3);
+        }
+
+        .uid-pill {
+            font-size: 12px;
+            color: #a49ec2;
+        }
+
+        .lucky-honor {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .honor-badge {
+            background: linear-gradient(135deg, #f5d17a, #d49520);
+            color: #1a1325;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 14px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 12px rgba(245, 209, 122, 0.4);
+        }
+
+        .honor-sub {
+            font-size: 11px;
+            color: #a49ec2;
+        }
+
+        /* 暗夜四宫格仪表盘 */
+        .dash-grid {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .dash-item {
+            flex: 1;
+            background: rgba(30, 24, 46, 0.75);
+            border: 1px solid rgba(245, 209, 122, 0.15);
+            border-radius: 12px;
+            padding: 12px 10px;
+            text-align: center;
+        }
+
+        .dash-label {
+            font-size: 11px;
+            color: #9b94be;
+            margin-bottom: 4px;
+        }
+
+        .dash-val {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .dash-val .unit {
+            font-size: 12px;
+            font-weight: 500;
+            color: #9b94be;
+            margin-left: 2px;
+        }
+
+        .dash-val.glow-gold {
+            color: #fcd34d;
+            text-shadow: 0 0 10px rgba(252, 211, 77, 0.5);
+        }
+
+        .dash-foot {
+            font-size: 10px;
+            color: #7b749e;
+            margin-top: 3px;
+        }
+
+        /* 展阁头部 */
+        .vault-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+
+        .vault-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vault-title h3 {
+            font-size: 17px;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .vault-pill {
+            background: rgba(245, 209, 122, 0.2);
+            color: #fcd34d;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(245, 209, 122, 0.35);
+        }
+
+        .vault-count {
+            font-size: 12px;
+            color: #9b94be;
+        }
+
+        /* 套装 3 列固定宽 232px */
+        .suit-grid {
+            width: 100%;
+        }
+
+        .suit-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .suit-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .suit-cell {
+            flex: 0 0 auto;
+            width: 232px;
+        }
+
+        .suit-row.partial {
+            justify-content: center;
+        }
+
+        /* 黑曜石星曜卡片 */
+        .starlit-card {
+            background: rgba(25, 21, 38, 0.95);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(245, 209, 122, 0.22);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .starlit-thumb {
+            width: 232px;
+            background: #141021;
+            display: block;
+        }
+
+        .starlit-thumb img.suit-img {
+            width: 232px;
+            display: block;
+        }
+
+        .starlit-info {
+            padding: 10px 12px 12px;
+            background: rgba(22, 18, 34, 0.98);
+        }
+
+        .starlit-tags {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .starlit-stars {
+            width: 48px;
+            height: 14px;
+            display: inline-block;
+        }
+
+        .starlit-pool {
+            font-size: 10px;
+            color: #c4b5fd;
+            background: rgba(139, 92, 246, 0.2);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            max-width: 130px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .starlit-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .starlit-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 6px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            margin-top: 2px;
+        }
+
+        .starlit-avg-pill {
+            background: linear-gradient(90deg, rgba(245, 209, 122, 0.2), rgba(212, 149, 32, 0.25));
+            color: #fcd34d;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            border: 1px solid rgba(245, 209, 122, 0.4);
+            text-shadow: 0 0 6px rgba(252, 211, 77, 0.4);
+        }
+
+        .starlit-total {
+            font-size: 11px;
+            color: #9b94be;
+            font-weight: 500;
+        }
+
+        /* 底栏 */
+        .night-footer {
+            text-align: center;
+            padding: 10px 0 0;
+            color: rgba(200, 190, 230, 0.7);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部标头 -->
+        <div class="night-masthead">
+            <div class="night-sub">STARLIT ARCHIVE // VOL.01</div>
+            <div class="night-title">
+                <span class="star-dot">★</span>
+                <span>星曜神话 · 共鸣图卷</span>
+                <span class="star-dot">★</span>
+            </div>
+            <div class="night-tagline">INFINITY NIKI · 奇想共鸣永恒星夜谱系</div>
+        </div>
+
+        <!-- 黑晶主体看板 -->
+        <div class="obsidian-card">
+            <!-- 搭配师星象名片 -->
+            <div class="profile-row">
+                <div class="profile-left">
+                    <div class="avatar-frame">
+                        {% if avatar_path %}
+                        <img src="{{ avatar_path }}" alt="头像">
+                        {% else %}
+                        <div class="avatar-placeholder">?</div>
+                        {% endif %}
+                    </div>
+                    <div class="profile-meta">
+                        <h2>{{ nickname }}</h2>
+                        <div class="badge-line">
+                            <span class="level-pill">Lv.{{ level }}</span>
+                            <span class="uid-pill">搭配师编号: {{ role_id }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lucky-honor">
+                    {% if avg_draw > 0 and avg_draw <= 15.5 %}
+                    <span class="honor-badge">★ 星夜神运 · 极光天琴 ★</span>
+                    <span class="honor-sub">恒星引力共鸣巅峰</span>
+                    {% elif avg_draw > 0 and avg_draw <= 16.5 %}
+                    <span class="honor-badge">★ 星辰眷顾 · 曜光辉映 ★</span>
+                    <span class="honor-sub">星辉熠熠照亮衣橱</span>
+                    {% elif avg_draw > 0 and avg_draw <= 17.5 %}
+                    <span class="honor-badge">★ 守望星图 · 步履安澜 ★</span>
+                    <span class="honor-sub">静候群星归位之时</span>
+                    {% else %}
+                    <span class="honor-badge">★ 愿力凝聚 · 终成星辉 ★</span>
+                    <span class="honor-sub">每一缕微光皆成永恒</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 四格暗夜仪表盘 -->
+            <div class="dash-grid">
+                <div class="dash-item">
+                    <div class="dash-label">汇聚星曜</div>
+                    <div class="dash-val">{{ owned_count }}<span class="unit">/{{ suit_count }}</span></div>
+                    <div class="dash-foot">点亮率 100%</div>
+                </div>
+                <div class="dash-item">
+                    <div class="dash-label">星海引力</div>
+                    <div class="dash-val">{{ total_draws }}<span class="unit">抽</span></div>
+                    <div class="dash-foot">总愿力投入</div>
+                </div>
+                <div class="dash-item">
+                    <div class="dash-label">恒星单件期望</div>
+                    <div class="dash-val glow-gold">{{ avg_draw }}<span class="unit">抽</span></div>
+                    <div class="dash-foot">均抽星级能效</div>
+                </div>
+                <div class="dash-item">
+                    <div class="dash-label">展示星域</div>
+                    <div class="dash-val" style="font-size: 16px; padding-top: 3px;">{{ pool_label }}</div>
+                    <div class="dash-foot">{% if filter_mode == 'owned' %}已集齐星耀{% else %}全图鉴{% endif %}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 星曜展馆卡片 -->
+        <div class="obsidian-card" style="padding-top: 20px;">
+            <div class="vault-header">
+                <div class="vault-title">
+                    <h3>五星星曜图鉴</h3>
+                    <span class="vault-pill">{{ pool_label }}</span>
+                </div>
+                <div class="vault-count">汇聚 {{ clothes|length }} 宿璀璨华裳</div>
+            </div>
+
+            {% if clothes %}
+            <div class="suit-grid">
+                {% for suit in clothes %}
+                {% set loop_index = loop.index0 %}
+                {% if loop_index % 3 == 0 %}<div class="suit-row{% if loop.length - loop.index0 < 3 %} partial{% endif %}">{% endif %}
+                <div class="suit-cell">
+                    <div class="starlit-card">
+                        <div class="starlit-thumb">
+                            {% if suit.imgUrl %}
+                            <img class="suit-img" src="{{ suit.imgUrl }}" alt="{{ suit.subSuit }}">
+                            {% else %}
+                            <div style="width:232px;height:232px;background:#141021;"></div>
+                            {% endif %}
+                        </div>
+                        <div class="starlit-info">
+                            <div class="starlit-tags">
+                                <img class="starlit-stars" src="images/icon/{% if suit.level == 5 %}五星.webp{% else %}四星.webp{% endif %}" alt="星级">
+                                {% if suit.bigSuit %}<span class="starlit-pool">{{ suit.bigSuit }}</span>{% endif %}
+                            </div>
+                            <div class="starlit-name">{{ suit.subSuit }}</div>
+                            <div class="starlit-foot">
+                                {% if suit.avgDrawNum > 0 %}
+                                <span class="starlit-avg-pill">{{ "%.1f"|format(suit.avgDrawNum) }} 抽/件</span>
+                                <span class="starlit-total">共 {{ suit.actualDrawCount }} 抽</span>
+                                {% else %}
+                                <span class="starlit-avg-pill">已点亮</span>
+                                <span class="starlit-total">完美共鸣</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if loop_index % 3 == 2 or loop.last %}</div>{% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 底栏 -->
+        <div class="night-footer">
+            STARLIT ARCHIVE · 数据来源: 奇想手账 · {{ update_time }}
+        </div>
+    </div>
+</body>
+</html>
