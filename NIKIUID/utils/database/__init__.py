@@ -385,6 +385,9 @@ class NikiCredential(User, table=True):
         row = cls(
             user_id=user_id,
             bot_id=bot_id,
+            # User 基类的 cookie 为 NOT NULL 且无列默认(default=None),
+            # INSERT 不带会炸 IntegrityError(凭证从未落库的根因)
+            cookie="",
             account_enc=encrypt_text(account),
             password_enc=encrypt_text(password),
             account_mask=mask,
