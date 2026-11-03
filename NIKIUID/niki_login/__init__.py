@@ -35,8 +35,7 @@ async def niki_login_cmd(bot: Bot, ev: Event):
     # 账号密码包含敏感信息,仅限私聊使用,群聊拒绝
     if ev.group_id:
         await bot.send(
-            "[无限暖暖]\n账号密码登录涉及敏感信息,请私聊机器人使用\n"
-            "或发送「niki登录」获取网页链接登录(支持群聊)",
+            "[无限暖暖]\n账号密码登录涉及敏感信息,请私聊机器人使用\n或发送「niki登录」获取网页链接登录(支持群聊)",
             at_sender=True,
         )
         return
@@ -53,13 +52,33 @@ async def niki_login_cmd(bot: Bot, ev: Event):
     await login_by_password(bot, ev, account, password)
 
 
-@sv_niki_login.on_fullmatch(("退出登录", "退出登陆", "登出", "logout", "tcdl", "dc"))
+@sv_niki_login.on_fullmatch(
+    ("退出登录", "退出登陆", "登出", "logout", "tcdl", "dc"),
+    to_ai="""删除当前无限暖暖登录账号
+
+    当用户说退出登录、登出、解除绑定时调用。
+    仅删除当前活跃账号,其他已登录账号不受影响,之后可重新 nk登录。
+
+    Args:
+        text: 无需参数,留空即可
+    """,
+)
 async def niki_logout_cmd(bot: Bot, ev: Event):
     """niki退出登录 / nk登出 - 删除当前账号"""
     await logout(bot, ev)
 
 
-@sv_niki_login.on_fullmatch(("全部登出", "退出全部登录", "退出全部登陆", "qbdc", "qbzc"))
+@sv_niki_login.on_fullmatch(
+    ("全部登出", "退出全部登录", "退出全部登陆", "qbdc", "qbzc"),
+    to_ai="""删除全部无限暖暖登录账号
+
+    当用户明确说退出全部登录、清除所有账号时调用。
+    会删除该用户的所有已登录账号,影响较大,用户只是说"退出登录"时不要用本工具。
+
+    Args:
+        text: 无需参数,留空即可
+    """,
+)
 async def niki_logout_all_cmd(bot: Bot, ev: Event):
     """全部登出 - 删除所有账号"""
     await logout_all(bot, ev)

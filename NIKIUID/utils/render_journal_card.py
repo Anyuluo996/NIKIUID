@@ -5,6 +5,7 @@ from typing import Any
 from datetime import datetime
 
 from gsuid_core.logger import logger
+from gsuid_core.ai_core.trigger_bridge import ai_return
 
 from .resource.RESOURCE_PATH import NIKI_TEMPLATES
 
@@ -259,9 +260,7 @@ def build_journal_context(
         return user_data.get(key, default)
 
     return {
-        "nickname": role_info.get("nickname")
-        or user_self_data.get("nickname")
-        or "未知",
+        "nickname": role_info.get("nickname") or user_self_data.get("nickname") or "未知",
         "level": user_data.get("level", role_info.get("level", 0)),
         "role_id": role_id,
         "avatar_path": avatar_path_str,
@@ -374,9 +373,7 @@ def _ud_danqing(user_data: dict) -> int:
     return _to_int(user_data.get("danqing_jade_num"))
 
 
-def _compute_reso_stats(
-    suit_list: list[dict], pool_stats: dict[str, dict]
-) -> dict[str, dict[str, Any]]:
+def _compute_reso_stats(suit_list: list[dict], pool_stats: dict[str, dict]) -> dict[str, dict[str, Any]]:
     """共鸣统计: 优先 poolStats(进化口径), 否则从 suitCardListData 兜底估算
 
     poolStats 结构: {pool_key: {pool_suits, collected, suit_total_num,
@@ -398,9 +395,7 @@ def _compute_reso_stats(
 
     # poolStats 缺失时, 从 suitCardListData 兜底(旧缓存兼容)
     if not any(r["total"] for r in result.values()):
-        stats: dict[str, list[int]] = {
-            k: [0, 0, 0] for k in keys
-        }  # [套装数, 已共鸣数, 件数]
+        stats: dict[str, list[int]] = {k: [0, 0, 0] for k in keys}  # [套装数, 已共鸣数, 件数]
         total_draws: dict[str, int] = {k: 0 for k in keys}
         for s in suit_list:
             level = int(s.get("level", 5) or 5)
@@ -428,6 +423,37 @@ def _compute_reso_stats(
     return result
 
 
+def _ai_return_journal(context: dict) -> None:
+    """提取手账关键统计,通过 ai_return 返回给 AI 分析"""
+    try:
+        parts = [
+            f"【无限暖暖 奇想手账】{context.get('nickname', '')} Lv.{context.get('level', 0)}",
+            f"登录天数: {context.get('login_days', 0)}  游玩时长: {context.get('total_play_time', 0)} 小时",
+            f"收集: 服装 {context.get('cloth_num', 0)}"
+            f"  妙妙 {context.get('momo_num', 0)}"
+            f"  设计图 {context.get('designdrawing_num', 0)}"
+            f"  成就 {context.get('achievement_num', 0)}",
+            f"祈愿抽卡: 限定 {context.get('draw_num', 0)}"
+            f"  周期 {context.get('periodic_draw_num', 0)}"
+            f"  常驻 {context.get('permanent_draw_num', 0)}",
+            f"共鸣套装 五星: {context.get('limited5_owned', 0)}/"
+            f"{context.get('limited5_total', 0)}"
+            f" (均 {context.get('limited5_avg', 0)} 抽)"
+            f"  四星: {context.get('limited4_owned', 0)}/{context.get('limited4_total', 0)}"
+            f"  常驻五星: {context.get('permanent5_owned', 0)}/"
+            f"{context.get('permanent5_total', 0)}",
+            f"探索: 宝箱 {context.get('box_collected', 0)}/{context.get('box_total', 0)}"
+            f"  阅读 {context.get('read_collected', 0)}/{context.get('read_total', 0)}"
+            f"  巡游 {context.get('cruise_collected', 0)}/{context.get('cruise_total', 0)}",
+            f"心愿原野: 奇想星 {context.get('whimystar_num', 0)}"
+            f"  露珠 {context.get('dew_num', 0)}"
+            f"  流转之柱 {context.get('pillar_num', 0)}",
+        ]
+        ai_return("\n".join(parts))
+    except Exception as e:
+        logger.warning(f"[NIKIUID] ai_return 手账数据提取失败: {e}")
+
+
 async def render_journal_card(
     data: dict,
     login_info: dict | None = None,
@@ -449,6 +475,9 @@ async def render_journal_card(
     """
     try:
         context = build_journal_context(data, login_info, map_data, get_user_dir_fn)
+
+        # 数据已拿到、图片未生成,给 AI 注入文字摘要(普通触发时静默)
+        _ai_return_journal(context)
 
         template = NIKI_TEMPLATES.get_template("niki_journal.html")
         html_content = template.render(**context)

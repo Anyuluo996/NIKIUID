@@ -9,6 +9,7 @@ from typing import Any
 from datetime import datetime
 
 from gsuid_core.logger import logger
+from gsuid_core.ai_core.trigger_bridge import ai_return
 
 from .models import PoolType, WardrobeFilterMode
 from .encoding import fix_encoding
@@ -175,17 +176,14 @@ def build_wardrobe_context(
 
     # 按拥有状态筛选
     if filter_mode == "owned":
-        filtered_suits = [
-            s for s in filtered_suits if str(s.get("suit_id", "")) in owned_set
-        ]
+        filtered_suits = [s for s in filtered_suits if str(s.get("suit_id", "")) in owned_set]
     elif filter_mode == "drawn":
         # 抽到过的套装(含未抽齐): 有共鸣抽数 或 在已共鸣名单里。
         # ownedSuitIds 只含齐套套装, 抽了 5/10 件的套装不在其中, 不能只看名单
         filtered_suits = [
             s
             for s in filtered_suits
-            if str(s.get("suit_id", "")) in owned_set
-            or int(s.get("totalDrawNum", 0) or 0) > 0
+            if str(s.get("suit_id", "")) in owned_set or int(s.get("totalDrawNum", 0) or 0) > 0
         ]
 
     if not filtered_suits:
@@ -200,15 +198,17 @@ def build_wardrobe_context(
         # 单件明细(共鸣抽数计算服务合并进来的 clothDetails)
         cloths_view = []
         for cloth in suit.get("clothDetails", []) or []:
-            cloths_view.append({
-                "clothId": str(cloth.get("clothId", "")),
-                "name": fix_encoding(str(cloth.get("name", "") or "")),
-                "displayType": str(cloth.get("displayType", "") or ""),
-                "image": str(cloth.get("image", "") or ""),
-                "drawNumFirst": int(cloth.get("drawNumFirst", 0) or 0),
-                "drawNumSecond": int(cloth.get("drawNumSecond", 0) or 0),
-                "owned": int(cloth.get("drawNumFirst", 0) or 0) > 0,
-            })
+            cloths_view.append(
+                {
+                    "clothId": str(cloth.get("clothId", "")),
+                    "name": fix_encoding(str(cloth.get("name", "") or "")),
+                    "displayType": str(cloth.get("displayType", "") or ""),
+                    "image": str(cloth.get("image", "") or ""),
+                    "drawNumFirst": int(cloth.get("drawNumFirst", 0) or 0),
+                    "drawNumSecond": int(cloth.get("drawNumSecond", 0) or 0),
+                    "owned": int(cloth.get("drawNumFirst", 0) or 0) > 0,
+                }
+            )
 
         # 旧缓存无 clothDetails 时, 从 cloths JSON 字符串补齐(抽数为 0)
         if not cloths_view:
@@ -216,39 +216,42 @@ def build_wardrobe_context(
                 raw_cloths = suit.get("cloths", "[]")
                 parsed = json.loads(raw_cloths) if isinstance(raw_cloths, str) else raw_cloths
                 for cloth in parsed or []:
-                    cloths_view.append({
-                        "clothId": str(cloth.get("cloth_id", "")),
-                        "name": fix_encoding(str(cloth.get("name", "") or "")),
-                        "displayType": str(cloth.get("display_type", "") or ""),
-                        "image": str(cloth.get("image", "") or ""),
-                        "drawNumFirst": 0,
-                        "drawNumSecond": 0,
-                        "owned": False,
-                    })
+                    cloths_view.append(
+                        {
+                            "clothId": str(cloth.get("cloth_id", "")),
+                            "name": fix_encoding(str(cloth.get("name", "") or "")),
+                            "displayType": str(cloth.get("display_type", "") or ""),
+                            "image": str(cloth.get("image", "") or ""),
+                            "drawNumFirst": 0,
+                            "drawNumSecond": 0,
+                            "owned": False,
+                        }
+                    )
             except Exception:
                 pass
 
-        all_clothes.append({
-            "subSuit": _get_name(suit),
-            "bigSuit": _get_pool_name(suit),
-            "level": _get_level(suit),
-            "cardType": int(suit.get("card_type", 2) or 2),
-            "poolType": "limited",
-            # 共鸣抽数数据(前端复刻算法)
-            "avgDrawNum": float(suit.get("averageDrawNum", 0) or 0),
-            "totalDrawNum": int(suit.get("totalDrawNum", 0) or 0),
-            "collectedCount": int(suit.get("collectedCount", 0) or 0),
-            # 去重后的单件拥有数(collectedCount 是槽位数, 含重抽)
-            "ownedClothCount": sum(1 for c in cloths_view if c["owned"]),
-            "actualDrawCount": int(suit.get("totalDrawNum", 0) or 0)
-            + int(suit.get("collectedCount", 0) or 0),
-            "evolutionCount": int(suit.get("evolutionCount", 0) or 0),
-            "evolutionTotal": int(suit.get("evolutionTotal", 0) or 0),
-            "isCollected": is_owned,
-            "imgUrl": _get_img_url(suit),
-            "timestamp": _get_timestamp(suit),
-            "cloths": cloths_view,
-        })
+        all_clothes.append(
+            {
+                "subSuit": _get_name(suit),
+                "bigSuit": _get_pool_name(suit),
+                "level": _get_level(suit),
+                "cardType": int(suit.get("card_type", 2) or 2),
+                "poolType": "limited",
+                # 共鸣抽数数据(前端复刻算法)
+                "avgDrawNum": float(suit.get("averageDrawNum", 0) or 0),
+                "totalDrawNum": int(suit.get("totalDrawNum", 0) or 0),
+                "collectedCount": int(suit.get("collectedCount", 0) or 0),
+                # 去重后的单件拥有数(collectedCount 是槽位数, 含重抽)
+                "ownedClothCount": sum(1 for c in cloths_view if c["owned"]),
+                "actualDrawCount": int(suit.get("totalDrawNum", 0) or 0) + int(suit.get("collectedCount", 0) or 0),
+                "evolutionCount": int(suit.get("evolutionCount", 0) or 0),
+                "evolutionTotal": int(suit.get("evolutionTotal", 0) or 0),
+                "isCollected": is_owned,
+                "imgUrl": _get_img_url(suit),
+                "timestamp": _get_timestamp(suit),
+                "cloths": cloths_view,
+            }
+        )
 
     # 按时间戳排序(从新到旧)
     all_clothes.sort(key=lambda x: x.get("timestamp", 0), reverse=True)
@@ -257,9 +260,7 @@ def build_wardrobe_context(
     effective_page_size = page_size if page_size and page_size > 0 else PAGE_SIZE
     total_pages = max(1, (total_suits + effective_page_size - 1) // effective_page_size)
     page = max(1, min(page, total_pages))
-    clothes = all_clothes[
-        (page - 1) * effective_page_size: page * effective_page_size
-    ]
+    clothes = all_clothes[(page - 1) * effective_page_size : page * effective_page_size]
 
     # 用户信息
     user_data = state.get("userData", {})
@@ -301,12 +302,8 @@ def build_wardrobe_context(
     total_draws = sum(int(c.get("actualDrawCount", 0) or 0) for c in all_clothes)
     total_collected = sum(int(c.get("collectedCount", 0) or 0) for c in all_clothes)
     avg_draw = round(total_draws / total_collected, 1) if total_collected > 0 else 0
-    total_evolutions = sum(
-        int(c.get("evolutionCount", 0) or 0) for c in all_clothes
-    )
-    max_evolutions = sum(
-        int(c.get("evolutionTotal", 0) or 0) for c in all_clothes
-    )
+    total_evolutions = sum(int(c.get("evolutionCount", 0) or 0) for c in all_clothes)
+    max_evolutions = sum(int(c.get("evolutionTotal", 0) or 0) for c in all_clothes)
 
     return {
         "nickname": role_info.get("nickname") or "未知",
@@ -333,6 +330,32 @@ def build_wardrobe_context(
         "icon_path": "images/icon",
         "update_time": datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
+
+
+def _ai_return_wardrobe(context: dict) -> None:
+    """提取衣橱筛选结果统计,通过 ai_return 返回给 AI 分析"""
+    try:
+        parts = [
+            f"【无限暖暖 共鸣衣橱·{context.get('pool_label', '')}】{context.get('nickname', '')}",
+            f"筛选({context.get('filter_mode', '')})共 {context.get('suit_count', 0)} 套,"
+            f"已共鸣 {context.get('owned_count', 0)} 套,"
+            f"当前第 {context.get('page', 1)}/{context.get('total_pages', 1)} 页",
+            f"累计抽数 {context.get('total_draws', 0)}"
+            f"  均抽 {context.get('avg_draw', 0)}"
+            f"  进化 {context.get('total_evolutions', 0)}/"
+            f"{context.get('max_evolutions', 0)}",
+        ]
+        for c in (context.get("clothes", []) or [])[:8]:
+            status = "已共鸣" if c.get("isCollected") else "未齐"
+            parts.append(
+                f"  - {c.get('subSuit', '?')}({c.get('level', '?')}星) {status}"
+                f" 抽 {c.get('totalDrawNum', 0)} 次"
+                f" 均抽 {c.get('avgDrawNum', 0)}"
+                f" 已集 {c.get('ownedClothCount', 0)} 件"
+            )
+        ai_return("\n".join(parts))
+    except Exception as e:
+        logger.warning(f"[NIKIUID] ai_return 衣橱数据提取失败: {e}")
 
 
 async def render_wardrobe_card(
@@ -375,6 +398,9 @@ async def render_wardrobe_card(
         if context is None:
             return None
 
+        # 数据已拿到、图片未生成,给 AI 注入文字摘要(普通触发时静默)
+        _ai_return_wardrobe(context)
+
         if template_name != "wardrobe.html":
             # 新模板: 单件图标本地化
             await localize_images(context["clothes"])
@@ -383,9 +409,7 @@ async def render_wardrobe_card(
         html_content = template.render(**context)
 
         if render_fn:
-            return await render_fn(
-                html_content, pool_type, context.get("suit_count", 0)
-            )
+            return await render_fn(html_content, pool_type, context.get("suit_count", 0))
 
         logger.warning("render_fn not provided, returning None")
         return None

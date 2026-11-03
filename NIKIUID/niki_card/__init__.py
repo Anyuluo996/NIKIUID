@@ -49,7 +49,18 @@ async def _get_user_data_dir(uid: str) -> "object":
     return user_dir
 
 
-@sv_niki_card.on_command(("卡片", "kp"), block=True)
+@sv_niki_card.on_command(
+    ("卡片", "kp"),
+    block=True,
+    to_ai="""查看无限暖暖奇想手账总览卡片
+
+    当用户想看手账、游玩数据总览、收集进度统计、登录天数时调用。
+    需要用户已登录(未登录会提示先发送 nk登录)。
+
+    Args:
+        text: 无需参数,留空即可
+    """,
+)
 async def niki_card_cmd(bot: Bot, ev: Event):
     """niki卡片 - 查看奇想手账"""
     user = await require_user(bot, ev)
@@ -74,9 +85,7 @@ async def niki_card_cmd(bot: Bot, ev: Event):
         login_info=data.get("login_info"),
         map_data=data.get("map_data"),
         get_user_dir_fn=lambda _uid: user_dir,
-        render_fn=lambda html: render_html_to_image(
-            html, user_data_dir=user_dir, max_width=max_width
-        ),
+        render_fn=lambda html: render_html_to_image(html, user_data_dir=user_dir, max_width=max_width),
     )
 
     if image_bytes:
@@ -85,7 +94,23 @@ async def niki_card_cmd(bot: Bot, ev: Event):
         await send_niki_notify(bot, ev, CardMsg.LOAD_FAILED)
 
 
-@sv_niki_gacha.on_command(("抽卡", "ck"), block=True)
+@sv_niki_gacha.on_command(
+    ("抽卡", "ck"),
+    block=True,
+    to_ai="""查看无限暖暖共鸣衣橱抽卡数据
+
+    当用户问抽卡记录、抽数、套装收集/共鸣进度、衣橱时调用。
+    需要用户已登录(未登录会提示先发送 nk登录)。
+
+    Args:
+        text: 可选参数,可组合(空格分隔),留空显示五星已共鸣视图
+              - "全" 显示含未抽取的全部套装,例如 "全"
+              - "4" 或 "四星" 查看四星池(默认五星),例如 "4" "全 4"
+              - "详情" 横幅详情视图(单件+抽数),例如 "详情" "全 详情"
+              - "页面" 生成 10 分钟有效的临时网页,例如 "页面"
+              - "第2页" 或 "p2" 翻页,例如 "全 第2页"
+    """,
+)
 async def niki_gacha_cmd(bot: Bot, ev: Event):
     """niki抽卡 [参数] - 查看共鸣衣橱
 

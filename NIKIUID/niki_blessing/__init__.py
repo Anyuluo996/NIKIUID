@@ -30,7 +30,18 @@ _BLESSING_PATTERN = r"^(?:祝福闪光|闪光|zhsg)\s*(\d*)$"
 _BLESSING_RE = re.compile(_BLESSING_PATTERN)
 
 
-@sv_niki_blessing.on_regex(_BLESSING_PATTERN, block=True)
+@sv_niki_blessing.on_regex(
+    _BLESSING_PATTERN,
+    block=True,
+    to_ai="""查看无限暖暖祝福闪光收集矩阵
+
+    当用户问祝福闪光、闪光收集进度、闪光配色收集时调用。
+
+    Args:
+        text: 消息格式为 "祝福闪光"、"闪光" 或 "zhsg",可带页码如 "闪光2"。
+              不带页码默认第 1 页(33 套按星级分页,每页 11 套)
+    """,
+)
 async def niki_blessing_cmd(bot: Bot, ev: Event):
     """祝福闪光 - 查看我的祝福闪光收集矩阵"""
     match = _BLESSING_RE.match((ev.text or "").strip() or (ev.raw_text or "").strip())
@@ -46,9 +57,7 @@ async def niki_blessing_cmd(bot: Bot, ev: Event):
         return
 
     if not (data.get("journal_data", {}).get("state", {}).get("magicBallData")):
-        await send_niki_notify(
-            bot, ev, "祝福闪光数据尚未缓存, 请先发送 nk刷新 更新数据"
-        )
+        await send_niki_notify(bot, ev, "祝福闪光数据尚未缓存, 请先发送 nk刷新 更新数据")
         return
 
     page_label = f"第 {page} 页" if page > 1 else ""
@@ -65,9 +74,7 @@ async def niki_blessing_cmd(bot: Bot, ev: Event):
         data=data.get("journal_data", {}),
         login_info=data.get("login_info"),
         get_user_dir_fn=lambda _uid: user_dir,
-        render_fn=lambda html: render_html_to_image(
-            html, user_data_dir=user_dir, max_width=max_width
-        ),
+        render_fn=lambda html: render_html_to_image(html, user_data_dir=user_dir, max_width=max_width),
         page=page,
     )
 

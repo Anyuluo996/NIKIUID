@@ -17,7 +17,18 @@ from ..utils.services.refresh_service import refresh_user_data
 sv_niki_refresh = SV("niki刷新")
 
 
-@sv_niki_refresh.on_command(("刷新", "sx", "sync"), block=True)
+@sv_niki_refresh.on_command(
+    ("刷新", "sx", "sync"),
+    block=True,
+    to_ai="""刷新无限暖暖手账数据
+
+    当用户说刷新数据、同步最新数据、更新手账时调用;
+    其他查询工具提示数据过旧时也可先调用本工具。
+
+    Args:
+        text: 无需参数,留空即可
+    """,
+)
 async def niki_refresh_cmd(bot: Bot, ev: Event):
     """niki刷新 / nk刷新 - 重新拉取奇想手账数据"""
     user = await require_user(bot, ev)

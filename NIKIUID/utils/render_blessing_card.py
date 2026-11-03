@@ -5,6 +5,7 @@ from pathlib import Path
 from datetime import datetime
 
 from gsuid_core.logger import logger
+from gsuid_core.ai_core.trigger_bridge import ai_return
 
 from .resource.RESOURCE_PATH import NIKI_TEMPLATES, USER_DATA_PATH
 from .services.blessing_service import (
@@ -60,7 +61,7 @@ def build_blessing_context(
 
     total_pages = max(1, (len(suits) + PAGE_SIZE - 1) // PAGE_SIZE)
     page = max(1, min(page, total_pages))
-    page_suits = suits[(page - 1) * PAGE_SIZE: page * PAGE_SIZE]
+    page_suits = suits[(page - 1) * PAGE_SIZE : page * PAGE_SIZE]
 
     # 本地化图标: 球图标 + 套装预览图(下载缓存到 USER_DATA_PATH/blessing)
     icon_urls = collect_blessing_icons({"suits": page_suits})
@@ -68,9 +69,7 @@ def build_blessing_context(
 
     async def _localize() -> dict[str, str]:
         mapping = await download_blessing_icons(icon_urls, BLESSING_ASSETS_DIR)
-        mapping.update(
-            await download_blessing_icons(preview_urls, BLESSING_ASSETS_DIR)
-        )
+        mapping.update(await download_blessing_icons(preview_urls, BLESSING_ASSETS_DIR))
         return mapping
 
     return {
@@ -82,6 +81,31 @@ def build_blessing_context(
         "login_info": login_info,
         "get_user_dir_fn": get_user_dir_fn,
     }
+
+
+def _ai_return_blessing(ctx: dict) -> None:
+    """提取祝福闪光收集统计,通过 ai_return 返回给 AI 分析"""
+    try:
+        matrix = ctx.get("matrix", {}) or {}
+        summary = matrix.get("summary", {}) or {}
+        parts = [
+            "【无限暖暖 祝福闪光】",
+            f"共 {summary.get('suitCount', 0)} 套"
+            f" {summary.get('itemCount', 0)} 件"
+            f" {summary.get('cellCount', 0)} 格,"
+            f"已集 {summary.get('ownedCells', 0)} 格,"
+            f"集齐 {summary.get('gatheredCount', 0)} 套",
+            f"当前第 {ctx.get('page', 1)}/{ctx.get('total_pages', 1)} 页:",
+        ]
+        for suit in ctx.get("page_suits", []) or []:
+            name = suit.get("name", "?")
+            owned = int(suit.get("ownedCells", 0) or 0)
+            total = int(suit.get("totalCells", 0) or 0)
+            done = "✓" if suit.get("hasGatheredAll") else ""
+            parts.append(f"  - {name} {owned}/{total} {done}")
+        ai_return("\n".join(parts))
+    except Exception as e:
+        logger.warning(f"[NIKIUID] ai_return 祝福闪光数据提取失败: {e}")
 
 
 async def render_blessing_card(
@@ -108,6 +132,9 @@ async def render_blessing_card(
         if ctx is None:
             return None
 
+        # 数据已拿到、图片未生成,给 AI 注入文字摘要(普通触发时静默)
+        _ai_return_blessing(ctx)
+
         icon_map = await ctx["icon_map_promise"]()
 
         def _local(url: str) -> str:
@@ -126,23 +153,25 @@ async def render_blessing_card(
                     if cell.get("missing"):
                         cells_view.append({"state": "missing"})
                     else:
-                        cells_view.append({
-                            "state": "owned" if cell["owned"] else "unowned",
-                            "icon": _local(cell["icon"]),
-                        })
+                        cells_view.append(
+                            {
+                                "state": "owned" if cell["owned"] else "unowned",
+                                "icon": _local(cell["icon"]),
+                            }
+                        )
                 rows_view.append({"colorType": suit["rows"][row_idx], "cells": cells_view})
-            suits_view.append({
-                "name": suit["name"],
-                "level": suit["suitLevel"],
-                "preview": _local(suit.get("previewImage", "")),
-                "owned": suit["ownedCells"],
-                "total": suit["totalCells"],
-                "gathered": suit["hasGatheredAll"],
-                "column_labels": [
-                    POSITION_LABELS.get(c["positionType"], "") for c in suit["columns"]
-                ],
-                "rows": rows_view,
-            })
+            suits_view.append(
+                {
+                    "name": suit["name"],
+                    "level": suit["suitLevel"],
+                    "preview": _local(suit.get("previewImage", "")),
+                    "owned": suit["ownedCells"],
+                    "total": suit["totalCells"],
+                    "gathered": suit["hasGatheredAll"],
+                    "column_labels": [POSITION_LABELS.get(c["positionType"], "") for c in suit["columns"]],
+                    "rows": rows_view,
+                }
+            )
 
         summary = ctx["matrix"]["summary"]
 
@@ -170,9 +199,9 @@ async def render_blessing_card(
             "summary": summary,
             "page": ctx["page"],
             "total_pages": ctx["total_pages"],
-            "owned_percent": round(
-                summary["ownedCells"] * 100 / summary["cellCount"], 1
-            ) if summary["cellCount"] else 0,
+            "owned_percent": round(summary["ownedCells"] * 100 / summary["cellCount"], 1)
+            if summary["cellCount"]
+            else 0,
             "icon_path": "images/icon",
             "update_time": datetime.now().strftime("%Y-%m-%d %H:%M"),
         }

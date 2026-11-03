@@ -20,6 +20,7 @@ from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.segment import MessageSegment
+from gsuid_core.ai_core.trigger_bridge import ai_return
 
 from ..utils.resource.RESOURCE_PATH import USER_DATA_PATH
 
@@ -39,9 +40,7 @@ async def _fetch_manifest() -> dict | None:
     """拉取远程 manifest.json。"""
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                MANIFEST_URL, timeout=aiohttp.ClientTimeout(total=15)
-            ) as resp:
+            async with session.get(MANIFEST_URL, timeout=aiohttp.ClientTimeout(total=15)) as resp:
                 if resp.status != 200:
                     logger.warning(f"[niki日历] manifest 拉取失败: HTTP {resp.status}")
                     return None
@@ -61,9 +60,7 @@ async def _download_image(version: str, filename: str) -> bytes | None:
     url = f"{RAW_BASE}/images/{version}/{filename}"
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(
-                url, timeout=aiohttp.ClientTimeout(total=30)
-            ) as resp:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=30)) as resp:
                 if resp.status != 200:
                     logger.warning(f"[niki日历] 图片下载失败 {filename}: HTTP {resp.status}")
                     return None
@@ -92,8 +89,37 @@ def _find_version(manifest: dict, query: str) -> dict | None:
     return None
 
 
+def _ai_return_calendar(version_data: dict, query: str) -> None:
+    """提取版本清单信息,通过 ai_return 返回给 AI 分析"""
+    try:
+        images = version_data.get("images", []) or []
+        titles = [str(i.get("title", "") or i.get("filename", "")) for i in images if isinstance(i, dict)]
+        parts = [
+            f"【无限暖暖 版本日历】v{version_data.get('version', '?')} (发布 {version_data.get('publish_date', '?')})",
+            f"共 {len(images)} 张一览图,已作为图片资源返回",
+        ]
+        if titles:
+            parts.append("内容: " + "、".join(titles[:10]))
+        if query:
+            parts.append(f"查询词: {query}")
+        ai_return("\n".join(parts))
+    except Exception as e:
+        logger.warning(f"[NIKIUID] ai_return 日历数据提取失败: {e}")
+
+
 @sv_niki_calendar.on_fullmatch(("日历", "calendar", "rl"), block=True)
-@sv_niki_calendar.on_command(("日历", "calendar", "rl"), block=True)
+@sv_niki_calendar.on_command(
+    ("日历", "calendar", "rl"),
+    block=True,
+    to_ai="""查看无限暖暖版本内容一览图
+
+    当用户问版本活动日历、新版本内容、活动时间、新套装时调用。
+
+    Args:
+        text: 可选。留空看最新版本;"列表" 列出全部可用版本;
+              版本号看指定版本,例如 "2.7"
+    """,
+)
 async def niki_calendar_cmd(bot: Bot, ev: Event):
     """nk日历 - 查看版本内容一览图片(活动日历/新套装/新玩法)"""
     query = ev.text.strip()
@@ -143,6 +169,9 @@ async def niki_calendar_cmd(bot: Bot, ev: Event):
     if not images:
         await bot.send(f"v{version_data['version']} 暂无图片内容")
         return
+
+    # 版本清单信息注入给 AI;图片随后作为资源 ID 返回
+    _ai_return_calendar(version_data, query)
 
     # 只发图片,不发标题/数量等文本
     ver = version_data["version"]

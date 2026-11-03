@@ -14,6 +14,7 @@ from gsuid_core.bot import Bot
 from gsuid_core.logger import logger
 from gsuid_core.models import Event
 from gsuid_core.segment import MessageSegment
+from gsuid_core.ai_core.trigger_bridge import ai_return
 
 from ..utils.msgs import CommonMsg, send_niki_notify
 from ..utils.session import require_user
@@ -34,9 +35,7 @@ DAILY_TASK_MAX = 500
 DISPATCH_TOTAL_SECONDS = 20 * 3600
 
 
-def _format_dispatch(
-    dispatch: list, now: int, total_seconds: int = DISPATCH_TOTAL_SECONDS
-) -> list[dict]:
+def _format_dispatch(dispatch: list, now: int, total_seconds: int = DISPATCH_TOTAL_SECONDS) -> list[dict]:
     """派遣任务格式化(纯函数,方便单元测试)。
 
     用 start_time + total_seconds 算结束时间,剩余 = 结束 - 当前。
@@ -52,11 +51,7 @@ def _format_dispatch(
         end_ts = start_ts + total_seconds
         remaining_sec = max(0, end_ts - now)
         elapsed = max(0, now - start_ts)
-        pct = (
-            min(elapsed / total_seconds * 100, 100)
-            if total_seconds > 0
-            else 0
-        )
+        pct = min(elapsed / total_seconds * 100, 100) if total_seconds > 0 else 0
 
         if remaining_sec <= 0:
             status = "已完成"
@@ -72,16 +67,18 @@ def _format_dispatch(
 
         spend_h = min(elapsed // 3600, 20)
 
-        result.append({
-            "text": text,
-            "reward_id": reward_id,
-            "spend": spend_h,
-            "total": 20,
-            "remain_h": remain_h,
-            "remain_m": remain_m,
-            "status": status,
-            "pct": round(pct, 1),
-        })
+        result.append(
+            {
+                "text": text,
+                "reward_id": reward_id,
+                "spend": spend_h,
+                "total": 20,
+                "remain_h": remain_h,
+                "remain_m": remain_m,
+                "status": status,
+                "pct": round(pct, 1),
+            }
+        )
     return result
 
 
@@ -120,9 +117,7 @@ def _build_stamina_context(user_data: dict, role: dict, avatar_path: str) -> dic
     # 数据时效提示
     data_time_str = ""
     if data_ts > 0:
-        data_time_str = datetime.fromtimestamp(data_ts).strftime(
-            "%m-%d %H:%M"
-        )
+        data_time_str = datetime.fromtimestamp(data_ts).strftime("%m-%d %H:%M")
 
     return {
         "nickname": role.get("nickname") or "搭配师",
@@ -149,7 +144,41 @@ def _build_stamina_context(user_data: dict, role: dict, avatar_path: str) -> dic
     }
 
 
-@sv_niki_stamina.on_command(("体力", "能量", "stamina", "energy", "tl"), block=True)
+def _ai_return_stamina(ctx: dict, data_source: str) -> None:
+    """提取体力关键数据,通过 ai_return 返回给 AI 分析"""
+    try:
+        parts = [
+            f"【无限暖暖 体力({data_source})】{ctx.get('nickname', '')} Lv.{ctx.get('level', 0)}",
+            f"活跃能量: {ctx.get('energy', 0)}/{ctx.get('energy_max', 350)}",
+            f"日常任务: {ctx.get('daily_task', 0)}/{ctx.get('daily_task_max', 500)} ({ctx.get('task_status', '')})",
+        ]
+        countdown = ctx.get("daily_countdown", "")
+        if countdown:
+            parts.append(f"日常刷新: {countdown}")
+        parts.append(f"派遣任务: {ctx.get('dispatch_status', '空闲')}")
+        for d in ctx.get("dispatch_list", []) or []:
+            parts.append(f"  - {d.get('text', '?')}: {d.get('status', '?')}")
+        parts.append(f"星海: {ctx.get('star_sea', 0)}  周期塔: {ctx.get('periodic_tower', 0)}")
+        ts = ctx.get("data_time_str", "")
+        if ts:
+            parts.append(f"数据时间: {ts} (距今约 {ctx.get('data_age_hours', 0)} 小时)")
+        ai_return("\n".join(parts))
+    except Exception as e:
+        logger.warning(f"[NIKIUID] ai_return 体力数据提取失败: {e}")
+
+
+@sv_niki_stamina.on_command(
+    ("体力", "能量", "stamina", "energy", "tl"),
+    block=True,
+    to_ai="""查询无限暖暖活跃能量与日常进度
+
+    当用户问体力/能量还剩多少、日常任务做没做完、派遣进度、星海周期塔时调用。
+    需要用户已登录游戏账号(未登录会提示先发送 nk登录)。
+
+    Args:
+        text: 无需参数,留空即可
+    """,
+)
 async def niki_stamina_cmd(bot: Bot, ev: Event):
     """nk体力 - 查询活跃能量、朝夕心愿、派遣等日常进度(图片)
 
@@ -199,10 +228,7 @@ async def niki_stamina_cmd(bot: Bot, ev: Event):
         "avatar": cached_role.get("avatar", ""),
     }
 
-    logger.info(
-        f"[niki体力] 渲染 user_id={ev.user_id} 来源={data_source} "
-        f"energy={user_data.get('energy')}"
-    )
+    logger.info(f"[niki体力] 渲染 user_id={ev.user_id} 来源={data_source} energy={user_data.get('energy')}")
 
     try:
         # 头像路径
@@ -220,9 +246,7 @@ async def niki_stamina_cmd(bot: Bot, ev: Event):
         ctx["data_source"] = data_source
 
         html = NIKI_TEMPLATES.get_template("stamina.html").render(**ctx)
-        img = await render_html_to_image(
-            html, user_data_dir=user_dir, max_width=760.0
-        )
+        img = await render_html_to_image(html, user_data_dir=user_dir, max_width=760.0)
 
         if img:
             await bot.send(MessageSegment.image(img))
