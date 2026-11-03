@@ -106,9 +106,7 @@ async def refresh_user_data(
         if level is None:
             error_msg.append("无法获取用户等级")
         logger.error(f"数据刷新失败：{'; '.join(error_msg)}")
-        result["refresh_status"] = (
-            f"数据刷新失败：{'; '.join(error_msg)}，请检查token是否有效或重新登录"
-        )
+        result["refresh_status"] = f"数据刷新失败：{'; '.join(error_msg)}，请检查token是否有效或重新登录"
         return result
 
     uid = str(role_info.get("uid", state.get("userData", {}).get("role_id", openid)))
@@ -134,9 +132,7 @@ async def refresh_user_data(
             user_dir.mkdir(parents=True, exist_ok=True)
             avatar_path = user_dir / "avatar.png"
             async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    avatar_url, timeout=aiohttp.ClientTimeout(total=20)
-                ) as resp:
+                async with session.get(avatar_url, timeout=aiohttp.ClientTimeout(total=20)) as resp:
                     if resp.status == 200:
                         avatar_path.write_bytes(await resp.read())
                         logger.info(f"头像已保存: {avatar_path}")

@@ -89,9 +89,7 @@ async def bulk_convert_webp(
         if not src.is_file():
             return
         async with sem:
-            ok = await loop.run_in_executor(
-                None, convert_png_to_webp, src, dst_dir / webp_name(name)
-            )
+            ok = await loop.run_in_executor(None, convert_png_to_webp, src, dst_dir / webp_name(name))
         if ok:
             done += 1
 

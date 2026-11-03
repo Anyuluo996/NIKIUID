@@ -63,18 +63,14 @@ def build_blessing_matrix(
         if isinstance(row, dict):
             owned.add(f"{row.get('magic_ball_id')}-{row.get('magic_ball_color')}")
     color_type_of = {
-        str(c.get("flag")): str(c.get("color_type") or "")
-        for c in color_list or []
-        if isinstance(c, dict)
+        str(c.get("flag")): str(c.get("color_type") or "") for c in color_list or [] if isinstance(c, dict)
     }
 
     def _sort_key(suit: dict):
         updated = 0.0
         if suit.get("updated_at"):
             try:
-                updated = datetime.fromisoformat(
-                    str(suit["updated_at"]).replace("Z", "+00:00")
-                ).timestamp()
+                updated = datetime.fromisoformat(str(suit["updated_at"]).replace("Z", "+00:00")).timestamp()
             except ValueError:
                 updated = 0.0
         return (
@@ -115,54 +111,56 @@ def build_blessing_matrix(
             row_cells = []
             for item in columns:
                 icon = next(
-                    (
-                        ic
-                        for ic in (item.get("color_icons") or [])
-                        if color_type_of.get(str(ic.get("flag"))) == ctype
-                    ),
+                    (ic for ic in (item.get("color_icons") or []) if color_type_of.get(str(ic.get("flag"))) == ctype),
                     None,
                 )
                 if icon is None:
-                    row_cells.append({
-                        "icon": "",
-                        "colorId": "",
-                        "owned": False,
-                        "missing": True,
-                    })
+                    row_cells.append(
+                        {
+                            "icon": "",
+                            "colorId": "",
+                            "owned": False,
+                            "missing": True,
+                        }
+                    )
                     continue
                 color_id = str(icon.get("flag"))
                 is_owned = f"{item.get('flag')}-{color_id}" in owned
                 if is_owned:
                     suit_owned += 1
-                row_cells.append({
-                    "icon": str(icon.get("url") or ""),
-                    "colorId": color_id,
-                    "owned": is_owned,
-                    "missing": False,
-                })
+                row_cells.append(
+                    {
+                        "icon": str(icon.get("url") or ""),
+                        "colorId": color_id,
+                        "owned": is_owned,
+                        "missing": False,
+                    }
+                )
             cells.append(row_cells)
 
         flat = [c for row in cells for c in row]
         gathered = bool(flat) and all(c["owned"] for c in flat)
-        suits_out.append({
-            "suitId": suit_flag,
-            "suitLevel": int(suit.get("suit_level") or 0),
-            "name": _zh_text(suit.get("name")),
-            "previewImage": str(suit.get("preview_image") or ""),
-            "columns": [
-                {
-                    "itemId": str(it.get("flag")),
-                    "positionType": int(it.get("position_type") or 0),
-                    "name": _zh_text(it.get("name")),
-                }
-                for it in columns
-            ],
-            "rows": rows,
-            "cells": cells,
-            "ownedCells": suit_owned,
-            "totalCells": len(flat),
-            "hasGatheredAll": gathered,
-        })
+        suits_out.append(
+            {
+                "suitId": suit_flag,
+                "suitLevel": int(suit.get("suit_level") or 0),
+                "name": _zh_text(suit.get("name")),
+                "previewImage": str(suit.get("preview_image") or ""),
+                "columns": [
+                    {
+                        "itemId": str(it.get("flag")),
+                        "positionType": int(it.get("position_type") or 0),
+                        "name": _zh_text(it.get("name")),
+                    }
+                    for it in columns
+                ],
+                "rows": rows,
+                "cells": cells,
+                "ownedCells": suit_owned,
+                "totalCells": len(flat),
+                "hasGatheredAll": gathered,
+            }
+        )
         total_cells += len(flat)
         owned_cells += suit_owned
         total_items += len(columns)
@@ -210,9 +208,7 @@ async def bulk_download_icons(
     urls = [u for u in dict.fromkeys(icon_urls) if u]
     if not urls:
         return
-    chunks = [
-        urls[i:i + chunk_size] for i in range(0, len(urls), chunk_size)
-    ]
+    chunks = [urls[i : i + chunk_size] for i in range(0, len(urls), chunk_size)]
 
     async def _run(chunk: list[str]) -> None:
         try:

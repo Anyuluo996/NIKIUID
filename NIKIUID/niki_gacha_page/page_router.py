@@ -82,15 +82,17 @@ def _asset_url(url: str, base_url: str, folder: str) -> str:
 def _page_suit(suit: dict[str, Any], base_url: str) -> dict[str, Any]:
     cloths = []
     for c in suit.get("cloths", []) or []:
-        cloths.append({
-            "clothId": str(c.get("clothId", "") or ""),
-            "name": str(c.get("name", "") or ""),
-            "displayType": str(c.get("displayType", "") or ""),
-            "image": _asset_url(str(c.get("image", "") or ""), base_url, "cloth"),
-            "drawNumFirst": int(c.get("drawNumFirst", 0) or 0),
-            "drawNumSecond": int(c.get("drawNumSecond", 0) or 0),
-            "owned": bool(c.get("owned")),
-        })
+        cloths.append(
+            {
+                "clothId": str(c.get("clothId", "") or ""),
+                "name": str(c.get("name", "") or ""),
+                "displayType": str(c.get("displayType", "") or ""),
+                "image": _asset_url(str(c.get("image", "") or ""), base_url, "cloth"),
+                "drawNumFirst": int(c.get("drawNumFirst", 0) or 0),
+                "drawNumSecond": int(c.get("drawNumSecond", 0) or 0),
+                "owned": bool(c.get("owned")),
+            }
+        )
     return {
         "name": str(suit.get("subSuit", "") or ""),
         "pool": str(suit.get("bigSuit", "") or ""),
@@ -139,8 +141,13 @@ async def build_page_payload(
     level_ctxs = []
     for pool in ("limited_5", "limited_4"):
         ctx = build_wardrobe_context(
-            data, pool, login_info, get_user_dir_fn,
-            filter_mode="all", page=1, page_size=10**9,
+            data,
+            pool,
+            login_info,
+            get_user_dir_fn,
+            filter_mode="all",
+            page=1,
+            page_size=10**9,
         )
         if ctx:
             level_ctxs.append(ctx)
@@ -168,12 +175,8 @@ async def build_page_payload(
     # 预转换 WebP 压缩缓存(漏掉的由资产路由按需兜底); 失败不阻塞生成
     try:
         await asyncio.gather(
-            bulk_convert_webp(
-                [png_name_of_url(u) for u in cloth_urls], CLOTHS_DIR, WEBP_CLOTHS_DIR
-            ),
-            bulk_convert_webp(
-                [png_name_of_url(u) for u in suit_urls], SUITS_DIR, WEBP_SUITS_DIR
-            ),
+            bulk_convert_webp([png_name_of_url(u) for u in cloth_urls], CLOTHS_DIR, WEBP_CLOTHS_DIR),
+            bulk_convert_webp([png_name_of_url(u) for u in suit_urls], SUITS_DIR, WEBP_SUITS_DIR),
         )
     except Exception as e:
         logger.warning(f"[niki抽卡页面] WebP 压缩失败(路由将按需转换): {e}")
@@ -191,17 +194,16 @@ async def build_page_payload(
         suits = groups.get(key)
         if not suits:
             continue
-        _, label, subtitle = _POOL_GROUPS[
-            (1 if key.startswith("permanent") else 2,
-             4 if key.endswith("_4") else 5)
-        ]
-        pools.append({
-            "key": key,
-            "label": label,
-            "subtitle": subtitle,
-            "stats": _pool_stats(suits),
-            "suits": suits,
-        })
+        _, label, subtitle = _POOL_GROUPS[(1 if key.startswith("permanent") else 2, 4 if key.endswith("_4") else 5)]
+        pools.append(
+            {
+                "key": key,
+                "label": label,
+                "subtitle": subtitle,
+                "stats": _pool_stats(suits),
+                "suits": suits,
+            }
+        )
 
     first = level_ctxs[0]
     role_id = str(first.get("role_id", "") or "")
@@ -245,11 +247,7 @@ async def create_gacha_page(
     _PAGE_CACHE.set(token, payload)
     url = f"{base_url}/niki/gacha/{token}"
     logger.info(f"[niki抽卡页面] 已生成 token={token[:6]}*** pools={len(payload['pools'])}")
-    return True, (
-        "抽卡页面已生成(10分钟内有效):\n"
-        f"{url}\n"
-        "网页内可筛选五星/四星、展开单件明细, 并可一键生成分享图片"
-    )
+    return True, (f"抽卡页面已生成(10分钟内有效):\n{url}\n网页内可筛选五星/四星、展开单件明细, 并可一键生成分享图片")
 
 
 # ----------------------------- 路由 -----------------------------
@@ -286,9 +284,7 @@ def _safe_fname(fname: str) -> bool:
     )
 
 
-async def _serve_icon(
-    fname: str, src_dir: Path, webp_dir: Path
-) -> FileResponse | JSONResponse:
+async def _serve_icon(fname: str, src_dir: Path, webp_dir: Path) -> FileResponse | JSONResponse:
     """页面图标: .webp 走压缩缓存(缺则现场转换), 其余回原图目录。"""
     if not _safe_fname(fname):
         return JSONResponse({"error": "bad_request"}, status_code=400)
@@ -302,7 +298,8 @@ async def _serve_icon(
             if not await asyncio.to_thread(convert_png_to_webp, src, path):
                 return JSONResponse({"error": "convert_failed"}, status_code=404)
         return FileResponse(
-            path, media_type="image/webp",
+            path,
+            media_type="image/webp",
             headers={"Cache-Control": "public, max-age=604800"},
         )
     path = src_dir / fname
@@ -332,7 +329,8 @@ async def niki_gacha_asset_avatar(uid: str):
     if not path.is_file():
         return JSONResponse({"error": "not_found"}, status_code=404)
     return FileResponse(
-        path, media_type="image/png",
+        path,
+        media_type="image/png",
         headers={"Cache-Control": "public, max-age=86400"},
     )
 
@@ -343,7 +341,8 @@ async def niki_gacha_page_data(token: str):
     payload = _PAGE_CACHE.get(token)
     if payload is None:
         return JSONResponse(
-            {"error": "expired"}, status_code=404,
+            {"error": "expired"},
+            status_code=404,
             headers={"Cache-Control": "no-store"},
         )
     return JSONResponse(payload, headers={"Cache-Control": "no-store"})

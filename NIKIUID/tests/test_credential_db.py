@@ -26,7 +26,8 @@ def cred_db(tmp_path: Path, monkeypatch) -> None:
 
     engine = create_async_engine(f"sqlite+aiosqlite:///{db.as_posix()}")
     monkeypatch.setattr(
-        base_models, "async_maker",
+        base_models,
+        "async_maker",
         async_sessionmaker(engine, expire_on_commit=False),
     )
 
@@ -34,54 +35,89 @@ def cred_db(tmp_path: Path, monkeypatch) -> None:
 class TestCredentialPersistence:
     def test_save_real_insert(self, cred_db):
         """保存凭证必须能真实 INSERT(cookie NOT NULL 曾炸掉落库)。"""
-        row = asyncio.run(NikiCredential.save_credential(
-            user_id="u1", bot_id="onebot",
-            account="user@example.com", password="p@ss",
-        ))
+        row = asyncio.run(
+            NikiCredential.save_credential(
+                user_id="u1",
+                bot_id="onebot",
+                account="user@example.com",
+                password="p@ss",
+            )
+        )
         assert row.id is not None
         assert row.cookie == ""  # 基类 NOT NULL 列已显式补空串
 
-        latest = asyncio.run(NikiCredential.get_latest_credential(
-            user_id="u1", bot_id="onebot",
-        ))
+        latest = asyncio.run(
+            NikiCredential.get_latest_credential(
+                user_id="u1",
+                bot_id="onebot",
+            )
+        )
         assert latest is not None
         assert latest.reveal() == ("user@example.com", "p@ss")
 
     def test_upsert_same_account(self, cred_db):
         """同账号再次保存应 upsert 而非新增行。"""
         for pwd in ("first", "second"):
-            asyncio.run(NikiCredential.save_credential(
-                user_id="u1", bot_id="onebot",
-                account="user@example.com", password=pwd,
-            ))
-        rows = asyncio.run(NikiCredential.list_credentials(
-            user_id="u1", bot_id="onebot",
-        ))
+            asyncio.run(
+                NikiCredential.save_credential(
+                    user_id="u1",
+                    bot_id="onebot",
+                    account="user@example.com",
+                    password=pwd,
+                )
+            )
+        rows = asyncio.run(
+            NikiCredential.list_credentials(
+                user_id="u1",
+                bot_id="onebot",
+            )
+        )
         assert len(rows) == 1
         assert rows[0].reveal()[1] == "second"
 
     def test_cap_five_credentials(self, cred_db):
         """单用户最多保留 5 组凭证。"""
         for i in range(7):
-            asyncio.run(NikiCredential.save_credential(
-                user_id="u2", bot_id="onebot",
-                account=f"acc{i}", password="x",
-            ))
-        rows = asyncio.run(NikiCredential.list_credentials(
-            user_id="u2", bot_id="onebot",
-        ))
+            asyncio.run(
+                NikiCredential.save_credential(
+                    user_id="u2",
+                    bot_id="onebot",
+                    account=f"acc{i}",
+                    password="x",
+                )
+            )
+        rows = asyncio.run(
+            NikiCredential.list_credentials(
+                user_id="u2",
+                bot_id="onebot",
+            )
+        )
         assert len(rows) == 5
         assert all("acc0" not in r.account_mask for r in rows)
         assert all("acc1" not in r.account_mask for r in rows)
 
     def test_delete_credentials(self, cred_db):
-        asyncio.run(NikiCredential.save_credential(
-            user_id="u3", bot_id="onebot", account="a", password="b",
-        ))
-        n = asyncio.run(NikiCredential.delete_credentials(
-            user_id="u3", bot_id="onebot",
-        ))
+        asyncio.run(
+            NikiCredential.save_credential(
+                user_id="u3",
+                bot_id="onebot",
+                account="a",
+                password="b",
+            )
+        )
+        n = asyncio.run(
+            NikiCredential.delete_credentials(
+                user_id="u3",
+                bot_id="onebot",
+            )
+        )
         assert n == 1
-        assert asyncio.run(NikiCredential.get_latest_credential(
-            user_id="u3", bot_id="onebot",
-        )) is None
+        assert (
+            asyncio.run(
+                NikiCredential.get_latest_credential(
+                    user_id="u3",
+                    bot_id="onebot",
+                )
+            )
+            is None
+        )

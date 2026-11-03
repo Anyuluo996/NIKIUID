@@ -97,10 +97,12 @@ class TestSplitTwo:
     """前端 y(): 每个 result 组按 pool_cnt 升序取前 2 条, times +1"""
 
     def test_first_and_second(self):
-        records = _parse_gacha_list([
-            _rec("1020500126", 10, pool_cnt=10),
-            _rec("1020500126", 70, pool_cnt=80),
-        ])
+        records = _parse_gacha_list(
+            [
+                _rec("1020500126", 10, pool_cnt=10),
+                _rec("1020500126", 70, pool_cnt=80),
+            ]
+        )
         first, second = _split_two({"1020500126": records})
         assert len(first) == 1 and len(second) == 1
         # bump +1
@@ -113,10 +115,12 @@ class TestSplitTwo:
         assert len(first) == 1 and len(second) == 0
 
     def test_sorted_by_pool_cnt(self):
-        records = _parse_gacha_list([
-            _rec("1020500126", 70, pool_cnt=80),
-            _rec("1020500126", 10, pool_cnt=10),
-        ])
+        records = _parse_gacha_list(
+            [
+                _rec("1020500126", 70, pool_cnt=80),
+                _rec("1020500126", 10, pool_cnt=10),
+            ]
+        )
         first, _ = _split_two({"1020500126": records})
         assert first[0].times_from_last_five_stars == 11  # pool_cnt=10 的排第一
 
@@ -233,11 +237,16 @@ class TestMergeDrawInfoToSuitCardList:
             SuitDrawInfo,
             ClothDrawInfo,
         )
+
         return SuitDrawInfo(
-            suit_id="10355", total_draw_num=98, average_draw_num=32.7,
-            collected_count=3, draw_nums=[11, 71, 16],
+            suit_id="10355",
+            total_draw_num=98,
+            average_draw_num=32.7,
+            collected_count=3,
+            draw_nums=[11, 71, 16],
             cloths=[ClothDrawInfo(cloth_id="1020500126", draw_num_first=11)],
-            evolution_count=2, evolution_total=3,
+            evolution_count=2,
+            evolution_total=3,
         )
 
     def test_matched_card(self):
@@ -253,9 +262,7 @@ class TestMergeDrawInfoToSuitCardList:
 
     def test_without_cloth_details(self):
         cards = [{"suit_id": "10355"}]
-        result = merge_draw_info_to_suit_card_list(
-            cards, {"10355": self._info()}, with_cloth_details=False
-        )
+        result = merge_draw_info_to_suit_card_list(cards, {"10355": self._info()}, with_cloth_details=False)
         assert "clothDetails" not in result[0]
         assert result[0]["evolutionCount"] == 2
 
@@ -276,13 +283,18 @@ class TestMergeDrawInfoToSuitCardList:
 
 class TestGachaRecordParsing:
     def test_parse_fields(self):
-        records = _parse_gacha_list([
-            {
-                "result": "1020500126", "rarity": "5", "card_pool_id": "2",
-                "times_from_last_five_stars": 10,
-                "times_from_last_four_stars": 3, "pool_cnt": 42,
-            }
-        ])
+        records = _parse_gacha_list(
+            [
+                {
+                    "result": "1020500126",
+                    "rarity": "5",
+                    "card_pool_id": "2",
+                    "times_from_last_five_stars": 10,
+                    "times_from_last_four_stars": 3,
+                    "pool_cnt": 42,
+                }
+            ]
+        )
         assert isinstance(records[0], GachaRecord)
         assert records[0].pool_cnt == 42
         assert records[0].cloth_id == "1020500126"
@@ -319,9 +331,7 @@ class TestDrawnFilterMode:
             [self._suit("甲", 84), self._suit("乙", 0), self._suit("丙", 10)],
             ["丙"],
         )
-        ctx = build_wardrobe_context(
-            data, "limited_5", None, None, "drawn", page_size=99
-        )
+        ctx = build_wardrobe_context(data, "limited_5", None, None, "drawn", page_size=99)
         assert self._names(ctx) == {"甲", "丙"}  # 乙从未抽到, 不显示
 
     def test_owned_only_fully_collected(self):
@@ -329,9 +339,7 @@ class TestDrawnFilterMode:
             [self._suit("甲", 84), self._suit("丙", 10)],
             ["丙"],
         )
-        ctx = build_wardrobe_context(
-            data, "limited_5", None, None, "owned", page_size=99
-        )
+        ctx = build_wardrobe_context(data, "limited_5", None, None, "owned", page_size=99)
         assert self._names(ctx) == {"丙"}
 
     def test_all_includes_undrawn(self):
@@ -339,9 +347,7 @@ class TestDrawnFilterMode:
             [self._suit("甲", 84), self._suit("乙", 0)],
             [],
         )
-        ctx = build_wardrobe_context(
-            data, "limited_5", None, None, "all", page_size=99
-        )
+        ctx = build_wardrobe_context(data, "limited_5", None, None, "all", page_size=99)
         assert self._names(ctx) == {"甲", "乙"}
 
 

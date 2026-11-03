@@ -51,12 +51,8 @@ async def migrate_file_cache_to_db() -> int:
                 data = json.load(f)
 
             # 旧文件里 platform_user_id 字段存的是 openid
-            openid = data.get("platform_user_id") or data.get("login_info", {}).get(
-                "openid", ""
-            )
-            uid = data.get("login_info", {}).get("user_info", {}).get("role", {}).get(
-                "uid", ""
-            ) or user_dir.name
+            openid = data.get("platform_user_id") or data.get("login_info", {}).get("openid", "")
+            uid = data.get("login_info", {}).get("user_info", {}).get("role", {}).get("uid", "") or user_dir.name
 
             if not openid:
                 logger.warning(f"[迁移] 跳过 {user_dir.name}: 无 openid")
@@ -82,9 +78,7 @@ async def migrate_file_cache_to_db() -> int:
 
             _mark_migrated(data_file)
             migrated += 1
-            logger.info(
-                f"[迁移] {user_dir.name} → DB: openid={openid[:8]}*** uid={uid}"
-            )
+            logger.info(f"[迁移] {user_dir.name} → DB: openid={openid[:8]}*** uid={uid}")
 
         except json.JSONDecodeError as e:
             logger.warning(f"[迁移] {user_dir.name}/data.json 解析失败: {e}")
@@ -94,10 +88,7 @@ async def migrate_file_cache_to_db() -> int:
             failed += 1
 
     if migrated or skipped or failed:
-        logger.info(
-            f"[迁移] 文件缓存→DB 完成: 迁移 {migrated} 条,跳过 {skipped} 条,"
-            f"失败 {failed} 条"
-        )
+        logger.info(f"[迁移] 文件缓存→DB 完成: 迁移 {migrated} 条,跳过 {skipped} 条,失败 {failed} 条")
     return migrated
 
 

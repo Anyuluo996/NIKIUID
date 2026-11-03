@@ -11,9 +11,7 @@ from ..constants import CLIENT_ID, MYL_API_BASE
 # logger 由 gsuid_core.logger 提供
 
 
-async def fetch_resonance_with_api(
-    token: str, openid: str, client_id: int | None = None
-) -> dict | None:
+async def fetch_resonance_with_api(token: str, openid: str, client_id: int | None = None) -> dict | None:
     """使用 API 获取共鸣数据（快速模式）
 
     Args:
@@ -80,9 +78,7 @@ async def fetch_resonance_with_api(
                         decompressed = decompress_snappy_payload(note_raw)
                         note_decompressed = json.loads(decompressed.decode("utf-8"))
                         iself = note_decompressed.get("info_from_self", {})
-                        owned_suit_ids = {
-                            str(sid) for sid in iself.get("suit_list", [])
-                        }
+                        owned_suit_ids = {str(sid) for sid in iself.get("suit_list", [])}
                         # 祝福闪光持有数据: [{magic_ball_id, magic_ball_color}]
                         user_magic_ball_list = iself.get("magic_ball_list", []) or []
                     except ImportError:
@@ -106,20 +102,12 @@ async def fetch_resonance_with_api(
                 logger.info(f"开始计算共鸣抽数，note_decompressed keys: {list(note_decompressed.keys())[:10]}")
                 logger.info(f"raw_suit_list length: {len(raw_suit_list)}")
 
-                draw_info_map = parse_note_book_info_with_suit_list(
-                    note_decompressed, raw_suit_list
-                )
+                draw_info_map = parse_note_book_info_with_suit_list(note_decompressed, raw_suit_list)
                 if draw_info_map:
-                    raw_suit_list = merge_draw_info_to_suit_card_list(
-                        raw_suit_list, draw_info_map
-                    )
+                    raw_suit_list = merge_draw_info_to_suit_card_list(raw_suit_list, draw_info_map)
                     # 转纯 dict: PoolDrawStats 直接进 state 会导致落库
                     # json.dumps 抛 not JSON serializable, 整次刷新不落库
-                    pool_stats = serialize_pool_stats(
-                        compute_pool_stats(
-                            raw_suit_list, draw_info_map, owned_suit_ids
-                        )
-                    )
+                    pool_stats = serialize_pool_stats(compute_pool_stats(raw_suit_list, draw_info_map, owned_suit_ids))
                     logger.info(f"共鸣抽数计算完成，覆盖 {len(draw_info_map)} 个套装")
                 else:
                     logger.warning("共鸣抽数计算返回空结果，返回原始数据")

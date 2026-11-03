@@ -25,10 +25,7 @@ from ..constants import CLIENT_ID, MYL_API_BASE
 from ..auth.passport import myl_sign_params
 
 # exploreResMax.json 的 KV 地址(前端硬编码)
-EXPLORE_RES_MAX_URL = (
-    "https://assets.papegames.com/kv/"
-    "2d65c7f3-4ef0-4e93-8ad2-7738b532d8aa/exploreResMax.json"
-)
+EXPLORE_RES_MAX_URL = "https://assets.papegames.com/kv/2d65c7f3-4ef0-4e93-8ad2-7738b532d8aa/exploreResMax.json"
 
 # resourceMap 覆盖的三个 world_id
 WORLD_DQY = "10000010"  # 丹青屿
@@ -133,15 +130,15 @@ def build_resource_map(
                 if template is None:
                     continue
                 for marker in markers or []:
-                    entries.append({
-                        **template,
-                        "id": marker.get("id"),
-                        "catalog": marker.get("catalog"),
-                    })
+                    entries.append(
+                        {
+                            **template,
+                            "id": marker.get("id"),
+                            "catalog": marker.get("catalog"),
+                        }
+                    )
             ids = {
-                str(ids_by_name.get(world, {}).get(n))
-                for n in names
-                if ids_by_name.get(world, {}).get(n) is not None
+                str(ids_by_name.get(world, {}).get(n)) for n in names if ids_by_name.get(world, {}).get(n) is not None
             }
             for entry in entries:
                 if str(entry.get("catalog")) in ids:
@@ -224,9 +221,7 @@ async def fetch_resource_map(
                     ) as resp:
                         if resp.status == 200:
                             raw = await resp.read()
-                            spawner_lists[world] = (
-                                _decode_snappy_json(raw).get("list") or []
-                            )
+                            spawner_lists[world] = _decode_snappy_json(raw).get("list") or []
                 except Exception as e:
                     logger.warning(f"[explore] spawner/list({world}) 失败: {e}")
 
@@ -254,9 +249,7 @@ async def fetch_resource_map(
         resource_map = build_resource_map(catalog_lists, spawner_lists, stages, obtained)
         logger.info(
             "[explore] resourceMap 聚合完成: "
-            + ", ".join(
-                f"{region}={res}" for region, res in resource_map.items() if res
-            )
+            + ", ".join(f"{region}={res}" for region, res in resource_map.items() if res)
         )
         return resource_map
 

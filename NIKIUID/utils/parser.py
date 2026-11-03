@@ -133,11 +133,11 @@ def parse_prefixed_command(text: str) -> ParsedCommand | None:
 
     for base, kind in _GACHA_SUB_BASES:
         if rest.startswith(base):
-            return _parse_gacha_tail(rest[len(base):], kind)
+            return _parse_gacha_tail(rest[len(base) :], kind)
 
     for base in _GACHA_BASES:
         if rest.startswith(base):
-            tail = rest[len(base):]
+            tail = rest[len(base) :]
             return _parse_gacha_tail(tail)
 
     return None
@@ -152,7 +152,7 @@ def parse_gacha_args_text(text: str) -> ParsedCommand:
     compact = _compact(text)
     for base, kind in _GACHA_SUB_BASES:
         if compact.startswith(base):
-            return _parse_gacha_tail(compact[len(base):], kind)
+            return _parse_gacha_tail(compact[len(base) :], kind)
     return _parse_gacha_tail(compact)
 
 
@@ -207,7 +207,7 @@ def _parse_gacha_tail(tail: str, kind: CommandKind = "gacha") -> ParsedCommand:
                 continue
 
             matched = True
-            remaining = remaining[len(token):]
+            remaining = remaining[len(token) :]
 
             if token_type == "display":
                 display_label = str(token_value)
@@ -229,7 +229,7 @@ def _parse_gacha_tail(tail: str, kind: CommandKind = "gacha") -> ParsedCommand:
                 parsed_page = int(page_match.group(1) or page_match.group(2))
                 if parsed_page >= 1:
                     page = parsed_page
-                    remaining = remaining[page_match.end():]
+                    remaining = remaining[page_match.end() :]
                     if remaining and not remaining.isdigit():
                         # 还有未识别的剩余内容才算错误
                         raise CommandParseError(build_gacha_parse_error_message())
@@ -250,7 +250,7 @@ def _parse_gacha_tail(tail: str, kind: CommandKind = "gacha") -> ParsedCommand:
 def _split_prefix(text: str) -> tuple[str | None, str]:
     for prefix in _PREFIXES:
         if text.startswith(prefix):
-            return prefix, text[len(prefix):]
+            return prefix, text[len(prefix) :]
     return None, text
 
 

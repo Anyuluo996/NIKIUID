@@ -46,9 +46,7 @@ class TestEnrichCardsWithEvolutions:
 
     def test_empty_inputs(self):
         """空输入 → 原样返回"""
-        result = enrich_cards_with_evolutions(
-            [], {}, fix_fn=lambda x: x
-        )
+        result = enrich_cards_with_evolutions([], {}, fix_fn=lambda x: x)
         assert result == []
 
     def test_no_evolution_data(self):

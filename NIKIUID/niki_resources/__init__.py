@@ -74,8 +74,7 @@ async def niki_download_resources_cmd(bot: Bot, ev: Event):
         return
 
     await bot.send(
-        f"[无限暖暖] 开始下载渲染资源, 共 {total} 张(已缓存的自动跳过), "
-        "首次全量下载需要几分钟, 完成后通知你...",
+        f"[无限暖暖] 开始下载渲染资源, 共 {total} 张(已缓存的自动跳过), 首次全量下载需要几分钟, 完成后通知你...",
         at_sender=bool(ev.group_id),
     )
 
@@ -85,17 +84,13 @@ async def niki_download_resources_cmd(bot: Bot, ev: Event):
         bulk_download_icons(suit_urls, SUITS_DIR),
         bulk_download_icons(blessing_urls, BLESSING_ASSETS_DIR),
         # 顺带预热 WebP 压缩缓存(抽卡页面用), 原图转一次即可
-        bulk_convert_webp(
-            [png_name_of_url(u) for u in cloth_urls], CLOTHS_DIR, WEBP_CLOTHS_DIR
-        ),
-        bulk_convert_webp(
-            [png_name_of_url(u) for u in suit_urls], SUITS_DIR, WEBP_SUITS_DIR
-        ),
+        bulk_convert_webp([png_name_of_url(u) for u in cloth_urls], CLOTHS_DIR, WEBP_CLOTHS_DIR),
+        bulk_convert_webp([png_name_of_url(u) for u in suit_urls], SUITS_DIR, WEBP_SUITS_DIR),
     )
     elapsed = round(time.monotonic() - t0, 1)
     logger.info(f"[niki资源] 预热完成: {total} 张, 耗时 {elapsed}s")
     await send_niki_notify(
-        bot, ev,
-        f"资源下载完成(共 {total} 张, 耗时 {elapsed} 秒), "
-        "后续抽卡/详情/页面渲染不再卡顿",
+        bot,
+        ev,
+        f"资源下载完成(共 {total} 张, 耗时 {elapsed} 秒), 后续抽卡/详情/页面渲染不再卡顿",
     )

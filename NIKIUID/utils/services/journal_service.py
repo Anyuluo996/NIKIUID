@@ -51,9 +51,7 @@ async def fetch_journal_data(
             try:
                 api_url = f"{MYL_API_BASE}/v1/strategy/user/info/get"
                 api_data = myl_sign_params(base_params.copy())
-                async with session.post(
-                    api_url, json=api_data, timeout=aiohttp.ClientTimeout(total=30)
-                ) as resp:
+                async with session.post(api_url, json=api_data, timeout=aiohttp.ClientTimeout(total=30)) as resp:
                     if resp.status == 200:
                         result = await resp.json()
                         logger.debug(f"[niki] 用户信息 API 响应: {result}")
@@ -62,9 +60,7 @@ async def fetch_journal_data(
                         else:
                             error_code = result.get("code", -1)
                             error_info = result.get("info", "Unknown error")
-                            logger.error(
-                                f"用户信息API返回错误: code={error_code}, info={error_info}"
-                            )
+                            logger.error(f"用户信息API返回错误: code={error_code}, info={error_info}")
                     else:
                         logger.error(f"用户信息API返回非200状态: {resp.status}")
             except Exception as e:
@@ -72,9 +68,7 @@ async def fetch_journal_data(
 
             # 2. 获取共鸣数据
             try:
-                resonance_data = (
-                    await fetch_resonance_with_api(token, openid, cid) or {}
-                )
+                resonance_data = await fetch_resonance_with_api(token, openid, cid) or {}
             except Exception as e:
                 logger.warning(f"获取共鸣数据失败: {e}")
 
@@ -114,9 +108,7 @@ async def fetch_journal_data(
         # 5. 探索总览: 分母(KV 静态文件) + 万相境/丹青屿分子(resourceMap 刷点聚合)
         explore_res_max = await fetch_explore_res_max()
         try:
-            resource_map = await fetch_resource_map(
-                token, openid, cid, map_user_info=map_data
-            )
+            resource_map = await fetch_resource_map(token, openid, cid, map_user_info=map_data)
         except Exception as e:
             logger.warning(f"获取 resourceMap 失败: {e}")
             resource_map = {}
@@ -162,9 +154,7 @@ async def fetch_journal_data(
 
         if resonance_data:
             state["reasonaceCardData"] = resonance_data
-            state["suitCardListData"] = resonance_data.get(
-                "suitCardListData", resonance_data.get("list", [])
-            )
+            state["suitCardListData"] = resonance_data.get("suitCardListData", resonance_data.get("list", []))
             # 祝福闪光: 配置三层数据 + 用户持有列表(state 层直达, 供渲染器使用)
             state["magicBallData"] = resonance_data.get("magicBallData", {})
             state["magicBallList"] = resonance_data.get("magicBallList", [])

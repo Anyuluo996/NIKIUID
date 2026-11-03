@@ -129,8 +129,13 @@ def _inline_local_images(html: str) -> str:
         try:
             data = img_path.read_bytes()
             ext = img_path.suffix.lower().lstrip(".")
-            mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
-                    "gif": "image/gif", "webp": "image/webp"}.get(ext, "image/png")
+            mime = {
+                "png": "image/png",
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg",
+                "gif": "image/gif",
+                "webp": "image/webp",
+            }.get(ext, "image/png")
             b64 = base64.b64encode(data).decode()
             data_uri = f"data:{mime};base64,{b64}"
             if m.group(1) is not None:
@@ -180,9 +185,7 @@ async def render_html_to_image(
         # 2. 把 file:// 图片内联成 base64(pytakumi 走 data URI 最稳);
         #    尾部垫底空白:pytakumi 自适应高度偶尔裁掉最后几像素(footer 半截)
         if "</body>" in html:
-            html = html.replace(
-                "</body>", '<div style="height:28px"></div></body>', 1
-            )
+            html = html.replace("</body>", '<div style="height:28px"></div></body>', 1)
         html = _inline_local_images(html)
 
         # 3. 超采样渲染:max_width 是设备像素(输出图宽),CSS 布局视口由

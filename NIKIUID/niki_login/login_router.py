@@ -104,9 +104,7 @@ async def niki_send_sms(payload: _SendSmsPayload, _request: Request) -> JSONResp
     try:
         return _json(await send_login_sms(payload.auth, payload.mobile))
     except Exception as error:
-        logger.warning(
-            f"[niki登录] 短信下发失败 user_id={_login_user_id(payload.auth)}: {error!r}"
-        )
+        logger.warning(f"[niki登录] 短信下发失败 user_id={_login_user_id(payload.auth)}: {error!r}")
         return _json(LoginResult.fail(LoginMsg.SMS_SEND_FAILED))
 
 
@@ -121,9 +119,7 @@ async def niki_perform_login(payload: _LoginPayload, _request: Request) -> JSONR
     try:
         return _json(await perform_login(payload.auth, payload.mobile, payload.code))
     except Exception as error:
-        logger.warning(
-            f"[niki登录] 登录失败 user_id={_login_user_id(payload.auth)}: {error!r}"
-        )
+        logger.warning(f"[niki登录] 登录失败 user_id={_login_user_id(payload.auth)}: {error!r}")
         return _json(LoginResult.fail(LoginMsg.SMS_LOGIN_FAILED))
 
 
@@ -139,15 +135,9 @@ async def niki_perform_login_password(payload: _PasswordLoginPayload, _request: 
         return _json(LoginResult.fail("请输入密码"))
 
     try:
-        return _json(
-            await perform_login_password(
-                payload.auth, account, password, payload.remember
-            )
-        )
+        return _json(await perform_login_password(payload.auth, account, password, payload.remember))
     except Exception as error:
-        logger.warning(
-            f"[niki登录] 密码登录失败 user_id={_login_user_id(payload.auth)}: {error!r}"
-        )
+        logger.warning(f"[niki登录] 密码登录失败 user_id={_login_user_id(payload.auth)}: {error!r}")
         return _json(LoginResult.fail(LoginMsg.USER_CENTER_LOGIN_FAILED))
 
 

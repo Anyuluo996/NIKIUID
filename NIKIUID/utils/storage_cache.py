@@ -35,9 +35,7 @@ class NikiJournalData(BaseIDModel, table=True):
         session: AsyncSession,
         openid: str,
     ) -> "NikiJournalData | None":
-        result = await session.execute(
-            select(cls).where(cls.openid == openid).limit(1)
-        )
+        result = await session.execute(select(cls).where(cls.openid == openid).limit(1))
         return result.scalars().first()
 
     @classmethod
@@ -50,9 +48,7 @@ class NikiJournalData(BaseIDModel, table=True):
         data_json: str,
     ) -> None:
         """按 openid 插入或更新。"""
-        result = await session.execute(
-            select(cls).where(cls.openid == openid).limit(1)
-        )
+        result = await session.execute(select(cls).where(cls.openid == openid).limit(1))
         row = result.scalars().first()
         if row is None:
             row = cls(openid=openid, uid=uid, data=data_json)
@@ -140,10 +136,7 @@ async def save_cached_data(
 
     # 验证uid是游戏UID而不是platform_user_id
     if uid == platform_user_id:
-        lg.error(
-            f"错误：uid ({uid}) 与 platform_user_id ({platform_user_id}) 相同，"
-            f"请检查是否传入了正确的游戏UID！"
-        )
+        lg.error(f"错误：uid ({uid}) 与 platform_user_id ({platform_user_id}) 相同，请检查是否传入了正确的游戏UID！")
         return
 
     data["platform_user_id"] = platform_user_id

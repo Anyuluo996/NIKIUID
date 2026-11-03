@@ -36,9 +36,7 @@ class _FakeConfig:
 def _setup_env(monkeypatch):
     """清空缓存 + stub 配置,隔离模块级状态。"""
     LOGIN_CACHE.clear()
-    monkeypatch.setattr(
-        login_service.NikiConfig, "get_config", lambda _k: _FakeConfig(True)
-    )
+    monkeypatch.setattr(login_service.NikiConfig, "get_config", lambda _k: _FakeConfig(True))
     yield
     LOGIN_CACHE.clear()
     for task in list(login_service._BACKGROUND_REFRESH_TASKS):
@@ -103,9 +101,7 @@ async def test_perform_login_idempotent_while_refreshing(monkeypatch):
 
         return wrapper
 
-    monkeypatch.setattr(
-        login_service, "sms_login", counting_sms(ok_sms)
-    )
+    monkeypatch.setattr(login_service, "sms_login", counting_sms(ok_sms))
 
     token = "tok-retry"
     _make_state(token)
@@ -237,6 +233,7 @@ async def test_wait_timeout_keeps_refreshing_drops_pending(monkeypatch):
 @pytest.mark.asyncio
 async def test_perform_login_password_saves_when_remember(monkeypatch):
     """网页密码登录 + remember=true:立即返回成功,凭证入库,刷新后台完成。"""
+
     async def fake_refresh(**_kwargs):
         await asyncio.sleep(0.02)
         return {"success": True, "nickname": "小暖", "level": 60}
@@ -269,6 +266,7 @@ async def test_perform_login_password_saves_when_remember(monkeypatch):
 @pytest.mark.asyncio
 async def test_perform_login_password_without_remember_skips_save(monkeypatch):
     """remember=false:不写凭证表。"""
+
     async def fake_refresh(**_kwargs):
         return {"success": True, "nickname": "小暖", "level": 60}
 
@@ -296,6 +294,7 @@ async def test_perform_login_password_without_remember_skips_save(monkeypatch):
 @pytest.mark.asyncio
 async def test_perform_login_password_fail_marks_failed(monkeypatch):
     """密码错误:返回 fail,会话置 failed;failed 允许重试。"""
+
     async def bad_passport(_account, _password):
         return None
 
@@ -312,6 +311,7 @@ async def test_perform_login_password_fail_marks_failed(monkeypatch):
 @pytest.mark.asyncio
 async def test_perform_login_password_idempotent_while_refreshing(monkeypatch):
     """refreshing 状态下重复提交不重走 passport_login。"""
+
     async def fake_refresh(**_kwargs):
         return {"success": True, "nickname": "小暖", "level": 60}
 
@@ -346,6 +346,7 @@ async def test_perform_login_password_idempotent_while_refreshing(monkeypatch):
 @pytest.mark.asyncio
 async def test_password_login_flow_results(monkeypatch):
     """bot 侧共用流程:成功带昵称文案,失败带错误文案。"""
+
     async def ok_passport(_account, _password):
         return {"token": "t", "openid": "o", "client_id": 1106, "area_id": 1}
 
@@ -357,15 +358,11 @@ async def test_password_login_flow_results(monkeypatch):
 
     monkeypatch.setattr(login_service, "passport_login", ok_passport)
     monkeypatch.setattr(login_service, "refresh_user_data", ok_refresh)
-    ok, text = await _password_login_flow(
-        user_id="u1", bot_id="test", account="a", password="p"
-    )
+    ok, text = await _password_login_flow(user_id="u1", bot_id="test", account="a", password="p")
     assert ok is True
     assert "安雨落" in text
 
     monkeypatch.setattr(login_service, "passport_login", bad_passport)
-    fail, fail_text = await _password_login_flow(
-        user_id="u1", bot_id="test", account="a", password="p"
-    )
+    fail, fail_text = await _password_login_flow(user_id="u1", bot_id="test", account="a", password="p")
     assert fail is False
     assert "失败" in fail_text

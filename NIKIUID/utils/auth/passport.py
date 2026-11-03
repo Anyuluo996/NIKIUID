@@ -46,10 +46,7 @@ def _mask_phone(phone: str) -> str:
 
 def _build_sms_sign(timestamp: str) -> str:
     """Build the HMAC-MD5 signature for SMS endpoints."""
-    sign_str = (
-        f"app_id={PASSPORT_APP_ID}&clientid={CLIENT_ID}&lang=zh-cn"
-        f"&sign_type=hmac&timestamp={timestamp}"
-    )
+    sign_str = f"app_id={PASSPORT_APP_ID}&clientid={CLIENT_ID}&lang=zh-cn&sign_type=hmac&timestamp={timestamp}"
     return hmac.new(
         PASSPORT_APP_KEY.encode(),
         sign_str.encode(),
@@ -81,9 +78,7 @@ def sign_params(params: dict[str, Any]) -> dict[str, Any]:
     keys = sorted([k for k in params if k not in ("sign", "data")])
     sign_str = "&".join([f"{k}={params[k]}" for k in keys])
 
-    sign = hmac.new(
-        PASSPORT_APP_KEY.encode(), sign_str.encode(), hashlib.md5
-    ).hexdigest()
+    sign = hmac.new(PASSPORT_APP_KEY.encode(), sign_str.encode(), hashlib.md5).hexdigest()
     params["sign"] = sign
     return params
 
@@ -99,9 +94,7 @@ def myl_sign_params(params: dict[str, Any]) -> dict[str, Any]:
     keys = sorted([k for k in params if k not in ("sign",)])
     sign_str = "&".join([f"{k}={params[k]}" for k in keys])
 
-    sign = hmac.new(
-        PASSPORT_APP_KEY.encode(), sign_str.encode(), hashlib.md5
-    ).hexdigest()
+    sign = hmac.new(PASSPORT_APP_KEY.encode(), sign_str.encode(), hashlib.md5).hexdigest()
     params["sign"] = sign
     return params
 
@@ -138,9 +131,7 @@ async def send_sms_code(phone: str, device_id: str | None = None) -> dict:
             "Referer": "https://myl.nuanpaper.com/",
         }
 
-        logger.info(
-            f"[SMS Send] phone={_mask_phone(phone)}, device_id={base_device_id[:20]}..."
-        )
+        logger.info(f"[SMS Send] phone={_mask_phone(phone)}, device_id={base_device_id[:20]}...")
 
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -218,9 +209,7 @@ async def sms_login(phone: str, code: str, device_id: str | None = None) -> dict
             "Referer": "https://myl.nuanpaper.com/",
         }
 
-        logger.info(
-            f"[SMS Login] phone={_mask_phone(phone)}, code=***, device_id={dev_id[:20]}..."
-        )
+        logger.info(f"[SMS Login] phone={_mask_phone(phone)}, code=***, device_id={dev_id[:20]}...")
 
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -232,9 +221,7 @@ async def sms_login(phone: str, code: str, device_id: str | None = None) -> dict
                 status = resp.status
                 result = await resp.json()
 
-                logger.info(
-                    f"[SMS Login] Response: code={result.get('code')}, info={result.get('info')}"
-                )
+                logger.info(f"[SMS Login] Response: code={result.get('code')}, info={result.get('info')}")
 
         if result.get("code") != 0:
             logger.warning(
@@ -312,9 +299,7 @@ async def passport_login(account: str, password: str) -> dict | None:
         keys = sorted([k for k in sign_params_dict if k not in ("data",)])
         sign_str = "&".join([f"{k}={sign_params_dict[k]}" for k in keys])
 
-        sign = hmac.new(
-            PASSPORT_APP_KEY.encode(), sign_str.encode(), hashlib.md5
-        ).hexdigest()
+        sign = hmac.new(PASSPORT_APP_KEY.encode(), sign_str.encode(), hashlib.md5).hexdigest()
 
         form = aiohttp.FormData()
         for k, v in sign_params_dict.items():
@@ -333,9 +318,7 @@ async def passport_login(account: str, password: str) -> dict | None:
             "Referer": "https://myl.nuanpaper.com/",
         }
 
-        logger.info(
-            f"[Passport] account={_mask_phone(account)}, DOID={droid[:20]}..., web_deviceid={web_dev_id}"
-        )
+        logger.info(f"[Passport] account={_mask_phone(account)}, DOID={droid[:20]}..., web_deviceid={web_dev_id}")
 
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -347,9 +330,7 @@ async def passport_login(account: str, password: str) -> dict | None:
                 status = resp.status
                 result = await resp.json()
 
-                logger.info(
-                    f"[Passport] Response status={status} code={result.get('code')} info={result.get('info')}"
-                )
+                logger.info(f"[Passport] Response status={status} code={result.get('code')} info={result.get('info')}")
 
         if result.get("code") != 0:
             logger.warning(

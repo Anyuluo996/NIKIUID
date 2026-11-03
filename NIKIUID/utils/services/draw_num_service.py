@@ -39,6 +39,7 @@ _EVOLUTION_SUIT_PATTERN = re.compile(r"^(\d{5})(\d{2})$")
 @dataclass
 class GachaRecord:
     """单条抽卡记录"""
+
     cloth_id: str
     rarity: str  # "4" 或 "5"
     card_pool_id: str
@@ -53,6 +54,7 @@ class ClothDrawInfo:
 
     每件衣服在衣橱里占两个槽位: firstSuit(初次共鸣) / secondSuit(重复共鸣)。
     """
+
     cloth_id: str
     name: str = ""
     display_type: str = ""
@@ -69,6 +71,7 @@ class ClothDrawInfo:
 @dataclass
 class SuitDrawInfo:
     """套装共鸣抽数信息"""
+
     suit_id: str
     total_draw_num: int = 0  # 总共鸣次数(firstSuit + secondSuit 槽位求和)
     average_draw_num: float = 0.0  # 平均共鸣次数(总共鸣 ÷ 件数槽位)
@@ -82,6 +85,7 @@ class SuitDrawInfo:
 @dataclass
 class PoolDrawStats:
     """卡池级共鸣统计(复刻前端 A())"""
+
     pool_suits: int = 0  # 该卡池套装数
     collected: int = 0  # 已集齐套数(含进化套装)
     suit_total_num: int = 0  # 套装总数(套装数 × 4/2)
@@ -104,9 +108,7 @@ def decompress_snappy_payload(raw: bytes) -> bytes:
 
     module_file = getattr(snappy, "__file__", None)
     location = f"（当前模块: {module_file}）" if module_file else ""
-    raise RuntimeError(
-        "检测到错误的 snappy 模块，请卸载 snappy 并安装 python-snappy" + location
-    )
+    raise RuntimeError("检测到错误的 snappy 模块，请卸载 snappy 并安装 python-snappy" + location)
 
 
 async def parse_note_book_info(
@@ -129,11 +131,13 @@ async def parse_note_book_info(
     try:
         from ..auth.passport import myl_sign_params
 
-        params = myl_sign_params({
-            "client_id": cid,
-            "token": token,
-            "openid": openid,
-        })
+        params = myl_sign_params(
+            {
+                "client_id": cid,
+                "token": token,
+                "openid": openid,
+            }
+        )
 
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -220,10 +224,7 @@ def parse_note_book_info_with_suit_list(
     """
     try:
         gacha_list = note_decompressed.get("info_from_self", {}).get("gacha_list", [])
-        owned_ids = {
-            str(sid)
-            for sid in note_decompressed.get("info_from_self", {}).get("suit_list", [])
-        }
+        owned_ids = {str(sid) for sid in note_decompressed.get("info_from_self", {}).get("suit_list", [])}
         return compute_draw_info(gacha_list, suit_list, owned_suit_ids=owned_ids)
     except Exception as e:
         logger.error(f"共鸣抽数计算失败: {e}")
@@ -261,10 +262,7 @@ def compute_pool_stats(
         ("permanent_5", 5, 1),
         ("permanent_4", 4, 1),
     ):
-        pool_suits = [
-            p for p in parsed
-            if p["level"] == level and p["card_type"] == card_type
-        ]
+        pool_suits = [p for p in parsed if p["level"] == level and p["card_type"] == card_type]
         if not pool_suits:
             stats[key] = PoolDrawStats()
             continue

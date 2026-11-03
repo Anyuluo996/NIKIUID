@@ -85,7 +85,7 @@ class TestBuildBlessingMatrix:
         # j(): 行 = 第一列单件(头部)的配色, 手部独有的蓝色不产生新行
         assert suit["rows"] == ["黄色"]
         assert suit["cells"][0][0]["missing"] is False  # 头-黄
-        assert suit["cells"][0][1]["missing"] is True   # 手-黄 缺
+        assert suit["cells"][0][1]["missing"] is True  # 手-黄 缺
 
     def test_sort_level_desc(self):
         """suit_level 降序, 同级按 sort_weight 降序(前端复刻)"""

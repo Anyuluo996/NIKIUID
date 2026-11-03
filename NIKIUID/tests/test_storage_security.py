@@ -1,6 +1,5 @@
 """路径穿越防护测试。"""
 
-
 import pytest
 
 from gsuid_core.plugins.NIKIUID.NIKIUID.utils.storage_cache import get_user_dir

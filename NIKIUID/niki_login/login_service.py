@@ -126,9 +126,7 @@ async def _send_login_link(bot: Bot, ev: Event, url: str) -> None:
 
 async def request_login(bot: Bot, ev: Event) -> None:
     """发起登录:有保存的凭证先自动登录,失败再发网页链接。"""
-    cred = await NikiCredential.get_latest_credential(
-        user_id=ev.user_id, bot_id=ev.bot_id
-    )
+    cred = await NikiCredential.get_latest_credential(user_id=ev.user_id, bot_id=ev.bot_id)
     if cred is not None:
         mask = cred.account_mask or "已保存账号"
         await bot.send(
@@ -144,9 +142,7 @@ async def request_login(bot: Bot, ev: Event) -> None:
             )
             return
         # 自动登录失败(密码改了/服务不可用等):告知原因后回退网页链接
-        await send_niki_notify(
-            bot, ev, f"自动登录失败: {text}\n已为你生成网页登录链接"
-        )
+        await send_niki_notify(bot, ev, f"自动登录失败: {text}\n已为你生成网页登录链接")
 
     await _issue_login_link(bot, ev)
 
@@ -161,9 +157,7 @@ async def auto_login_with_credential(ev: Event, cred: NikiCredential) -> tuple[b
         return False, "保存的凭证已损坏, 请重新登录"
     if not account or not password:
         return False, "保存的凭证已损坏, 请重新登录"
-    return await _password_login_flow(
-        user_id=ev.user_id, bot_id=ev.bot_id, account=account, password=password
-    )
+    return await _password_login_flow(user_id=ev.user_id, bot_id=ev.bot_id, account=account, password=password)
 
 
 async def _issue_login_link(bot: Bot, ev: Event) -> None:
@@ -242,9 +236,7 @@ async def send_login_sms(auth_token: str, mobile: str) -> LoginResult:
     return LoginResult.fail(result.get("message", LoginMsg.SMS_SEND_FAILED))
 
 
-async def _refresh_login_state(
-    auth_token: str, state: LoginState, token_info: dict[str, Any]
-) -> None:
+async def _refresh_login_state(auth_token: str, state: LoginState, token_info: dict[str, Any]) -> None:
     """后台执行登录后的数据刷新,把 LOGIN_CACHE 推到终态。
 
     独立于 HTTP 请求运行:_wait 轮询到终态后给 bot 用户发通知。
@@ -274,9 +266,7 @@ async def _refresh_login_state(
         state.msg = LoginMsg.SMS_VERIFIED
         state.result = refresh_result
     else:
-        fail_msg = (refresh_result or {}).get(
-            "refresh_status", "登录凭证已保存，但数据刷新失败"
-        )
+        fail_msg = (refresh_result or {}).get("refresh_status", "登录凭证已保存，但数据刷新失败")
         state.status = "success"
         state.ok = True
         state.msg = LoginMsg.SMS_VERIFIED
@@ -328,9 +318,7 @@ async def perform_login(auth_token: str, mobile: str, code: str) -> LoginResult:
     return LoginResult.success(msg=LoginMsg.SMS_VERIFIED)
 
 
-async def perform_login_password(
-    auth_token: str, account: str, password: str, remember: bool
-) -> LoginResult:
+async def perform_login_password(auth_token: str, account: str, password: str, remember: bool) -> LoginResult:
     """网页侧:账号密码登录(可选记住凭证)。
 
     与 perform_login 相同的后台刷新模式:本接口只验证并立刻返回,
@@ -360,10 +348,7 @@ async def perform_login_password(
                 account=account,
                 password=password,
             )
-            logger.info(
-                f"[niki登录] 网页侧保存凭证 user_id={state.user_id} "
-                f"account={account[:3]}****"
-            )
+            logger.info(f"[niki登录] 网页侧保存凭证 user_id={state.user_id} account={account[:3]}****")
         except Exception as e:
             logger.warning(f"[niki登录] 保存凭证失败: {e!r}")
 
@@ -422,9 +407,7 @@ async def _password_login_flow(
         level = refresh_result.get("level") or 0
         return True, f"{LoginMsg.SUCCESS}\n搭配师: {nickname}\n等级: {level}"
 
-    fail_msg = (refresh_result or {}).get(
-        "refresh_status", "登录凭证已保存,但数据刷新失败"
-    )
+    fail_msg = (refresh_result or {}).get("refresh_status", "登录凭证已保存,但数据刷新失败")
     # 刷新失败但凭证本身有效:视为登录成功(与网页侧口径一致)
     return True, fail_msg
 
@@ -444,9 +427,7 @@ async def logout(bot: Bot, ev: Event) -> None:
     deleted = await NikiUser.delete_account(ev.user_id, ev.bot_id, user.openid)
     if not deleted:
         return await send_niki_notify(bot, ev, LoginMsg.NOT_LOGGED_IN)
-    await send_niki_notify(
-        bot, ev, f"{LoginMsg.LOGOUT_DONE}\n保存的账号密码已一并清除"
-    )
+    await send_niki_notify(bot, ev, f"{LoginMsg.LOGOUT_DONE}\n保存的账号密码已一并清除")
 
 
 async def logout_all(bot: Bot, ev: Event) -> None:
@@ -455,9 +436,7 @@ async def logout_all(bot: Bot, ev: Event) -> None:
     count = await NikiUser.delete_all(ev.user_id, ev.bot_id)
     if count == 0:
         return await send_niki_notify(bot, ev, LoginMsg.NOT_LOGGED_IN)
-    await send_niki_notify(
-        bot, ev, f"{LoginMsg.LOGOUT_ALL_DONE}\n保存的账号密码已一并清除"
-    )
+    await send_niki_notify(bot, ev, f"{LoginMsg.LOGOUT_ALL_DONE}\n保存的账号密码已一并清除")
 
 
 async def login_by_password(bot: Bot, ev: Event, account: str, password: str) -> None:
@@ -468,18 +447,14 @@ async def login_by_password(bot: Bot, ev: Event, account: str, password: str) ->
     """
     await bot.send("[无限暖暖] 正在登录...", at_sender=bool(ev.group_id))
 
-    ok, text = await _password_login_flow(
-        user_id=ev.user_id, bot_id=ev.bot_id, account=account, password=password
-    )
+    ok, text = await _password_login_flow(user_id=ev.user_id, bot_id=ev.bot_id, account=account, password=password)
     if not ok:
         return await send_niki_notify(bot, ev, text)
 
     # 登录有效:保存凭证供 nk登录 自动登录(失败不阻断登录结果)
     saved_note = ""
     try:
-        await NikiCredential.save_credential(
-            user_id=ev.user_id, bot_id=ev.bot_id, account=account, password=password
-        )
+        await NikiCredential.save_credential(user_id=ev.user_id, bot_id=ev.bot_id, account=account, password=password)
         saved_note = "\n已加密保存账号密码, 下次发送「登录」将自动登录"
         logger.info(f"[niki登录] 保存凭证 user_id={ev.user_id} account={account[:3]}****")
     except Exception as e:

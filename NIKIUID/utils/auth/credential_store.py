@@ -57,8 +57,8 @@ def decrypt_text(blob: str) -> str:
     if len(raw) < _NONCE_LEN + _TAG_LEN:
         raise ValueError("credential blob too short")
     nonce = raw[:_NONCE_LEN]
-    tag = raw[_NONCE_LEN:_NONCE_LEN + _TAG_LEN]
-    ct = raw[_NONCE_LEN + _TAG_LEN:]
+    tag = raw[_NONCE_LEN : _NONCE_LEN + _TAG_LEN]
+    ct = raw[_NONCE_LEN + _TAG_LEN :]
     cipher = AES.new(_load_key(), AES.MODE_GCM, nonce=nonce)
     return cipher.decrypt_and_verify(ct, tag).decode("utf-8")
 

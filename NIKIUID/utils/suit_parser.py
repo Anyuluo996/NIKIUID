@@ -170,11 +170,7 @@ def parse_suit_card_list(
             pool_type = _resolve_pool_type(card, is_new_format=is_new_format)
 
             # 获取图片 URL
-            preview_image = (
-                card.get("image", "")
-                if is_new_format
-                else card.get("preview_image", "")
-            )
+            preview_image = card.get("image", "") if is_new_format else card.get("preview_image", "")
 
             # 获取时间戳
             timestamp = card.get("card_start_timestamp", 0)
@@ -207,10 +203,7 @@ def parse_suit_card_list(
 
             # 获取进化次数
             evolutions = card.get("evolutions", [])
-            if (
-                "actualEvolutionCount" in card
-                and card["actualEvolutionCount"] is not None
-            ):
+            if "actualEvolutionCount" in card and card["actualEvolutionCount"] is not None:
                 evolution_count = int(card["actualEvolutionCount"])
             else:
                 evolution_count = len(evolutions) if evolutions else 0

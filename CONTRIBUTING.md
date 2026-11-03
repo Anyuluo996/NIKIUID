@@ -33,10 +33,12 @@ from gsuid_core.logger import logger
 
 # ❌ 错误 — 会导致 datetime.datetime.now() 崩溃
 import datetime
+
 datetime.datetime.now()  # AttributeError!
 
 # ❌ 错误 — gsuid_core 用 structlog,不是标准 logging
 import logging
+
 logger = logging.getLogger("niki.xxx")  # 日志不显示!
 ```
 
@@ -50,6 +52,7 @@ logger = logging.getLogger("niki.xxx")  # 日志不显示!
 ```python
 # ✅ 继承 User 基类(复用 user_id/bot_id/cookie/status)
 from gsuid_core.utils.database.base_models import User, with_session
+
 
 class NikiUser(User, table=True):
     uid: str = Field(default="", index=True)  # 只声明游戏特有字段
@@ -123,6 +126,7 @@ img = await render_html_to_image(html, max_width=760.0)
 ```python
 # ✅ 字体复用 gsuid_core 自带
 from gsuid_core.utils.fonts.fonts import core_font
+
 font = core_font(38)
 ```
 
@@ -151,10 +155,12 @@ def test_energy_regen():
     r = _calc_estimated_energy(6, 1782091216, 1782170450)
     assert r["current"] == 270  # 文档实测值
 
+
 # ✅ 安全:注入应抛异常
 def test_path_traversal():
     with pytest.raises(ValueError):
         get_user_dir(base, "../../../etc")
+
 
 # ✅ 往返:加密→解密 = 原文
 def test_aes_roundtrip():

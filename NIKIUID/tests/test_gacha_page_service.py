@@ -29,23 +29,22 @@ def _no_icon_download(monkeypatch):
 
     # page_router 走 bulk_download_icons(分块并发), 兼容旧名字
     monkeypatch.setattr(page_router, "bulk_download_icons", _noop, raising=False)
-    monkeypatch.setattr(
-        page_router, "download_blessing_icons", _noop, raising=False
-    )
+    monkeypatch.setattr(page_router, "download_blessing_icons", _noop, raising=False)
 
 
-def _suit(suit_id, level=5, card_type=2, draws=139, avg=14.9,
-          cloths_n=10, owned_cloths=10, ts=1700000000):
+def _suit(suit_id, level=5, card_type=2, draws=139, avg=14.9, cloths_n=10, owned_cloths=10, ts=1700000000):
     cloth_details = []
     for i in range(cloths_n):
-        cloth_details.append({
-            "clothId": f"1{suit_id}{i:02d}",
-            "name": "",
-            "displayType": ["头部", "手部", "脚部"][i % 3],
-            "image": f"https://cdn.example.com/c_{suit_id}_{i}.png" if i < 2 else "",
-            "drawNumFirst": draws if i == 0 else (1 if i < owned_cloths else 0),
-            "drawNumSecond": 0,
-        })
+        cloth_details.append(
+            {
+                "clothId": f"1{suit_id}{i:02d}",
+                "name": "",
+                "displayType": ["头部", "手部", "脚部"][i % 3],
+                "image": f"https://cdn.example.com/c_{suit_id}_{i}.png" if i < 2 else "",
+                "drawNumFirst": draws if i == 0 else (1 if i < owned_cloths else 0),
+                "drawNumSecond": 0,
+            }
+        )
     return {
         "suit_id": str(suit_id),
         "level": level,
@@ -60,11 +59,9 @@ def _suit(suit_id, level=5, card_type=2, draws=139, avg=14.9,
         "collectedCount": owned_cloths,
         "evolutionCount": 2,
         "evolutionTotal": 3,
-        "cloths": json.dumps([
-            {"cloth_id": c["clothId"], "display_type": c["displayType"],
-             "image": c["image"]}
-            for c in cloth_details
-        ]),
+        "cloths": json.dumps(
+            [{"cloth_id": c["clothId"], "display_type": c["displayType"], "image": c["image"]} for c in cloth_details]
+        ),
         "clothDetails": cloth_details,
     }
 
@@ -83,9 +80,9 @@ LOGIN_INFO = {"user_info": {"role": {"uid": "101", "nickname": "anyul", "level":
 
 
 def _build(data, tmp_path=""):
-    return asyncio.run(page_router.build_page_payload(
-        data, LOGIN_INFO, lambda uid: Path(tmp_path) / uid, "https://nik.example.com"
-    ))
+    return asyncio.run(
+        page_router.build_page_payload(data, LOGIN_INFO, lambda uid: Path(tmp_path) / uid, "https://nik.example.com")
+    )
 
 
 class TestGachaSubCommandParsing:
@@ -151,13 +148,16 @@ class TestBuildPagePayload:
     """网页全量数据构建"""
 
     def _mixed_data(self):
-        return _data([
-            _suit("201", level=5, card_type=2, draws=139, avg=14.9, ts=1700000100),
-            _suit("202", level=5, card_type=2, draws=100, avg=10.0, ts=1700000200),
-            _suit("301", level=4, card_type=2, draws=50, avg=5.0),
-            _suit("401", level=5, card_type=1, draws=60, avg=6.0),
-            _suit("501", level=4, card_type=1, draws=40, avg=4.0),
-        ], owned_ids=["201", "301"])
+        return _data(
+            [
+                _suit("201", level=5, card_type=2, draws=139, avg=14.9, ts=1700000100),
+                _suit("202", level=5, card_type=2, draws=100, avg=10.0, ts=1700000200),
+                _suit("301", level=4, card_type=2, draws=50, avg=5.0),
+                _suit("401", level=5, card_type=1, draws=60, avg=6.0),
+                _suit("501", level=4, card_type=1, draws=40, avg=4.0),
+            ],
+            owned_ids=["201", "301"],
+        )
 
     def test_pool_grouping_and_order(self):
         payload = _build(self._mixed_data())
@@ -185,10 +185,11 @@ class TestBuildPagePayload:
         assert s5["evolutionCount"] == 4  # 2 套 × 2
 
     def test_suit_fields_and_asset_urls(self):
-        data = _data([
-            _suit("202", level=5, card_type=2, draws=100, avg=10.0,
-                  ts=1700000200, owned_cloths=4),
-        ])
+        data = _data(
+            [
+                _suit("202", level=5, card_type=2, draws=100, avg=10.0, ts=1700000200, owned_cloths=4),
+            ]
+        )
         payload = _build(data)
         suit = payload["pools"][0]["suits"][0]
         assert suit["name"] == "套装202"
@@ -197,9 +198,7 @@ class TestBuildPagePayload:
         assert suit["clothTotal"] == 10
         assert suit["evolutionCount"] == 2
         cloth = suit["cloths"][0]
-        assert cloth["image"].startswith(
-            "https://nik.example.com/niki/gacha/asset/cloth/"
-        )
+        assert cloth["image"].startswith("https://nik.example.com/niki/gacha/asset/cloth/")
         assert cloth["owned"] is True
         assert cloth["drawNumFirst"] == 100
         # 未获得且无图的单件: asset URL 为空
@@ -231,9 +230,7 @@ class TestCreateGachaPage:
             return "https://nik.example.com"
 
         monkeypatch.setattr(page_router, "_login_page_url", fake_url)
-        ok, msg = asyncio.run(page_router.create_gacha_page(
-            _data([_suit("201")]), LOGIN_INFO, lambda uid: Path(uid)
-        ))
+        ok, msg = asyncio.run(page_router.create_gacha_page(_data([_suit("201")]), LOGIN_INFO, lambda uid: Path(uid)))
         assert ok is True
         assert "/niki/gacha/" in msg
         assert "10分钟内有效" in msg
@@ -256,9 +253,7 @@ class TestCreateGachaPage:
             return "https://nik.example.com"
 
         monkeypatch.setattr(page_router, "_login_page_url", fake_url)
-        ok, msg = asyncio.run(page_router.create_gacha_page(
-            {"state": {}}, LOGIN_INFO, lambda uid: Path(uid)
-        ))
+        ok, msg = asyncio.run(page_router.create_gacha_page({"state": {}}, LOGIN_INFO, lambda uid: Path(uid)))
         assert ok is False
         assert "nk刷新" in msg
 
@@ -286,10 +281,12 @@ class TestCollectResourceUrls:
             "suitCardListData": [
                 {
                     "preview_image": "https://cdn/s1.png",
-                    "cloths": json.dumps([
-                        {"cloth_id": "c1", "image": "https://cdn/c1.png"},
-                        {"cloth_id": "c2", "image": ""},
-                    ]),
+                    "cloths": json.dumps(
+                        [
+                            {"cloth_id": "c1", "image": "https://cdn/c1.png"},
+                            {"cloth_id": "c2", "image": ""},
+                        ]
+                    ),
                 },
                 {
                     "preview_image": "https://cdn/s1.png",
@@ -306,8 +303,6 @@ class TestCollectResourceUrls:
             collect_render_resource_urls,
         )
 
-        suit_urls, cloth_urls = collect_render_resource_urls(
-            {"suitCardListData": [{"cloths": "{bad json"}]}
-        )
+        suit_urls, cloth_urls = collect_render_resource_urls({"suitCardListData": [{"cloths": "{bad json"}]})
         assert suit_urls == [] and cloth_urls == []
         assert collect_render_resource_urls({}) == ([], [])

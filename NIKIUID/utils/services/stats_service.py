@@ -1,5 +1,6 @@
 """统计与文案服务"""
 
+
 def build_refresh_message(nickname: str, level: int) -> str:
     """构建刷新成功文案"""
     return f"数据刷新成功！\n搭配师: {nickname}\n等级: {level}"

@@ -30,7 +30,5 @@ async def require_user(bot: Bot, ev: Event) -> NikiUser | None:
         has_expired = bool(accounts)  # 有账号但没活跃的 = 可能 token 过期
         await send_niki_notify(bot, ev, CommonMsg.not_logged_in(has_expired))
         if has_expired:
-            logger.info(
-                f"[niki] user_id={ev.user_id} 有 {len(accounts)} 个账号但无活跃,可能 token 过期"
-            )
+            logger.info(f"[niki] user_id={ev.user_id} 有 {len(accounts)} 个账号但无活跃,可能 token 过期")
     return user

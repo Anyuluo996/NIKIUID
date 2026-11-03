@@ -52,9 +52,7 @@ def _calc_daily_task(api_value: int, data_ts: int, now_ts: int) -> dict:
         {current, max, reset, reset_at_ts}
     """
     now_dt = datetime.fromtimestamp(now_ts, tz=TZ_SHANGHAI)
-    today_4am = now_dt.replace(
-        hour=4, minute=0, second=0, microsecond=0
-    )
+    today_4am = now_dt.replace(hour=4, minute=0, second=0, microsecond=0)
     today_4am_ts = int(today_4am.timestamp())
 
     reset = data_ts < today_4am_ts and now_ts >= today_4am_ts
@@ -102,9 +100,7 @@ def _calc_estimated_energy(energy: int, data_ts: int, now: int) -> dict:
     remaining_points = ENERGY_MAX - current
     seconds_to_full = remaining_points * ENERGY_REGEN_SECONDS_PER_POINT
     full_min = remaining_points * (ENERGY_REGEN_SECONDS_PER_POINT // 60)
-    human_remaining = (
-        f"{full_min // 60}h{full_min % 60}m" if remaining_points > 0 else "已满"
-    )
+    human_remaining = f"{full_min // 60}h{full_min % 60}m" if remaining_points > 0 else "已满"
     return {
         "current": current,
         "recovered": recovered,
@@ -128,9 +124,7 @@ async def _trigger_start_sync(
     try:
         async with session.post(
             f"{MYL_API_BASE}/v1/strategy/post/start_sync",
-            json=myl_sign_params(
-                {"client_id": cid, "token": token, "openid": openid}
-            ),
+            json=myl_sign_params({"client_id": cid, "token": token, "openid": openid}),
             timeout=aiohttp.ClientTimeout(total=10),
         ) as resp:
             if resp.status != 200:
@@ -188,9 +182,7 @@ async def fetch_realtime_stamina(
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as resp:
                 if resp.status != 200:
-                    logger.warning(
-                        f"[niki体力] note/book/info 返回状态 {resp.status}"
-                    )
+                    logger.warning(f"[niki体力] note/book/info 返回状态 {resp.status}")
                     return None
                 raw = await resp.read()
 
@@ -199,9 +191,7 @@ async def fetch_realtime_stamina(
             decompressed = decompress_snappy_payload(raw)
             data = json.loads(decompressed.decode("utf-8"))
         except ImportError:
-            logger.error(
-                "[niki体力] snappy 未安装,请运行 pip install python-snappy"
-            )
+            logger.error("[niki体力] snappy 未安装,请运行 pip install python-snappy")
             return None
         except Exception as e:
             logger.error(f"[niki体力] 实时查询解压失败: {e}")
@@ -210,9 +200,7 @@ async def fetch_realtime_stamina(
         # code 校验(token 过期会返回非 0 code)
         code = data.get("code")
         if code not in (0, None):
-            logger.warning(
-                f"[niki体力] note/book/info code={code} info={data.get('info', '')}"
-            )
+            logger.warning(f"[niki体力] note/book/info code={code} info={data.get('info', '')}")
             return None
 
         igm = data.get("info_from_gm", {})

@@ -59,9 +59,7 @@ class TestConvert:
             assert im.getpixel((0, 0))[3] == 128
 
     def test_missing_src(self, tmp_path: Path):
-        assert convert_png_to_webp(
-            tmp_path / "no.png", tmp_path / "no.webp"
-        ) is False
+        assert convert_png_to_webp(tmp_path / "no.png", tmp_path / "no.webp") is False
 
     def test_corrupt_src(self, tmp_path: Path):
         src = tmp_path / "bad.png"
@@ -73,10 +71,13 @@ class TestConvert:
         (tmp_path / "dst").mkdir()
         for n in ("a.png", "b.png"):
             (tmp_path / "src" / n).write_bytes(_png_bytes(100))
-        asyncio.run(bulk_convert_webp(
-            ["a.png", "b.png", "missing.png", "a.png"],
-            tmp_path / "src", tmp_path / "dst",
-        ))
+        asyncio.run(
+            bulk_convert_webp(
+                ["a.png", "b.png", "missing.png", "a.png"],
+                tmp_path / "src",
+                tmp_path / "dst",
+            )
+        )
         assert (tmp_path / "dst" / "a.webp").is_file()
         assert (tmp_path / "dst" / "b.webp").is_file()
         assert not (tmp_path / "dst" / "missing.webp").exists()
