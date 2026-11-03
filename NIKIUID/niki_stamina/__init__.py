@@ -245,6 +245,9 @@ async def niki_stamina_cmd(bot: Bot, ev: Event):
         # 在卡片标题旁标注数据来源(实时/缓存)
         ctx["data_source"] = data_source
 
+        # 数据已拿到、图片未生成,给 AI 注入文字摘要(普通触发时静默)
+        _ai_return_stamina(ctx, data_source)
+
         html = NIKI_TEMPLATES.get_template("stamina.html").render(**ctx)
         img = await render_html_to_image(html, user_data_dir=user_dir, max_width=760.0)
 
